@@ -1,0 +1,42 @@
+# Book configuration for the ja edition.
+#
+# Everything except the title and `language` matches book/book.toml.
+#
+# The theme, the CSS and the switcher are NOT referenced from book/theme
+# directly: mdBook copies additional-css and additional-js into the output, and
+# it does not copy files from outside the book root, which silently produces an
+# unstyled site. book/scripts/build_site.py copies book/theme here before
+# building, so the design is still made once, in book/theme.
+
+[book]
+title = "NUDO テクニカルブック"
+authors = ["NUDO Project"]
+description = "NUDO: design, rationale, compiler architecture, trust model and agent-oriented programming."
+language = "ja"
+src = "src"
+
+[build]
+build-dir = "output/html"
+create-missing = false
+use-default-preprocessors = true
+
+[output.html]
+theme = "theme"
+default-theme = "light"
+preferred-dark-theme = "navy"
+smart-punctuation = true
+additional-css = ["theme/css/tokens.css", "theme/css/nudo-book.css"]
+additional-js = ["theme/nudo-book.js"]
+no-section-label = false
+git-repository-url = "https://github.com/smouj/nudo"
+git-repository-icon = "fab-github"
+
+[output.html.search]
+enable = true
+limit-results = 24
+use-boolean-and = true
+boost-title = 2
+boost-hierarchy = 1
+boost-paragraph = 1
+expand = true
+heading-split-level = 3

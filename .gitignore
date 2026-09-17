@@ -19,5 +19,13 @@ Thumbs.db
 /book/src/assets/brand/*.png
 /book/typst/assets/brand/*.png
 
+# Book: diagrams are shared from book/src/diagrams and copied into each
+# language tree by book/scripts/build_site.py.
+/book/i18n/*/src/diagrams/
+/book/i18n/*/theme/
+
+# Python bytecode from the book's helper scripts
+__pycache__/
+
 # Local scratch
 /.openclaw/
