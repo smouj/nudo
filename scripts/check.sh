@@ -50,4 +50,7 @@ python3 scripts/check-docs.py
 step "workflow policy"
 python3 scripts/check-workflows.py
 
+step "documented console output"
+python3 scripts/check-console.py
+
 printf '\nall checks passed\n'

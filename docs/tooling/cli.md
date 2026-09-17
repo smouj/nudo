@@ -29,7 +29,7 @@ USAGE:
 
 ```console
 $ nudo check examples/00-hello-world/main.nudo
-checked 1 file: 0 errors, 0 warnings
+checked 1 file: 0 errors and 0 warnings
 
 $ nudo check --dump-tokens examples/00-hello-world/main.nudo
 # nudo-tokens v1

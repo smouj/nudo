@@ -188,7 +188,7 @@ the dependency rules between them.
 
 ```console
 $ nudo check examples/00-hello-world/main.nudo
-checked 1 file: 0 errors, 0 warnings
+checked 1 file: 0 errors and 0 warnings
 ```
 
 `nudo check` runs lexical analysis only. A clean run means "no lexical
