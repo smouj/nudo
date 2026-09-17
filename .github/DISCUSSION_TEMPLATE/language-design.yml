@@ -1,0 +1,55 @@
+title: "[design] "
+labels: ["type:design", "area:language"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Design review of something already specified, or of a question in
+        `DESIGN.md`'s open questions. The most useful review says which program
+        a design makes impossible, which one it makes too easy, and what happens
+        at the boundary with a capability, a remote agent, or a hostile tool.
+
+  - type: input
+    id: subject
+    attributes:
+      label: What is being reviewed
+      description: A specification chapter, a NEP, or a named open question.
+    validations:
+      required: true
+
+  - type: textarea
+    id: concern
+    attributes:
+      label: The concern
+      description: What could go wrong, or what is under-specified.
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: A program that shows it
+      description: The case that concerns you, written out.
+      render: nudo
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would change
+      description: Optional. A well-argued concern with no solution is still useful.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: How serious
+      options:
+        - A safety or security problem — the design can be bypassed
+        - A correctness problem — the design does not do what it claims
+        - An ergonomics problem — it works, but badly
+        - A clarity problem — the specification is ambiguous
+    validations:
+      required: true

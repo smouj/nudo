@@ -1,0 +1,50 @@
+name: Documentation
+description: A document is wrong, missing, or describes something that does not exist.
+title: "[docs] "
+labels: ["type:docs", "area:docs"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Documentation is part of the deliverable, not a courtesy. A page that
+        describes behaviour the toolchain does not have is a bug, and it is the
+        kind this project cares most about.
+
+  - type: input
+    id: location
+    attributes:
+      label: Where
+      description: The file or URL, and the section if the page is long.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is wrong
+      options:
+        - Incorrect — it says something untrue
+        - Describes unimplemented behaviour as working
+        - Missing — something a reader needs is not written down
+        - Unclear — correct but hard to follow
+        - Broken link
+        - Contradicts the specification
+        - Typo or formatting
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Quote the text that is wrong, and say what it should say.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Before submitting
+      options:
+        - label: If this claims unimplemented behaviour works, I checked `ROADMAP.md`.
+          required: false

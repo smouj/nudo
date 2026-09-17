@@ -1,0 +1,45 @@
+# Dependabot configuration.
+#
+# The pre-alpha workspace has no third-party dependencies, so the useful work
+# here is keeping the pinned GitHub Actions current. Configuration is tuned to
+# stay quiet: grouped updates, a weekly schedule, and a small open-pull-request
+# limit, because a stream of dependency pull requests on a pre-alpha repository
+# trains reviewers to merge without reading.
+
+version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Madrid"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "build"
+    labels:
+      - "area:tooling"
+      - "type:chore"
+    groups:
+      cargo:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Madrid"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "area:tooling"
+      - "type:chore"
+    groups:
+      actions:
+        patterns:
+          - "*"

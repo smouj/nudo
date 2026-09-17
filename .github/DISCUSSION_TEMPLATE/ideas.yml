@@ -1,0 +1,43 @@
+title: "[idea] "
+labels: ["area:language"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For ideas that are not yet proposals. A concrete example beats a
+        description, and "this would be more convenient" is a legitimate
+        argument — it is just not a sufficient one.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What you want to be able to write, or do.
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: A program that would be better
+      render: nudo
+    validations:
+      required: false
+
+  - type: textarea
+    id: today
+    attributes:
+      label: What happens today
+      description: How people work around this now, and why that is unsatisfying.
+    validations:
+      required: false
+
+  - type: textarea
+    id: cost
+    attributes:
+      label: What it might cost
+      description: |
+        Complexity in the grammar, a new keyword, a new concept to learn, a
+        breaking change. Guessing is fine; ignoring the question is not.
+    validations:
+      required: false

@@ -1,0 +1,68 @@
+name: Bug
+description: Something in the toolchain behaves incorrectly.
+title: "[bug] "
+labels: ["type:bug", "status:needs-repro"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. A compiler bug that cannot be reproduced cannot be
+        fixed safely, so the reproduction is the most valuable part of this
+        report.
+
+        If the toolchain panicked, or a source file makes it hang, use the
+        **Compiler bug** form instead.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you observed, and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: |
+        The exact commands you ran, and the exact output. Paste it as text, not
+        as a screenshot.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: source
+    attributes:
+      label: Input files
+      description: The smallest `.nudo` file that shows the problem, if one is involved.
+      render: nudo
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The output of `nudo --version`.
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: Operating system, and the output of `rustc --version`.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Before submitting
+      options:
+        - label: I read the relevant section of `ROADMAP.md` and this is not simply an unimplemented feature.
+          required: true
+        - label: I searched existing issues for the same problem.
+          required: true

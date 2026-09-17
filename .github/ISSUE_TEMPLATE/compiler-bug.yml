@@ -1,0 +1,70 @@
+name: Compiler bug
+description: A panic, a hang, unbounded memory use, or a wrong diagnostic.
+title: "[compiler] "
+labels: ["type:bug", "area:compiler", "status:needs-repro", "priority:p1"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when the compiler misbehaves on input rather than producing
+        the wrong result for a valid program: a panic, a hang, memory growth, a
+        span that escapes the source, or a diagnostic that cannot be justified.
+
+        These are treated as high priority. The lexer's required properties are
+        written down in `compiler/nudo-lexer/src/lib.rs` and tested in
+        `compiler/nudo-lexer/tests/robustness.rs`.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of misbehaviour
+      options:
+        - Panic
+        - Hang or non-termination
+        - Unbounded memory use
+        - Wrong or unjustifiable diagnostic
+        - Span or position outside the source
+        - Non-deterministic output
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: |
+        The exact command and the exact input. If the input is large, reduce it
+        first: a minimal case is worth more than a complete one.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behaviour
+      description: The output, including a backtrace if there is one.
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The output of `nudo --version`, and the commit if you are not on `main`.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: properties
+    attributes:
+      label: Which documented property is broken
+      description: The guarantees are listed in `spec/lexical-structure.md`.
+      options:
+        - label: It panics on input
+        - label: It does not terminate
+        - label: A span escapes the source or is not on a character boundary
+        - label: The result is not deterministic
+        - label: The diagnostic cannot be justified from the specification

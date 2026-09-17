@@ -1,0 +1,61 @@
+# Path-based labels for the labeler workflow.
+#
+# One label per area, applied from the paths a pull request touches, so that a
+# reviewer can route a change without reading the diff first. The label set is
+# deliberately small: `area:*` here, `type:*` and `priority:*` by hand, and
+# `status:*` during triage.
+
+"area:compiler":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "compiler/**"
+
+"area:runtime":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "runtime/**"
+          - "backends/**"
+
+"area:language":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "spec/**"
+          - "grammar/**"
+          - "neps/**"
+
+"area:security":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "SECURITY.md"
+          - "deny.toml"
+          - "runtime/nudo-capability/**"
+          - "runtime/nudo-policy/**"
+          - "runtime/nudo-sandbox/**"
+          - "docs/security/**"
+
+"area:tooling":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "cli/**"
+          - "tooling/**"
+          - "scripts/**"
+          - "benchmarks/**"
+          - "fuzz/**"
+          - ".github/**"
+
+"area:docs":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/**"
+          - "**/*.md"
+
+"area:interop":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "protocols/**"
+          - "backends/wasm/**"
+
+"area:performance":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "benchmarks/**"

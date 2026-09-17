@@ -1,0 +1,155 @@
+# Release artefacts.
+#
+# PREPARED, NOT EXERCISED: no release has been published, because a pre-alpha
+# toolchain that cannot compile a program should not be offered as a download.
+#
+# It runs only when a version tag is pushed, or when a maintainer starts it by
+# hand. It produces binaries for every supported target, checksums and an SBOM.
+# Publication happens only for a tag, and the job refuses to publish if the
+# version in Cargo.toml does not match the tag.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish a GitHub release for the current version tag"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  NUDO_CI: "1"
+
+jobs:
+  build:
+    name: build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive: tar.gz
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            archive: tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive: zip
+          - os: macos-14
+            target: aarch64-apple-darwin
+            archive: tar.gz
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: stable
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+
+      - name: Check the tag against the declared version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          set -euo pipefail
+          declared="$(cargo metadata --no-deps --format-version 1 | python3 -c 'import json,sys; print(json.load(sys.stdin)["packages"][0]["version"])' 2>/dev/null || echo unknown)"
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$declared" != "$tag" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match the declared version $declared"
+            exit 1
+          fi
+
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }} --package nudo-cli
+
+      - name: Package
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)"
+          name="nudo-$version-${{ matrix.target }}"
+          mkdir -p "dist/$name"
+          cp "target/${{ matrix.target }}/release/nudo" "dist/$name/" 2>/dev/null \
+            || cp "target/${{ matrix.target }}/release/nudo.exe" "dist/$name/"
+          cp LICENSE-MIT LICENSE-APACHE README.md "dist/$name/"
+          cd dist
+          if [ "${{ matrix.archive }}" = "zip" ]; then
+            (cd "$name" && zip -q -r "../$name.zip" .)
+          else
+            tar -czf "$name.tar.gz" "$name"
+          fi
+
+      - name: Checksums
+        shell: bash
+        run: cd dist && sha256sum ./*.tar.gz ./*.zip > "${{ matrix.target }}-SHA256SUMS" 2>/dev/null || sha256sum ./* > "${{ matrix.target }}-SHA256SUMS"
+
+      - name: Upload artefacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nudo-${{ matrix.target }}
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*-SHA256SUMS
+          if-no-files-found: error
+
+  sbom:
+    name: sbom
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Generate an SBOM for the source tree
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
+        with:
+          path: .
+          format: spdx-json
+          artifact-name: nudo-sbom.spdx.json
+          output-file: nudo-sbom.spdx.json
+
+  publish:
+    name: publish
+    needs: [build, sbom]
+    if: startsWith(github.ref, 'refs/tags/') && (github.event_name == 'push' || inputs.publish)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Combine checksums
+        run: |
+          set -euo pipefail
+          cd dist
+          cat ./*-SHA256SUMS > SHA256SUMS
+          cat SHA256SUMS
+      - name: Publish the release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/SHA256SUMS
+            dist/*.spdx.json
+          draft: true
+          generate_release_notes: true
+          body: |
+            NUDO is **pre-alpha**. This is a development snapshot of an
+            incomplete toolchain: it lexes source files and nothing else.
+
+            Do not use it for anything that matters. See ROADMAP.md for what
+            works today and README.md for the current status.

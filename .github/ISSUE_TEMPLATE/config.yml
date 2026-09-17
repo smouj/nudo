@@ -1,0 +1,19 @@
+# Issue chooser configuration.
+#
+# Security reports are deliberately not an issue form: a private advisory is the
+# only place a vulnerability is reported. See SECURITY.md.
+
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/smouj/nudo/security/advisories/new
+    about: Report a vulnerability privately. Never open a public issue for one.
+  - name: Question or idea
+    url: https://github.com/smouj/nudo/discussions
+    about: Ask a question, or discuss an idea before it becomes a proposal.
+  - name: Language design discussion
+    url: https://github.com/smouj/nudo/discussions/new?category=language-design
+    about: Design review is the most valuable contribution to a pre-alpha language.
+  - name: Contributing guide
+    url: https://github.com/smouj/nudo/blob/main/CONTRIBUTING.md
+    about: How to build, test and propose a change.

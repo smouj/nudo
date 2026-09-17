@@ -1,0 +1,41 @@
+# Documentation-only checks, separated so that a documentation change gets a
+# fast, focused result instead of waiting for the whole matrix.
+
+name: Docs
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - "docs/**"
+      - "spec/**"
+      - "grammar/**"
+      - "neps/**"
+      - ".github/workflows/docs.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  markdown:
+    name: markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Relative links, abandoned names and machine-readable files
+        run: python3 scripts/check-docs.py
+      - name: Every documented `nudo` command exists
+        run: |
+          set -euo pipefail
+          cargo build --quiet --package nudo-cli
+          help="$(./target/debug/nudo --help)"
+          for command in $(sed -n 's/^| `\([a-z]*\)` | .*/\1/p' docs/tooling/cli.md | sort -u); do
+            if ! printf '%s' "$help" | grep -q "\b$command\b"; then
+              echo "::error::docs/tooling/cli.md documents \`$command\`, which \`nudo --help\` does not list"
+              exit 1
+            fi
+          done

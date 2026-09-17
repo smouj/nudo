@@ -1,0 +1,25 @@
+# NUDO code owners.
+#
+# These paths require review from the listed owner. The specification, the
+# grammar, the proposal process and the security policy are the artefacts that
+# define what NUDO is; changing them is a language change or a security change,
+# and both are reviewed rather than merged.
+
+*                       @smouj
+
+# The language
+/spec/                  @smouj
+/grammar/               @smouj
+/neps/                  @smouj
+
+# Trust and security
+/SECURITY.md            @smouj
+/GOVERNANCE.md          @smouj
+/AGENTS.md              @smouj
+
+# Repository infrastructure
+/.github/               @smouj
+/Cargo.toml             @smouj
+/deny.toml              @smouj
+/rust-toolchain.toml    @smouj
+/scripts/               @smouj

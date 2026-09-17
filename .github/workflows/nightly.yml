@@ -1,0 +1,79 @@
+# Nightly builds.
+#
+# Purpose: catch what only shows up over time — a new stable Rust release, a new
+# advisory, a flaky test — without waiting for someone to open a pull request.
+#
+# This workflow builds and tests. It does not publish anything, and no nightly
+# artefact is presented as a release: `0.x.y-nightly.YYYYMMDD` is a development
+# snapshot of a pre-alpha toolchain.
+
+name: Nightly
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  NUDO_CI: "1"
+
+jobs:
+  latest-stable:
+    name: latest stable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+      - run: rustc --version
+      - run: cargo build --workspace --all-targets --locked
+      - run: cargo test --workspace --locked
+
+  msrv:
+    name: msrv (1.85.0)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.85.0"
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+      - run: cargo build --workspace --all-targets --locked
+
+  artifacts:
+    name: nightly artefacts
+    needs: [latest-stable, msrv]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+      - name: Build the CLI
+        run: |
+          set -euo pipefail
+          cargo build --release --locked --package nudo-cli
+          version="$(./target/release/nudo --version | awk '{print $2}')"
+          stamp="$(date -u +%Y%m%d)"
+          mkdir -p dist
+          cp target/release/nudo "dist/nudo-$version-nightly.$stamp-x86_64-unknown-linux-gnu"
+          (cd dist && sha256sum ./* > SHA256SUMS)
+          cat dist/SHA256SUMS
+      - name: Upload the nightly snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nudo-nightly-linux-x86_64
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,81 @@
+name: Language proposal
+description: Propose a change to the language. This is the entry point to a NEP.
+title: "[proposal] "
+labels: ["type:design", "area:language", "status:needs-design"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A change to what a program means, or how it is written, needs a **NEP**.
+        This form is the first step; the proposal itself is written from
+        `neps/0000-template.md` and reviewed as a pull request.
+
+        Read `GOVERNANCE.md` for who decides, and `spec/README.md` for the
+        authority order.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: |
+        Show the program that is awkward or impossible today, and say what is
+        awkward about it. A proposal without a concrete example is a preference.
+      render: nudo
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: The proposal
+      description: What you would write instead, in one or two sentences.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impossible
+    attributes:
+      label: What this would make impossible
+      description: |
+        Every design closes doors. Which programs or designs does this forbid,
+        and why is that acceptable? If you cannot name one, that is worth saying.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: At least one, and why it lost.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of the language
+      options:
+        - Surface syntax
+        - Type system
+        - Effects and capabilities
+        - Trust types (Generated / Verified)
+        - Agents, tasks and tools
+        - Policies, budgets and approvals
+        - Modules and packages
+        - Concurrency
+        - Interoperability
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Before submitting
+      options:
+        - label: I read `DESIGN.md` and this is not already rejected there.
+          required: true
+        - label: I checked `ROADMAP.md`; this is not a feature that is merely not built yet.
+          required: true
+        - label: I searched existing issues and discussions for the same proposal.
+          required: true
