@@ -1,0 +1,15 @@
+// Function declarations the pre-alpha lexer accepts.
+
+fn nothing() {}
+
+fn constant() -> Int {
+    1
+}
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+fn chained(a: Int, b: Int, c: Int) -> Int {
+    add(add(a, b), c) - a * b / c
+}

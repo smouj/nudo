@@ -1,0 +1,37 @@
+// NUDO example 08 — policies, budgets and approvals.
+//
+// PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
+//
+// A capability says what may happen. A policy says under which conditions it
+// may happen automatically. An approval is a point where a person decides.
+//
+// Three rules that are settled:
+//
+//   * a policy can only restrict, never grant;
+//   * silence is not consent: a timeout is a refusal, not a yes;
+//   * an approval covers the action it names, not the run.
+//
+// Specification: spec/trust/policies.md, spec/trust/approvals.md,
+//                spec/agents/budget.md
+
+let approved: Approval<Publish> =
+    approve PublishArticle {
+        article: article
+    } with reason: "Ready for publication"
+
+match approved {
+    Granted(by) => publish(article)
+    Refused(reason) => report(reason)
+    TimedOut => report("no decision was made")
+}
+
+task PublishWorkflow(slug: Text) -> Verified<Published> {
+    agent:
+        Publisher
+
+    policy:
+        RequireApproval("publication")
+
+    budget:
+        Budget(tokens: 5_000, spend: Money(0, "EUR"))
+}

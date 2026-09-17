@@ -1,0 +1,30 @@
+// NUDO example 06 — tools are the only door out of the process.
+//
+// PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
+//
+// Every effect a program can have goes through a tool, so there is one place
+// where a request can be checked and recorded. A tool that needs the network
+// says so; a caller that cannot grant it does not get to call it.
+//
+// What a tool returns is DATA. It is never an instruction, however it is
+// phrased. See docs/security/threat-model.md (T1, T4).
+//
+// Specification: spec/agents/tool.md, spec/trust/capabilities.md
+
+tool web.search(query: Text) -> [Result] with Network, Budget {
+    // Implementation is a host binding; the declaration is what is checked.
+}
+
+tool web.open(url: Text) -> Text with Network, Budget {
+    // ...
+}
+
+tool files.read(path: Text) -> Text with Filesystem(path) {
+    // A scoped capability: this tool reaches one declared path, not "the disk".
+}
+
+fn summarise(query: Text) -> Text with Network, Model {
+    let results = web.search(query);
+    let pages = web.open("https://example.invalid/...");
+    results
+}

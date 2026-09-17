@@ -1,0 +1,33 @@
+// NUDO example 04 — errors are values.
+//
+// PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
+//
+// NUDO has no exceptions. A failure is a value the caller must handle, and
+// `match` must be exhaustive (spec/expressions.md).
+//
+// Note that the helpers below are declared in this file on purpose: the
+// standard library does not exist yet (std/README.md), so an example cannot
+// honestly call `print`.
+
+enum Outcome<T, E> {
+    Ok(value: T)
+    Err(error: E)
+}
+
+fn divide(a: Int, b: Int) -> Outcome<Int, Text> {
+    if b == 0 {
+        return Outcome.Err("division by zero")
+    }
+    Outcome.Ok(a / b)
+}
+
+fn log(message: Text) {
+    // No output capability exists yet; this is a placeholder for std/io.
+}
+
+fn main() {
+    match divide(10, 2) {
+        Ok(value) => log("division succeeded")
+        Err(reason) => log(reason)
+    }
+}

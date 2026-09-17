@@ -1,0 +1,5 @@
+// EXPECT: NDO1004
+fn main() {
+    /* this block comment never ends
+    let value = 1;
+}

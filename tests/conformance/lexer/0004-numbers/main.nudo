@@ -1,0 +1,4 @@
+let i = 0;
+let grouped = 1_000_000;
+let ratio = 3.5;
+let mixed = 1_0.2_5;

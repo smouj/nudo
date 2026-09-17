@@ -1,0 +1,6 @@
+// EXPECT: NDO1002
+// EXPECT: NDO1002
+fn main() {
+    let first = 1 @ 2;
+    let second = 3 # 4;
+}

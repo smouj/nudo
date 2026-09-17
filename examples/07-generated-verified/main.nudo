@@ -1,0 +1,33 @@
+// NUDO example 07 — generated is not verified.
+//
+// PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
+//
+// The central idea of the language: what a model produced and what has been
+// checked are different types, and the conversion between them is an explicit,
+// fallible, recorded step.
+//
+//   Generated<T>   produced by a model, not checked
+//   Verified<T>    passed an explicit verification step
+//
+// There is no implicit conversion in either direction, and none to plain `T`.
+// The absence of a verification step has to be visible in the source, because
+// it is the single most important thing a reviewer needs to see.
+//
+// Specification: spec/trust/generated.md, spec/trust/verified.md
+// Proposal: neps/0002-generated-verified.md
+
+let draft: Generated<Article> =
+    ask Writer {
+        "Create an article."
+    }
+
+let article: Verified<Article> =
+    verify draft with ArticleVerifier
+
+fn publish(article: Verified<Article>) -> Unit {
+    // The signature states the precondition, and the compiler enforces it.
+}
+
+fn show(draft: Generated<Article>) -> Unit {
+    // Displaying an unchecked draft to a person is fine.
+}

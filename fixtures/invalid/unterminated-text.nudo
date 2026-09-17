@@ -1,0 +1,4 @@
+// EXPECT: NDO1003
+fn main() {
+    let broken = "this text literal is never closed
+}

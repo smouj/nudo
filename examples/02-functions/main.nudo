@@ -1,0 +1,27 @@
+// NUDO example 02 — functions.
+//
+// READ BY THE TOOLCHAIN TODAY:
+//
+//     nudo check examples/02-functions/main.nudo
+//
+// A function declares its effects when it has any:
+//
+//     fn fetch(url: Text) -> Text with Network { ... }
+//
+// That clause is not implemented (M5), so it does not appear here.
+
+fn main() {
+    let total = add(1, 2);
+    let scaled = scale(total, 10);
+    let nothing_here = nothing();
+}
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+fn scale(value: Int, factor: Int) -> Int {
+    value * factor
+}
+
+fn nothing() {}

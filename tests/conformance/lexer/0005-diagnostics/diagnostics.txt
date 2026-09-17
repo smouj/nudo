@@ -1,0 +1,3 @@
+# nudo-diagnostics v1
+error NDO1002 2:13
+error NDO1003 3:13

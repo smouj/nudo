@@ -1,0 +1,29 @@
+// NUDO example 03 — types.
+//
+// PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
+//
+// This file illustrates proposed syntax (spec/types.md, spec/declarations.md).
+// The parser that would accept it is milestone M2 and does not exist, so
+// `nudo check` reports unknown characters for `=>`, `match` is not reserved,
+// and nothing here is a contract.
+
+struct User {
+    name: Text
+    age: Int
+}
+
+enum Status {
+    Pending
+    Running
+    Complete
+    Failed(reason: Text)
+}
+
+fn describe(status: Status) -> Text {
+    match status {
+        Pending => "not started"
+        Running => "in progress"
+        Complete => "finished"
+        Failed(reason) => reason
+    }
+}

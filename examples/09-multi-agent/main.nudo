@@ -1,0 +1,66 @@
+// NUDO example 09 — delegation narrows authority.
+//
+// PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
+//
+// The rule: delegation may narrow authority, and may never widen it.
+//
+// Without that rule, every capability boundary can be walked around in one
+// line — an agent that cannot reach the network asks an agent that can. The
+// capability system would then describe intent rather than enforce it.
+//
+// Authority narrows monotonically along a chain: a capability dropped at any
+// step cannot reappear later.
+//
+// Specification: spec/agents/delegation.md
+// Proposal: neps/0001-agent-types.md, neps/0003-capability-system.md
+
+agent Researcher {
+    role:
+        "Find and check sources."
+
+    tools:
+        web.search
+        web.open
+
+    allow:
+        Network
+
+    budget:
+        Budget(tokens: 20_000, tool_calls: 30)
+}
+
+agent Editor {
+    role:
+        "Turn research into an article."
+
+    tools:
+        web.search
+
+    allow:
+        Network
+
+    budget:
+        Budget(tokens: 10_000, tool_calls: 5)
+}
+
+task WriteArticle(topic: Text) -> Verified<Article> {
+    agent:
+        Editor
+
+    verify:
+        SourcesRequired
+
+    budget:
+        Budget(tokens: 30_000, tool_calls: 35)
+}
+
+fn produce(topic: Text) -> Verified<Article> with Network, Model {
+    // The delegated task receives part of this task's budget and a subset of
+    // its capabilities — never more than the caller holds.
+    let research = delegate Researcher {
+        topic: topic
+    } with budget: Budget(tokens: 8_000, tool_calls: 12);
+
+    let article = verify research with ArticleVerifier;
+    article
+}

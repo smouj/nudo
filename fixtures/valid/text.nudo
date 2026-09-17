@@ -1,0 +1,10 @@
+// Text literals, including every escape sequence the lexer defines.
+
+let newline = "a\nb";
+let carriage = "a\rb";
+let tab = "a\tb";
+let backslash = "a\\b";
+let quote = "a\"b";
+let nul = "a\0b";
+let empty = "";
+let heavy = "¿unicode inside text? sí: ñ, ü, 漢字";

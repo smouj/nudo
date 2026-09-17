@@ -1,0 +1,2 @@
+// EXPECT: NDO1005
+let code = 123abc;

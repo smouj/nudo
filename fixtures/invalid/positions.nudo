@@ -1,0 +1,5 @@
+// EXPECT: NDO1002 @ 4:9
+// EXPECT: NDO1002 @ 5:16
+let a = 1;
+let b = @;
+let c = "text" @ 2;

@@ -1,0 +1,13 @@
+# nudo-tokens v1
+0000 1:1-1:3 KeywordFn "fn"
+0001 1:4-1:8 Ident "main"
+0002 1:8-1:9 LParen "("
+0003 1:9-1:10 RParen ")"
+0004 1:11-1:12 LBrace "{"
+0005 2:5-2:8 KeywordLet "let"
+0006 2:9-2:17 Ident "greeting"
+0007 2:18-2:19 Equals "="
+0008 2:20-2:33 TextLiteral "\"hello, nudo\""
+0009 2:33-2:34 Semi ";"
+0010 3:1-3:2 RBrace "}"
+0011 4:1-4:1 Eof ""

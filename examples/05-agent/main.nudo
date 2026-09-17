@@ -1,0 +1,40 @@
+// NUDO example 05 — an agent is a bounded executor.
+//
+// PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
+//
+// Read this declaration as a capability statement, not as a prompt:
+//
+//   * `tools` is exhaustive. A call to anything else is a compile error.
+//   * `allow` grants capabilities. An agent holds only what it names.
+//   * `budget` is enforced. Exhaustion fails the task; it is not a warning.
+//   * `role` is documentation for humans. It is not a security boundary, and
+//     nothing enforces it.
+//
+// Specification: spec/agents/agent.md, spec/agents/budget.md
+// Proposal: neps/0001-agent-types.md
+
+agent Researcher {
+    role:
+        "Research reliable information."
+
+    tools:
+        web.search
+        web.open
+
+    allow:
+        Network
+
+    budget:
+        Budget(tokens: 20_000, tool_calls: 30)
+}
+
+task ResearchTopic(topic: Text) -> Verified<Report> {
+    agent:
+        Researcher
+
+    verify:
+        SourcesRequired
+
+    budget:
+        Budget(tokens: 20_000, tool_calls: 30)
+}

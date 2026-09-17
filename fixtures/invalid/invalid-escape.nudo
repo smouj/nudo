@@ -1,0 +1,2 @@
+// EXPECT: NDO1006
+let pattern = "a\qb";

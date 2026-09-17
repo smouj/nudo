@@ -1,0 +1,18 @@
+// NUDO pre-alpha fixture: the smallest program the current toolchain accepts.
+//
+//   nudo check fixtures/valid/hello.nudo
+//
+// reports zero diagnostics. This file is NOT executable: the parser, the type
+// checker and the interpreter are planned and do not exist yet.
+
+fn main() {
+    let greeting = "hello, nudo";
+}
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+let answer = 42;
+let ratio = 3.5;
+let total = add(1, 2) / 3;

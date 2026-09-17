@@ -1,0 +1,12 @@
+// A line comment.
+// Another one, with a slash / and a star * that must not confuse the lexer.
+
+/* A block comment. */
+/* A block comment
+   over several lines. */
+/* A nested /* block */ comment. */
+
+fn main() {
+    // A comment inside a function body.
+    let value = 1; /* trailing block comment */
+}

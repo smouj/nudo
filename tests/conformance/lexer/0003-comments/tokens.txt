@@ -1,0 +1,8 @@
+# nudo-tokens v1
+0000 4:1-4:3 KeywordFn "fn"
+0001 4:4-4:8 Ident "main"
+0002 4:8-4:9 LParen "("
+0003 4:9-4:10 RParen ")"
+0004 4:11-4:12 LBrace "{"
+0005 4:12-4:13 RBrace "}"
+0006 5:1-5:1 Eof ""

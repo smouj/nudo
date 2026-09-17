@@ -1,0 +1,16 @@
+// NUDO example 01 — bindings and literals.
+//
+// READ BY THE TOOLCHAIN TODAY:
+//
+//     nudo check examples/01-variables/main.nudo
+//
+// Immutability is the default. Whether NUDO has mutable bindings at all, and
+// what they are spelled, is an open question (see DESIGN.md).
+
+let count = 3;
+let unit_price = 1_999.95;
+let label = "unit price";
+let total = count * unit_price;
+let grouped = 1_000_000;
+let nested = (((count)));
+let text = "escapes: \n \t \\ \" \0";

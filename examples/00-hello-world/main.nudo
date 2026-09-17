@@ -1,0 +1,19 @@
+// NUDO example 00 — hello world.
+//
+// READ BY THE TOOLCHAIN TODAY:
+//
+//     nudo check examples/00-hello-world/main.nudo
+//
+// This file uses only the token set the pre-alpha lexer implements, so it
+// reports zero diagnostics. It does not run: there is no parser (M2) and no
+// interpreter (M4).
+
+fn main() {
+    let greeting = "hello, nudo";
+}
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+let answer = add(1, 2);
