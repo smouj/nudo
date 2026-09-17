@@ -12,6 +12,7 @@ Thumbs.db
 
 # Book: generated on every build, never committed.
 /book/output/
+/book/i18n/*/output/
 /book/typst/generated/
 
 # Book: the official logos are copied here by book/scripts/sync_brand_assets.py

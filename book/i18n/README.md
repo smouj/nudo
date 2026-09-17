@@ -43,11 +43,21 @@ knowingly, and the staleness check is what keeps it from becoming drift.
 Rules that apply to every language. They exist because a translated manual about
 a pre-alpha language is an unusually effective way to mislead people.
 
-1. **Never translate a status label into something stronger.** `IMPLEMENTED`,
-   `SPECIFIED`, `PLANNED` and `PROPOSED` mean exactly what
-   [`../../AGENTS.md`](../../AGENTS.md) says they mean. Translate the words, keep
-   the ranks. A translation that turns "planned" into "available" is a defect,
-   not a nuance.
+1. **Never translate a status label into something stronger.** The four ranks are
+   `IMPLEMENTED`, `SPECIFIED`, `PLANNED` and `PROPOSED`, and they mean exactly
+   what [`../../AGENTS.md`](../../AGENTS.md) says they mean.
+
+   A chapter's status line is `<rank>` or `<rank> / <rank>`, optionally followed by
+   a short descriptor: `Implemented foundation`, `Proposed syntax`. The rank is
+   **kept verbatim in uppercase English** so that it stays machine-checkable and
+   cannot drift, and the descriptor is translated. A translation that turns
+   "planned" into "available" is a defect, not a nuance.
+
+   There is no `Open` rank. "The design question this chapter names has not been
+   settled" is written as `Proposed`, and a chapter whose question *has* been
+   settled is updated rather than left carrying its old label — which is what
+   happened to `02-language-design/expressions.md` once the expression grammar was
+   frozen.
 2. **Never translate a claim into a promise.** If the English says a feature is
    designed and not built, every language says that.
 3. **Code, identifiers, file paths, `NDO` codes, type names and command names are
