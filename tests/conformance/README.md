@@ -63,6 +63,18 @@ error NDO1003 3:13
 
 A case with no diagnostics omits the file, or contains only the header.
 
+## Line endings
+
+Expectations are compared line by line, and a carriage return is treated as a
+checkout artefact rather than content: the reference driver normalises CRLF to LF
+before comparing. `.gitattributes` normalises the corpus to LF in the repository
+and in the working tree, so this should never matter — it is handled anyway,
+because a Windows contributor regenerating an expectation with a shell redirect
+writes CRLF, and a corpus that only works on the author's machine is not a
+corpus.
+
+The token dump itself always ends its lines with LF, on every platform.
+
 ## Regenerating expectations
 
 Expectations are reviewed artefacts, not build output. When a case legitimately

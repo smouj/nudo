@@ -1,0 +1,33 @@
+# Line endings.
+#
+# NUDO is checked out, edited and compared on Windows, Linux and macOS, and the
+# conformance corpus is compared line by line. A platform-dependent line ending
+# would make the same commit produce different results on different machines,
+# which is precisely the property a conformance corpus must not have.
+#
+# Everything is normalised to LF in the repository and in the working tree.
+# The lexer accepts CRLF as a line terminator, so a source file that arrives
+# with CRLF still lexes to the same positions.
+
+* text=auto eol=lf
+
+# Source, corpus and configuration are compared as text.
+*.nudo  text eol=lf
+*.txt   text eol=lf
+*.md    text eol=lf
+*.ebnf  text eol=lf
+*.rs    text eol=lf
+*.toml  text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+
+# PowerShell is the one exception: Windows tooling reads it with a CRLF
+# convention, and nothing in this repository compares these files as text.
+*.ps1 text eol=crlf
+
+# Binary assets must never be converted.
+*.png binary
+*.jpg binary
+*.ico binary
+*.zip binary
+*.gz  binary
