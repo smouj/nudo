@@ -146,16 +146,32 @@ match status {
 }
 ```
 
-| Operator | Precedence |
-| -------- | ---------- |
-| `f(x)`, `a.b`, `a[i]` | 1 |
-| `-`, `!` | 2 |
-| `*`, `/` | 3 |
-| `+`, `-` | 4 |
-| `<`, `>`, `<=`, `>=` | 5 |
-| `==`, `!=` | 6 |
-| `&&` | 7 |
-| `\|\|` | 8 |
+<!-- PRECEDENCE: expression > logical-or > logical-and > equality > comparison > additive > multiplicative > unary-expression > postfix-expression > primary-expression -->
+
+The levels below are the whole definition of precedence. Each level is written in
+terms of the next one, so the grammar and this table cannot disagree — and
+`scripts/check-grammar.py` fails the build if they do.
+
+| Level | Operators | Associativity |
+| ----- | --------- | ------------- |
+| `logical-or` | `\|\|` | left |
+| `logical-and` | `&&` | left |
+| `equality` | `==`, `!=` | left |
+| `comparison` | `<`, `>`, `<=`, `>=` | **none** — `a < b < c` is an error |
+| `additive` | `+`, `-` | left |
+| `multiplicative` | `*`, `/` | left |
+| `unary-expression` | `-x`, `!x` | prefix, right |
+| `postfix-expression` | `f(x)`, `a.b`, `a[i]` | left, chains |
+| `primary-expression` | literals, paths, `( … )`, blocks, `if`, `match`, `ask`, `verify`, `delegate` | — |
+
+Postfix forms chain, so `a.b(c)[d]` is one expression. Comparison does not chain:
+write `a < b && b < c` instead, because `a < b < c` reads as arithmetic on a
+boolean more often than it reads as a mistake.
+
+There is no `?` operator in expressions. `?` is a type operator, and
+expression-level error propagation is an open question that needs a NEP before it
+has syntax. There is also no assignment expression: mutability itself is
+undecided, so assignment has nothing to assign to yet.
 
 No implicit numeric conversion, no truthiness, and `match` must be exhaustive.
 

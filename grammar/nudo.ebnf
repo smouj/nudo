@@ -1,191 +1,275 @@
-(* NUDO grammar — EBNF                                                    *)
-(*                                                                       *)
-(* STATUS: PRE-ALPHA AND PROVISIONAL.                                    *)
-(*                                                                       *)
-(* Only the "Lexical structure" section below is implemented, and only by *)
-(* the lexer (milestone M1). Every production marked "PROVISIONAL"       *)
-(* describes syntax NUDO is being designed towards; nothing accepts it.   *)
-(*                                                                       *)
-(* The normative narrative is spec/grammar.md and the chapters it links.  *)
-(* If this file and the specification disagree, the specification wins.   *)
-(*                                                                       *)
-(* Notation:                                                              *)
-(*   rule = ... ;        a production                                     *)
-(*   a b                 a followed by b                                  *)
-(*   a | b               a or b                                           *)
+(* NUDO grammar — EBNF                                                     *)
+(*                                                                        *)
+(* STATUS: PRE-ALPHA. Two layers, with different standing:                 *)
+(*                                                                        *)
+(*   LEXICAL GRAMMAR    IMPLEMENTED   milestone M1, compiler/nudo-lexer    *)
+(*   SYNTACTIC GRAMMAR  SPECIFIED     milestone M2, not implemented        *)
+(*                                                                        *)
+(* "Specified" means the shape is decided and a parser for it is the next   *)
+(* milestone. Nothing in the syntactic grammar is accepted by any command   *)
+(* today, and `nudo check` reports unknown characters rather than pretending *)
+(* to parse.                                                               *)
+(*                                                                        *)
+(* The normative narrative is spec/grammar.md and the chapters it links.    *)
+(* If this file and the specification disagree, the specification wins.     *)
+(*                                                                        *)
+(* Two rules below are load-bearing and are checked mechanically by         *)
+(* scripts/check-grammar.py:                                                *)
+(*                                                                        *)
+(*   1. NO LEFT RECURSION. nudo-parser will be a recursive-descent parser,  *)
+(*      which cannot handle a production that derives a form starting with  *)
+(*      itself, directly or indirectly.                                     *)
+(*   2. NO UNSTATED PRECEDENCE. The PRECEDENCE marker is the single source  *)
+(*      of operator precedence; the productions must implement it, and the  *)
+(*      identical marker appears in grammar/syntax-reference.md and         *)
+(*      spec/expressions.md. The checker compares all three.                *)
+(*                                                                        *)
+(* Notation:                                                               *)
+(*   rule = ... ;        a production                                      *)
+(*   a , b               a followed by b                                   *)
+(*   a | b               a or b                                            *)
 (*   [ a ]               optional                                         *)
-(*   { a }               zero or more repetitions                         *)
-(*   "text"              a literal token                                  *)
-(*   (* comment *)       a comment                                        *)
+(*   { a }               zero or more repetitions                          *)
+(*   "text"              a literal token                                   *)
+(*   ? ... ?             a special sequence: prose, or an unspecified input *)
+(*   comment             text between the comment delimiters              *)
 
-(* ==================================================================== *)
-(* Lexical structure                                       IMPLEMENTED  *)
-(* ==================================================================== *)
+(* ===================================================================== *)
+(* LEXICAL GRAMMAR                                          IMPLEMENTED  *)
+(* ===================================================================== *)
+(* Normative text: spec/lexical-structure.md. Implemented by             *)
+(* compiler/nudo-lexer; covered by tests/conformance/lexer.              *)
 
-source-file        = { trivia | token }, eof ;
+source-file         = { trivia | token }, eof ;
 
-trivia             = whitespace | line-comment | block-comment ;
+trivia              = whitespace | line-comment | block-comment ;
 
-whitespace         = ? any Unicode whitespace character ? ;
+whitespace          = ? any Unicode whitespace character ? ;
 
-line-comment       = "//", { ? any character except a line terminator ? } ;
+line-comment        = "//", { ? any character except a line terminator ? } ;
 
-block-comment      = "/*", { block-comment-body }, "*/" ;
-block-comment-body = ? any character ? | block-comment ;
+block-comment       = "/*", { block-comment-body }, "*/" ;
+block-comment-body  = ? any character ? | block-comment ;
 
-eof                = ? end of file ? ;
+eof                 = ? end of file ? ;
 
-identifier         = identifier-start, { identifier-continue } ;
-identifier-start   = letter | "_" ;
+identifier          = identifier-start, { identifier-continue } ;
+identifier-start    = letter | "_" ;
 identifier-continue = letter | digit | "_" ;
-letter             = "A" | ... | "Z" | "a" | ... | "z" ;
-digit              = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+letter              = ? "A" through "Z", or "a" through "z" ? ;
+digit               = ? "0" through "9" ? ;
 
-integer-literal    = digit, { separator-digit } ;
-separator-digit    = digit | ( "_", digit ) ;
+integer-literal     = digit, { separator-digit } ;
+separator-digit     = digit | ( "_", digit ) ;
 
-float-literal      = integer-literal, ".", digit, { separator-digit } ;
+float-literal       = integer-literal, ".", digit, { separator-digit } ;
 
-text-literal       = '"', { text-character | escape-sequence }, '"' ;
-text-character     = ? any character except a quote, a backslash or a line terminator ? ;
-escape-sequence    = "\", ( "n" | "r" | "t" | "\" | '"' | "0" ) ;
+text-literal        = '"', { text-character | escape-sequence }, '"' ;
+text-character      = ? any character except a quote, a backslash,
+                        or a line terminator ? ;
+escape-sequence     = "\", ( "n" | "r" | "t" | "\" | '"' | "0" ) ;
 
-(* Reserved words. Only these two are reserved today; every other word in  *)
-(* this grammar is an ordinary identifier until a NEP reserves it.         *)
-keyword            = "fn" | "let" ;
+(* Only these two words are reserved. See NEP-0005 for the policy that
+   decides how the words below, and future ones, become reserved. *)
+keyword             = "fn" | "let" ;
 
 (* Punctuation of the pre-alpha token set. *)
-punctuation        = "(" | ")" | "{" | "}" | ":" | "," | "->" | "="
-                   | "+" | "-" | "*" | "/" | ";" ;
+punctuation         = "(" | ")" | "{" | "}" | "[" | "]" | ":" | "," | "::"
+                    | "->" | "=>" | "." | "?" | "=" | "==" | "!="
+                    | "<" | ">" | "<=" | ">=" | "&&" | "||" | "!"
+                    | "+" | "-" | "*" | "/" | ";" ;
 
-token              = identifier | integer-literal | float-literal
-                   | text-literal | keyword | punctuation ;
+token               = identifier | integer-literal | float-literal
+                    | text-literal | keyword | punctuation ;
 
-(* ==================================================================== *)
-(* Items                                                          PROVISIONAL *)
-(* ==================================================================== *)
+(* ===================================================================== *)
+(* SYNTACTIC GRAMMAR                                        SPECIFIED    *)
+(* ===================================================================== *)
+(* PRE-ALPHA. Proposed syntax, not implemented. Milestone M2.            *)
 
-program            = { item } ;
+program             = { item } ;
 
-item               = function-decl
-                   | struct-decl
-                   | enum-decl
-                   | agent-decl            (* PROVISIONAL *)
-                   | task-decl             (* PROVISIONAL *)
-                   | tool-decl             (* PROVISIONAL *)
-                   | model-decl            (* PROVISIONAL *)
-                   | const-decl            (* PROVISIONAL *)
-                   | binding ;
+item                = function-decl
+                    | struct-decl
+                    | enum-decl
+                    | agent-decl
+                    | task-decl
+                    | tool-decl
+                    | model-decl
+                    | const-decl
+                    | binding ;
 
-function-decl      = "fn", identifier, parameter-list,
-                     [ "->", type ], [ effect-clause ], block ;
+(* ---------------------------------------------------------------- items *)
 
-parameter-list     = "(", [ parameter, { ",", parameter } ], ")" ;
-parameter          = identifier, ":", type ;
+function-decl       = "fn", identifier, parameter-list,
+                      [ "->", type ], [ effect-clause ], block ;
 
-effect-clause      = "with", capability-list ;              (* PROVISIONAL *)
+parameter-list      = "(", [ parameter, { ",", parameter } ], ")" ;
+parameter           = identifier, ":", type ;
 
-struct-decl        = "struct", identifier, "{", { field }, "}" ;
-field              = identifier, ":", type ;
+effect-clause       = "with", capability-list ;
+capability-list     = capability, { ",", capability } ;
+capability          = identifier ;
 
-enum-decl          = "enum", identifier, "{", { variant }, "}" ;
-variant            = identifier, [ "(", [ field, { ",", field } ], ")" ] ;
+struct-decl         = "struct", identifier, "{", { field }, "}" ;
+field               = identifier, ":", type ;
 
-const-decl         = "const", identifier, ":", type, "=", expression, ";" ;
+enum-decl           = "enum", identifier, "{", { variant }, "}" ;
+variant             = identifier, [ "(", [ field, { ",", field } ], ")" ] ;
 
-binding            = "let", identifier, [ ":", type ], "=", expression, ";" ;
+const-decl          = "const", identifier, ":", type, "=", expression, ";" ;
 
-(* --- agents, tasks, tools and models ------------------------------- *)
+binding             = "let", identifier, [ ":", type ], "=", expression, ";" ;
 
-agent-decl         = "agent", identifier, "{", { agent-clause }, "}" ;  (* PROVISIONAL *)
-agent-clause       = role-clause | tools-clause | allow-clause | budget-clause ;
-role-clause        = "role", ":", text-literal ;
-tools-clause       = "tools", ":", { tool-name } ;
-allow-clause       = "allow", ":", capability-list ;
-tool-name          = identifier, ".", identifier ;
-capability-list    = capability, { ",", capability } ;
-capability         = identifier ;
+(* --------------------------------------------------- agents and tasks *)
 
-task-decl          = "task", identifier, parameter-list,
-                     "->", type, "{", { task-clause }, "}" ;        (* PROVISIONAL *)
-task-clause        = agent-clause
-                   | "agent", ":", identifier
-                   | verify-clause
-                   | budget-clause ;
-verify-clause      = "verify", ":", identifier ;
+agent-decl          = "agent", identifier, "{", { agent-clause }, "}" ;
+agent-clause        = role-clause | tools-clause | allow-clause | budget-clause ;
+role-clause         = "role", ":", text-literal ;
+tools-clause        = "tools", ":", tool-name, { ",", tool-name } ;
+allow-clause        = "allow", ":", capability-list ;
+tool-name           = path ;
 
-budget-clause      = "budget", ":", budget-literal ;            (* PROVISIONAL *)
-budget-literal     = "Budget", "(", budget-field, { ",", budget-field }, ")" ;
-budget-field       = identifier, ":", expression ;
+task-decl           = "task", identifier, parameter-list,
+                      "->", type, "{", { task-clause }, "}" ;
+task-clause         = agent-clause
+                    | "agent", ":", path
+                    | verify-clause
+                    | budget-clause ;
+verify-clause       = "verify", ":", path ;
 
-tool-decl          = "tool", qualified-name, parameter-list,
-                     [ "->", type ], [ effect-clause ], block ;  (* PROVISIONAL *)
-qualified-name     = identifier, ".", identifier ;
+budget-clause       = "budget", ":", budget-literal ;
+budget-literal      = "Budget", "(", budget-field, { ",", budget-field }, ")" ;
+budget-field        = identifier, ":", expression ;
 
-model-decl         = "model", identifier, "{", { model-field }, "}" ;  (* PROVISIONAL *)
-model-field        = identifier, ":", expression ;
+tool-decl           = "tool", path, parameter-list,
+                      [ "->", type ], [ effect-clause ], block ;
 
-(* ==================================================================== *)
-(* Types                                                          PROVISIONAL *)
-(* ==================================================================== *)
+model-decl          = "model", identifier, "{", { model-field }, "}" ;
+model-field         = identifier, ":", expression ;
 
-type               = path-type
-                   | generic-type
-                   | sequence-type
-                   | function-type
-                   | optional-type ;
+(* ---------------------------------------------------------------- types *)
 
-path-type          = identifier, { "::", identifier } ;
-generic-type       = identifier, "<", type, { ",", type }, ">" ;  (* PROVISIONAL *)
-sequence-type      = "[", type, "]" ;
-function-type      = "Fn", "(", [ type, { ",", type } ], ")", "->", type ;
-optional-type      = type, "?" ;
+type                = primary-type, [ "?" ] ;
 
-(* ==================================================================== *)
-(* Expressions                                                    PROVISIONAL *)
-(* ==================================================================== *)
+primary-type        = path-type
+                    | generic-type
+                    | sequence-type
+                    | function-type
+                    | parenthesized-type ;
 
-block              = "{", { statement }, [ expression ], "}" ;
+path-type           = path ;
+generic-type        = path, "<", type, { ",", type }, ">" ;
+sequence-type       = "[", type, "]" ;
+function-type       = "Fn", "(", [ type, { ",", type } ], ")", "->", type ;
+parenthesized-type  = "(", type, ")" ;
 
-statement          = binding | expression-statement ;
+(* A type is at most one level of optional: `T?` is valid, `T??` is not,
+   and `(T?)?` is valid because parentheses reset the level. `primary-type`
+   does not include a trailing `?`, so this is not left-recursive.
 
-expression         = literal
-                   | path-expression
-                   | call-expression
-                   | field-expression
-                   | index-expression
-                   | unary-expression
-                   | binary-expression
-                   | if-expression
-                   | match-expression
-                   | block
-                   | ask-expression        (* PROVISIONAL *)
-                   | verify-expression     (* PROVISIONAL *)
-                   | delegate-expression ; (* PROVISIONAL *)
+   The parser needs one token of lookahead to choose between `path-type`
+   and `generic-type` (`Foo` versus `Foo<...>`). That is the only lookahead
+   the type grammar requires, and it is recorded in
+   docs/internals/parser-design.md. *)
 
-literal            = integer-literal | float-literal | text-literal
-                   | "true" | "false" ;
+(* ----------------------------------------------------------- expressions *)
 
-path-expression    = identifier, { "::", identifier } ;
-call-expression    = expression, argument-list ;
-argument-list      = "(", [ expression, { ",", expression } ], ")" ;
-field-expression   = expression, ".", identifier ;
-index-expression   = expression, "[", expression, "]" ;
+(* PRECEDENCE: expression > logical-or > logical-and > equality > comparison > additive > multiplicative > unary-expression > postfix-expression > primary-expression *)
 
-unary-expression   = ( "-" | "!" ), expression ;
-binary-expression  = expression, binary-operator, expression ;
-binary-operator    = "+" | "-" | "*" | "/"
-                   | "<" | ">" | "<=" | ">=" | "==" | "!="
-                   | "&&" | "||" ;                              (* PROVISIONAL *)
+(* The chain above is the single definition of operator precedence. Each
+   level is defined in terms of the next, so the grammar and the precedence
+   cannot disagree; scripts/check-grammar.py verifies both that and the fact
+   that the same text appears in grammar/syntax-reference.md and
+   spec/expressions.md.
 
-if-expression      = "if", expression, block, [ "else", ( block | if-expression ) ] ;
-match-expression   = "match", expression, "{", { match-arm }, "}" ;
-match-arm          = pattern, "=>", expression ;
-pattern            = identifier, [ "(", [ identifier, { ",", identifier } ], ")" ] ;
+   There is deliberately no `assignment` level. An assignment expression
+   requires a mutable binding, and whether NUDO has mutable bindings at all is
+   an open question (spec/declarations.md). When it is answered, assignment
+   takes the place above `logical-or`, and a NEP records it. *)
 
-(* --- the agentic expressions -------------------------------------- *)
+expression          = logical-or ;
 
-ask-expression     = "ask", identifier, block ;                 (* PROVISIONAL *)
-verify-expression  = "verify", expression, "with", identifier ; (* PROVISIONAL *)
-delegate-expression = "delegate", identifier, block,
-                      [ "with", "budget", ":", budget-literal ] ; (* PROVISIONAL *)
+logical-or          = logical-and, { "||", logical-and } ;
+
+logical-and         = equality, { "&&", equality } ;
+
+equality            = comparison, { equality-operator, comparison } ;
+equality-operator   = "==" | "!=" ;
+
+(* Comparison does not chain: `a < b < c` is a syntax error rather than a
+   silent `(a < b) < c`. Use an explicit `&&` between comparisons. *)
+comparison          = additive, [ comparison-operator, additive ] ;
+comparison-operator = "<" | ">" | "<=" | ">=" ;
+
+additive            = multiplicative, { additive-operator, multiplicative } ;
+additive-operator   = "+" | "-" ;
+
+multiplicative      = unary-expression, { multiplicative-operator, unary-expression } ;
+multiplicative-operator = "*" | "/" ;
+
+unary-expression    = prefix-operator, unary-expression
+                    | postfix-expression ;
+prefix-operator     = "-" | "!" ;
+
+postfix-expression  = primary-expression, { postfix-suffix } ;
+postfix-suffix      = argument-list
+                    | field-access
+                    | index-access ;
+argument-list       = "(", [ expression, { ",", expression } ], ")" ;
+field-access        = ".", identifier ;
+index-access        = "[", expression, "]" ;
+
+(* Left-associative postfix chaining is what makes `a.b(c)[d]` one
+   expression. There is no `?` suffix: `?` is a type operator in the
+   pre-alpha design, and expression-level error propagation is an open
+   question that needs a NEP before it has syntax. *)
+
+primary-expression  = literal
+                    | path-expression
+                    | parenthesized-expression
+                    | block
+                    | if-expression
+                    | match-expression
+                    | ask-expression
+                    | verify-expression
+                    | delegate-expression ;
+
+literal             = integer-literal | float-literal | text-literal
+                    | "true" | "false" ;
+
+path                = path-segment, { "::", path-segment } ;
+path-segment        = identifier ;
+path-expression     = path ;
+
+parenthesized-expression = "(", expression, ")" ;
+
+(* A block is a statement list with an optional final expression, which is
+   the block's value. Every statement other than the final expression is
+   terminated by `;`, which keeps the rule decidable without backtracking. *)
+block               = "{", { block-statement }, [ expression ], "}" ;
+block-statement     = binding | expression-statement ;
+expression-statement = expression, ";" ;
+
+if-expression       = "if", expression, block,
+                      [ "else", ( block | if-expression ) ] ;
+
+(* `match` is unambiguous without lookahead: a block is a primary
+   expression, never a postfix suffix, so the scrutinee expression cannot
+   swallow the `{` that opens the arms. *)
+match-expression    = "match", expression, "{", { match-arm }, "}" ;
+match-arm           = pattern, "=>", expression ;
+pattern             = path, [ "(", [ pattern, { ",", pattern } ], ")" ] ;
+
+(* The agentic expressions. All three are provisional: NEP-0001, NEP-0002
+   and NEP-0006 decide whether they are keywords, functions or protocols.
+
+   `with` is not an operator. It appears only in `effect-clause`,
+   `verify-expression` and `delegate-expression`, which is what keeps
+   `verify draft with V` parseable: no postfix suffix starts with `with`. *)
+ask-expression      = "ask", path, block ;
+
+verify-expression   = "verify", expression, "with", path ;
+
+delegate-expression = "delegate", path, block,
+                      [ "with", "budget", ":", budget-literal ] ;
