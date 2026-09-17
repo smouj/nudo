@@ -1,0 +1,13 @@
+[package]
+name = "nudo-syntax"
+description = "Lossless syntax tree shared by the parser, formatter and language server."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true

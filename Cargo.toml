@@ -1,0 +1,85 @@
+# NUDO — workspace manifest.
+#
+# The workspace is intentionally a monorepo: the language specification, the
+# compiler crates, the runtime crates and the tooling must evolve together
+# under a single, auditable history. See ARCHITECTURE.md.
+
+[workspace]
+resolver = "3"
+members = [
+    # compiler/
+    "compiler/nudo-lexer",
+    "compiler/nudo-syntax",
+    "compiler/nudo-parser",
+    "compiler/nudo-ast",
+    "compiler/nudo-hir",
+    "compiler/nudo-typeck",
+    "compiler/nudo-effects",
+    "compiler/nudo-diagnostics",
+    "compiler/nudo-mir",
+    "compiler/nudo-codegen",
+
+    # runtime/
+    "runtime/nudo-runtime",
+    "runtime/nudo-agent",
+    "runtime/nudo-model",
+    "runtime/nudo-tool",
+    "runtime/nudo-task",
+    "runtime/nudo-policy",
+    "runtime/nudo-capability",
+    "runtime/nudo-provenance",
+    "runtime/nudo-trace",
+    "runtime/nudo-memory",
+    "runtime/nudo-sandbox",
+
+    # crates/
+    "crates/nudo-common",
+    "crates/nudo-source",
+    "crates/nudo-span",
+    "crates/nudo-schema",
+
+    # cli/
+    "cli/nudo-cli",
+
+    # tooling/
+    "tooling/nudo-fmt",
+    "tooling/nudo-lsp",
+    "tooling/nudo-doc",
+    "tooling/nudo-test",
+    "tooling/nudo-eval",
+    "tooling/nudo-repl",
+
+    # backends/
+    "backends/interpreter",
+    "backends/wasm",
+
+    # benchmarks/
+    "benchmarks/nudo-bench",
+]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/smouj/nudo"
+authors = ["smouj"]
+# NUDO is pre-alpha: nothing is published to crates.io.
+publish = false
+
+[workspace.dependencies]
+nudo-common = { path = "crates/nudo-common" }
+nudo-span = { path = "crates/nudo-span" }
+nudo-source = { path = "crates/nudo-source" }
+nudo-diagnostics = { path = "compiler/nudo-diagnostics" }
+nudo-lexer = { path = "compiler/nudo-lexer" }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+rust_2018_idioms = { level = "warn", priority = -1 }
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }

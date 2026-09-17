@@ -1,0 +1,17 @@
+[package]
+name = "nudo-diagnostics"
+description = "Diagnostic model, stable NDO error codes and human-readable renderers."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[dependencies]
+nudo-source.workspace = true
+nudo-span.workspace = true
+
+[lints]
+workspace = true

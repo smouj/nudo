@@ -1,0 +1,9 @@
+# NUDO is built with the stable Rust toolchain.
+#
+# The MSRV is declared in Cargo.toml ([workspace.package].rust-version) and is
+# the value CI is expected to verify. `stable` is used for day-to-day work and
+# for the pinned CI toolchain, so contributors never need a custom toolchain.
+[toolchain]
+channel = "stable"
+profile = "minimal"
+components = ["rustfmt", "clippy"]

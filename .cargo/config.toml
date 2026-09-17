@@ -1,0 +1,21 @@
+# Cargo configuration for the NUDO workspace.
+#
+# The full local pipeline (format, lint, build, test, conformance, docs) lives
+# in `scripts/check.sh` / `scripts/check.ps1` and in `.github/workflows/ci.yml`.
+# Cargo aliases cannot invoke shell scripts, so the aliases below only shorten
+# the individual commands used by that pipeline.
+
+[alias]
+# Workspace-wide formatting check (same command CI runs).
+fmt-all = "fmt --all --check"
+# Workspace-wide linting with warnings denied (same command CI runs).
+lint = "clippy --workspace --all-targets --all-features -- -D warnings"
+# Build every crate, including tests and examples.
+build-all = "build --workspace --all-targets"
+# Run every test in the workspace.
+test-all = "test --workspace --all-targets"
+# Reproducible lexer measurements.
+bench-all = "run --release --package nudo-bench"
+
+[term]
+color = "auto"

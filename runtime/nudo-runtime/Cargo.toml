@@ -1,0 +1,13 @@
+[package]
+name = "nudo-runtime"
+description = "Host runtime: the execution loop and coordination of tasks."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true

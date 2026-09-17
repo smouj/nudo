@@ -1,0 +1,14 @@
+# Rust build output
+/target
+**/*.rs.bk
+*.pdb
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Local scratch
+/.openclaw/

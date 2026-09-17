@@ -1,0 +1,25 @@
+# nudo.toml — the NUDO package manifest.
+#
+# PROVISIONAL AND NOT IMPLEMENTED. No command in the toolchain reads this file
+# yet: `nudo init`, `nudo new` and `nudo build` are planned (see ROADMAP.md).
+# The schema below is the smallest one the specification currently proposes, and
+# it is expected to change through a NEP before anything consumes it. It is
+# checked in so that the schema is designed against a real example rather than
+# in the abstract.
+#
+# Unknown fields are an error by design: a manifest that silently ignores what
+# it does not understand is how a typo becomes a build that "works".
+
+[package]
+name = "nudo"
+version = "0.0.1"
+description = "The NUDO language: specification, compiler, runtime and toolchain."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/smouj/nudo"
+authors = ["smouj"]
+
+[dependencies]
+# NUDO has no package dependencies yet. The dependency and capability model is
+# specified in spec/trust/capabilities.md and is deliberately not implemented
+# before the capability system exists: an unenforced dependency graph would be
+# a security claim the toolchain cannot keep.
