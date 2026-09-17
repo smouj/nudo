@@ -1,6 +1,6 @@
 # 目录
 
-[NUDO 技术手册](index.md)
+[简介](index.md)
 
 # 00 — 引言
 - [什么是 NUDO？](00-introduction/what-is-nudo.md)

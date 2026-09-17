@@ -1,6 +1,6 @@
 # Sumario
 
-[El Libro Técnico de NUDO](index.md)
+[Introducción](index.md)
 
 # 00 — Introducción
 - [¿Qué es NUDO?](00-introduction/what-is-nudo.md)

@@ -1,4 +1,4 @@
-# The NUDO Technical Book
+# Introduction
 
 > **Status:** Historical / Living  
 > **Summary:** A structured explanation of what NUDO is, why it exists, and how its compiler, trust model and agent-oriented runtime are intended to fit together.

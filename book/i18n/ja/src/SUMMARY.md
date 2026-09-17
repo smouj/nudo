@@ -1,6 +1,6 @@
 # 目次
 
-[NUDO テクニカルブック](index.md)
+[はじめに](index.md)
 
 # 00 — はじめに
 - [NUDO とは何か](00-introduction/what-is-nudo.md)
