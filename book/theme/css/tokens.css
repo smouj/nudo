@@ -1,0 +1,19 @@
+:root {
+  --nudo-brand-black: #000000;
+  --nudo-brand-blue: #3F85FF;
+  --paper-light: #F3EAD8;
+  --paper-warm: #E7DCC7;
+  --paper-aged: #D8C6A8;
+  --ink: #2B2926;
+  --graphite: #55514C;
+  --rust: #8A6142;
+  --brass: #A2875C;
+  --blueprint-gray: #7C827C;
+  --rule: #B8AB93;
+  --grid: #CEC1AA;
+  --warning: #8C4E3A;
+  --paper-shadow: rgba(44, 40, 34, .14);
+  --serif: Georgia, "Times New Roman", serif;
+  --sans: Inter, "Segoe UI", Arial, sans-serif;
+  --mono: "IBM Plex Mono", "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+}

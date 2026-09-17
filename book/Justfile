@@ -1,0 +1,23 @@
+set shell := ["bash", "-cu"]
+
+book-check:
+    python scripts/check_book.py
+
+book-dev:
+    mdbook serve --open
+
+book-build:
+    mdbook build
+
+book-pdf:
+    python scripts/prepare_typst.py
+    mkdir -p output/pdf
+    typst compile typst/main.typ output/pdf/nudo-technical-book.pdf
+
+preview-html:
+    python scripts/build_html_preview.py
+
+preview-pdf:
+    python scripts/build_pdf_preview.py
+
+book-release: book-check book-build book-pdf

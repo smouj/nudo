@@ -1,0 +1,4 @@
+max_redirects = 5
+max_retries = 2
+accept = [200, 429]
+exclude_path = ["output"]

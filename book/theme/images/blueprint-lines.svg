@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+  <g fill="none" stroke="#8A6142" stroke-opacity=".16" stroke-width="1">
+    <path d="M40 100H760M40 700H760M100 40V760M700 40V760"/>
+    <circle cx="400" cy="400" r="170"/><circle cx="400" cy="400" r="230"/>
+    <path d="M400 110V690M110 400H690M230 230L570 570M570 230L230 570"/>
+  </g>
+  <g fill="#8A6142" fill-opacity=".35" font-family="monospace" font-size="14">
+    <text x="42" y="92">NUDO / GRID 01</text><text x="620" y="724">REF 3F85FF</text>
+  </g>
+</svg>

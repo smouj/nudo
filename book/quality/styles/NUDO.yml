@@ -1,0 +1,9 @@
+extends: existence
+message: "Prefer precise status language; avoid '%s'."
+level: warning
+ignorecase: true
+tokens:
+  - obviously
+  - simply perfect
+  - guaranteed safe
+  - production-ready
