@@ -24,7 +24,7 @@ let answer = add(1, 2);
 
 ```console
 $ nudo check hello.nudo
-checked 1 file: 0 errors, 0 warnings
+checked 1 file: 0 errors and 0 warnings
 ```
 
 **What that actually means.** `nudo check` reads the file, lexes it, and reports

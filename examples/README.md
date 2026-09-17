@@ -14,7 +14,7 @@ test in `compiler/nudo-lexer/tests/examples.rs` checks it.
 
 ```console
 $ nudo check examples/00-hello-world/main.nudo
-checked 1 file: 0 errors, 0 warnings
+checked 1 file: 0 errors and 0 warnings
 ```
 
 "Clean" means no **lexical** diagnostics. It does not mean the file is correct or
