@@ -1,6 +1,6 @@
 # El Libro Técnico de NUDO
 
-> **Status:** Histórico / Vivo  
+> **Status:** Histórico / Vivo (HISTORICAL / LIVING)  
 > **Summary:** Una explicación estructurada de qué es NUDO, por qué existe y cómo se pretende que encajen su compilador, su modelo de confianza y su runtime orientado a agentes.
 
 <div class="status-key">

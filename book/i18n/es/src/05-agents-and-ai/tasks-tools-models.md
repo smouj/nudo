@@ -1,6 +1,6 @@
 # 05.2 — Tareas, herramientas y modelos
 
-> **Status:** Propuesto  
+> **Status:** Propuesto (PROPOSED)  
 > **Summary:** NUDO separa los objetivos, las herramientas con efectos y los proveedores de modelos para que la autonomía pueda acotarse sin incrustar un proveedor en el lenguaje.
 
 

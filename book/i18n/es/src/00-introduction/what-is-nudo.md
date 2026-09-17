@@ -1,6 +1,6 @@
 # 00.1 — ¿Qué es NUDO?
 
-> **Status:** Especificado  
+> **Status:** Especificado (SPECIFIED)  
 > **Summary:** NUDO se diseña como un lenguaje de propósito general en el que el código determinista y el trabajo probabilístico acotado pueden convivir sin ocultar las fronteras de confianza ni de autoridad.
 
 ## El modelo en una frase

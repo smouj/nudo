@@ -1,6 +1,6 @@
 # 00.2 — Por qué existe NUDO
 
-> **Status:** Especificado  
+> **Status:** Especificado (SPECIFIED)  
 > **Summary:** El proyecto parte de un problema de visibilidad para el compilador: en la era de la IA, parte del estado crítico de un programa suele quedar oculto en cadenas, paneles y convenciones.
 
 ## La brecha de visibilidad

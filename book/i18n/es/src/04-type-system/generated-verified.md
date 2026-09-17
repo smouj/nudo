@@ -1,6 +1,6 @@
 # 04.2 — `Generated<T>` y `Verified<T>`
 
-> **Status:** Propuesto  
+> **Status:** Propuesto (PROPOSED)  
 > **Summary:** Los tipos de confianza pretenden impedir que una salida probabilística se convierta en datos de aplicación de confianza mediante una conversión implícita.
 
 

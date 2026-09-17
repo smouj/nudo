@@ -1,6 +1,6 @@
 # 02.1 — Disciplina de gramática y sintaxis
 
-> **Status:** Propuesto  
+> **Status:** Propuesto (PROPOSED)  
 > **Summary:** La gramática es un contrato entre el texto fuente y el parser; la sintaxis provisional de agentes debe seguir siendo visiblemente provisional hasta que se acepte.
 
 ## Poca sintaxis, semántica fuerte

@@ -1,6 +1,6 @@
 # 07.2 — Presupuestos y aprobaciones
 
-> **Status:** Propuesto  
+> **Status:** Propuesto (PROPOSED)  
 > **Summary:** Los presupuestos acotan el consumo de recursos; las aprobaciones crean puertas explícitas, humanas o controladas por políticas, en los flujos de trabajo autónomos.
 
 Un presupuesto puede representar más que dinero. Entre las dimensiones útiles están

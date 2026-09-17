@@ -1,6 +1,6 @@
 # 15.1 — Hitos y evidencia
 
-> **Status:** Histórico / Vivo  
+> **Status:** Histórico / Vivo (HISTORICAL / LIVING)  
 > **Summary:** NUDO usa hitos basados en evidencia en lugar de promesas de calendario; un hito está completo cuando lo están sus criterios de salida y su evidencia de conformidad.
 
 La hoja de ruta comienza con el fundamento del repositorio y el pipeline léxico, y

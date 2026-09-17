@@ -1,6 +1,6 @@
 # 05.1 — Los agentes como ejecutores acotados
 
-> **Status:** Propuesto  
+> **Status:** Propuesto (PROPOSED)  
 > **Summary:** Un agente se concibe como un ejecutor declarado, con herramientas, autoridad, límites y criterios de aceptación explícitos, y no como un bucle de prompts sin restricciones.
 
 Las declaraciones de agentes solo son útiles si comunican algo que el compilador o el

@@ -1,6 +1,6 @@
 # 06.1 — Capacidades, efectos y autoridad
 
-> **Status:** Propuesto  
+> **Status:** Propuesto (PROPOSED)  
 > **Summary:** Los efectos describen qué puede hacer una ejecución; las capacidades describen qué autoridad puede conceder realmente el contexto actual.
 
 

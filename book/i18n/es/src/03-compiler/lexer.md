@@ -1,6 +1,6 @@
 # 03.2 — Modelo de código fuente y lexer
 
-> **Status:** Implementado  
+> **Status:** Implementado (IMPLEMENTED)  
 > **Summary:** El lexer es la primera capa real de implementación del lenguaje y se encarga de la tokenización determinista y de los diagnósticos léxicos recuperables.
 
 Un lexer robusto debe preservar las posiciones en bytes, la correspondencia entre

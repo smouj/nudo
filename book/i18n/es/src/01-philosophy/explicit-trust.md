@@ -1,6 +1,6 @@
 # 01.2 — Confianza explícita
 
-> **Status:** Propuesto  
+> **Status:** Propuesto (PROPOSED)  
 > **Summary:** NUDO separa los valores generados de los verificados para que las transiciones de confianza sean visibles para quienes revisan y para las herramientas de comprobación.
 
 ## La distinción central

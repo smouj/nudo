@@ -1,6 +1,6 @@
 # 10.1 — Arquitectura del repositorio
 
-> **Status:** Base implementada  
+> **Status:** Base implementada (IMPLEMENTED FOUNDATION)  
 > **Summary:** El monorepositorio mantiene la evolución de la especificación, el compilador, el runtime y las herramientas en una única historia auditable, preservando a la vez las fronteras conceptuales entre crates.
 
 El workspace separa las fases del compilador, los servicios del runtime, los crates

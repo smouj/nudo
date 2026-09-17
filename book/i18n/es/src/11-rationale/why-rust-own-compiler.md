@@ -1,6 +1,6 @@
 # 11.1 — ¿Por qué Rust y por qué un compilador propio?
 
-> **Status:** Justificación especificada  
+> **Status:** Justificación especificada (SPECIFIED RATIONALE)  
 > **Summary:** Rust aporta un sustrato de implementación sólido, mientras que un compilador dedicado es necesario si la semántica de NUDO debe existir con independencia de otro lenguaje anfitrión.
 
 ## Por qué Rust para la implementación

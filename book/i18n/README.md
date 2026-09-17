@@ -50,7 +50,13 @@ a pre-alpha language is an unusually effective way to mislead people.
    A chapter's status line is `<rank>` or `<rank> / <rank>`, optionally followed by
    a short descriptor: `Implemented foundation`, `Proposed syntax`. The rank is
    **kept verbatim in uppercase English** so that it stays machine-checkable and
-   cannot drift, and the descriptor is translated. A translation that turns
+   cannot drift, and the descriptor is translated.
+
+   The label itself — `Status:` — may be translated (`状态`, `ステータス`) or kept as
+   the English field name; both are in use and neither changes the meaning. The
+   value must carry the English rank token in parentheses after the translated
+   wording, as in `> **Status:** Especificado (SPECIFIED)`, which is the part a
+   check can act on. A translation that turns
    "planned" into "available" is a defect, not a nuance.
 
    There is no `Open` rank. "The design question this chapter names has not been

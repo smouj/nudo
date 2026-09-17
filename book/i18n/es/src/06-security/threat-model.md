@@ -1,6 +1,6 @@
 # 06.2 — Modelo de amenazas
 
-> **Status:** Especificado / Planificado  
+> **Status:** Especificado / Planificado (SPECIFIED / PLANNED)  
 > **Summary:** NUDO trata la salida de los modelos y la entrada de herramientas externas como no confiables hasta que reglas explícitas mueven los datos a través de las fronteras de confianza.
 
 El modelo de amenazas incluye la inyección de prompts, la salida maliciosa de

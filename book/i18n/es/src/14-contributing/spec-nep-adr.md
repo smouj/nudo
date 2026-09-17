@@ -1,6 +1,6 @@
 # 14.1 — Especificación, NEPs y ADRs
 
-> **Status:** Proceso especificado  
+> **Status:** Proceso especificado (SPECIFIED PROCESS)  
 > **Summary:** Las reglas normativas, los cambios propuestos del lenguaje y la justificación arquitectónica son clases documentales distintas porque responden a preguntas distintas.
 
 ## Especificación

@@ -1,6 +1,6 @@
 # 04.1 — Fundamentos del sistema de tipos
 
-> **Status:** Propuesto  
+> **Status:** Propuesto (PROPOSED)  
 > **Summary:** El sistema de tipos favorece las firmas públicas explícitas, las relaciones nominales y la información de confianza y de efectos visible para el compilador.
 
 Entre las restricciones de diseño actuales están los tipos escalares primitivos, los

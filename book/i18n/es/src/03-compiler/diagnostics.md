@@ -1,6 +1,6 @@
 # 03.4 — Los diagnósticos como diseño de producto
 
-> **Status:** Especificado / Planificado  
+> **Status:** Especificado / Planificado (SPECIFIED / PLANNED)  
 > **Summary:** Los errores del compilador deberían explicar la regla, la ubicación en el código y la cadena que introdujo el requisito.
 
 Los diagnósticos forman parte de la experiencia del lenguaje, no son un volcado de

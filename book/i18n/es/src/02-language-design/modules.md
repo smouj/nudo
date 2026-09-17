@@ -1,6 +1,6 @@
 # 02.3 — Módulos y límites del programa
 
-> **Status:** Propuesto  
+> **Status:** Propuesto (PROPOSED)  
 > **Summary:** Los módulos deben ofrecer espacios de nombres explícitos y una estructura de programa reproducible sin ocultar la autoridad ni las fronteras de dependencia.
 
 El diseño de módulos está muy ligado al diseño de paquetes, a la resolución de

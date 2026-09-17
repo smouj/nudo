@@ -1,6 +1,6 @@
 # 03.1 — El pipeline del compilador
 
-> **Status:** Especificado  
+> **Status:** Especificado (SPECIFIED)  
 > **Summary:** NUDO se estructura en fases explícitas del compilador para que cada transformación tenga una responsabilidad comprobable.
 
 

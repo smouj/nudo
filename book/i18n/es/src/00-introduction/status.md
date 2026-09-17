@@ -1,6 +1,6 @@
 # 00.3 — Estado actual del proyecto
 
-> **Status:** Implementado / Planificado  
+> **Status:** Implementado / Planificado (IMPLEMENTED / PLANNED)  
 > **Summary:** El repositorio es deliberadamente honesto sobre la distancia entre las fases del compilador ya implementadas y las fases futuras que solo están diseñadas.
 
 ## Base implementada

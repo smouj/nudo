@@ -1,6 +1,6 @@
 # 03.3 — Parser, sintaxis sin pérdidas y AST
 
-> **Status:** Planificado  
+> **Status:** Planificado (PLANNED)  
 > **Summary:** M2 debería convertir el flujo de tokens en una estructura sintáctica sin pérdidas, recuperarse de entradas malformadas y exponer un AST tipado para las fases semánticas posteriores.
 
 ## Por qué primero una sintaxis sin pérdidas

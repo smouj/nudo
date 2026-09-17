@@ -1,6 +1,6 @@
 # 01.3 — Local-first y agnóstico del proveedor
 
-> **Status:** Especificado  
+> **Status:** Especificado (SPECIFIED)  
 > **Summary:** Los modelos locales, las herramientas locales y la ejecución sin conexión se conciben como modos de primera clase, no como modos degradados.
 
 Un nombre de proveedor no debería aparecer en el lenguaje central solo porque ese

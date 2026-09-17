@@ -1,6 +1,6 @@
 # 01.1 — Primero el software determinista
 
-> **Status:** Especificado  
+> **Status:** Especificado (SPECIFIED)  
 > **Summary:** El código determinista ordinario debe seguir siendo el caso fácil y predecible, aunque NUDO esté diseñado para sistemas de la era de la IA.
 
 Un lenguaje para agentes que vuelve incómodo el software sencillo está resolviendo

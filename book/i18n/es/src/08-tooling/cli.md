@@ -1,6 +1,6 @@
 # 08.1 — Cadena de herramientas y CLI
 
-> **Status:** Implementado / Planificado  
+> **Status:** Implementado / Planificado (IMPLEMENTED / PLANNED)  
 > **Summary:** El comando `nudo` debería ofrecer un único punto de entrada coherente, desde las comprobaciones léxicas de hoy hasta los flujos de compilación, ejecución, formateo, prueba, auditoría y trazas del futuro.
 
 Los comandos implementados actualmente incluyen la comprobación léxica y los

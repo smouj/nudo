@@ -1,6 +1,6 @@
 # 07.1 — Trazas y procedencia
 
-> **Status:** Propuesto  
+> **Status:** Propuesto (PROPOSED)  
 > **Summary:** Una ejecución autónoma relevante debería dejar evidencia estructurada suficiente para reconstruir lo ocurrido sin necesidad de hacer ingeniería inversa sobre los registros.
 
 Una traza es una narración de la ejecución. La procedencia son los datos de linaje

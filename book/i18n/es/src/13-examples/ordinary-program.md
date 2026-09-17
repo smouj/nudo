@@ -1,6 +1,6 @@
 # 13.1 — Programa determinista ordinario
 
-> **Status:** Sintaxis propuesta  
+> **Status:** Sintaxis propuesta (PROPOSED SYNTAX)  
 > **Summary:** Un pequeño programa determinista demuestra el requisito de diseño de que el código ordinario siga siendo sencillo.
 
 ```nudo

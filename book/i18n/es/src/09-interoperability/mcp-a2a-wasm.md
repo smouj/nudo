@@ -1,6 +1,6 @@
 # 09.1 — MCP, A2A y WebAssembly
 
-> **Status:** Planificado  
+> **Status:** Planificado (PLANNED)  
 > **Summary:** La interoperabilidad debería permitir que NUDO participe en los ecosistemas existentes de herramientas y agentes sin permitir que los adaptadores amplíen la autoridad.
 
 La interoperabilidad con MCP puede permitir que NUDO consuma o exponga herramientas.
