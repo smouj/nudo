@@ -37,9 +37,27 @@ TEXT_EXTENSIONS = (
     ".ps1",
     ".py",
     ".txt",
+    ".svg",
 )
 
 SKIP_DIRECTORIES = {".git", "target", "dist", "node_modules"}
+
+# Translation trees are checked by their own tools, not by this one.
+#
+# A translation in progress is a legitimate state: its table of contents lands
+# before the chapters do. This checker assumes completeness, so running it over a
+# half-finished translation reports work that is simply not finished yet.
+# Instead:
+#
+#   * book/scripts/check_translations.py reports what is missing and what is
+#     behind the English source, which is the question that matters there;
+#   * book/scripts/check_links.py resolves every reference in the *built* site,
+#     which finds a broken link in a finished translation more reliably than
+#     reading the Markdown does.
+#
+# Residue scanning still covers these files: an abandoned project name in a
+# translation is exactly as unwelcome as one in the English source.
+TRANSLATION_SOURCE = "book/i18n/"
 
 # Names and artefacts this project abandoned. Any occurrence is a leftover and
 # fails the check.
@@ -60,6 +78,10 @@ FORBIDDEN = (
 INFORMATIONAL = (".nu`", ".nu\"")
 
 
+def is_translation_source(relative: str) -> bool:
+    return relative.startswith(TRANSLATION_SOURCE) and "/src/" in relative
+
+
 def iter_files():
     for directory, subdirectories, filenames in os.walk(ROOT):
         subdirectories[:] = sorted(
@@ -78,7 +100,7 @@ LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 def check_links(errors):
     checked = 0
     for relative in iter_files():
-        if not relative.endswith(".md"):
+        if not relative.endswith(".md") or is_translation_source(relative):
             continue
         absolute = os.path.join(ROOT, relative)
         with open(absolute, encoding="utf-8") as handle:

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 430" role="img" aria-labelledby="interfaces-title">
+  <title id="interfaces-title">How agent, task, tool, model, capability and budget fit together</title>
+  <style>
+    .decl  { fill: none; stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; rx: 8; }
+    .plain { fill: none; stroke: currentColor; stroke-width: 1.5; rx: 8; }
+    .dash  { fill: none; stroke: currentColor; stroke-width: 1.25; stroke-dasharray: 4 4; opacity: .5; rx: 8; }
+    .kw    { font: 700 12px ui-monospace, SFMono-Regular, Menlo, monospace; fill: var(--nudo-accent, #3F85FF); }
+    .name  { font: 600 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; }
+    .sub   { font: 11.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .65; }
+    .field { font: 11.5px ui-monospace, SFMono-Regular, Menlo, monospace; fill: currentColor; opacity: .8; }
+    .rel   { stroke: currentColor; stroke-width: 1.25; fill: none; opacity: .5; }
+    .rellab{ font: 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .6; }
+  </style>
+  <text class="name" x="18" y="30">The four declarations, and what constrains them</text>
+  <text class="sub"  x="18" y="50">Each is a type the compiler can read and a reviewer can audit. Prose in a prompt is not a boundary.</text>
+  <rect class="decl" x="18" y="76" width="200" height="150"/>
+  <text class="kw"   x="34" y="100">agent</text>
+  <text class="name" x="34" y="122">Researcher</text>
+  <text class="field" x="34" y="146">role:</text>
+  <text class="field" x="34" y="164">tools:</text>
+  <text class="field" x="34" y="182">allow:</text>
+  <text class="field" x="34" y="200">budget:</text>
+  <text class="sub"  x="34" y="218">a bounded executor</text>
+  <rect class="decl" x="258" y="76" width="200" height="150"/>
+  <text class="kw"   x="274" y="100">task</text>
+  <text class="name" x="274" y="122">Research(topic)</text>
+  <text class="field" x="274" y="146">agent:</text>
+  <text class="field" x="274" y="164">verify:</text>
+  <text class="field" x="274" y="182">budget:</text>
+  <text class="sub"  x="274" y="218">returns Verified&lt;Report&gt;</text>
+  <rect class="plain" x="498" y="76" width="204" height="150"/>
+  <text class="kw"   x="514" y="100" style="fill: currentColor">tool</text>
+  <text class="name" x="514" y="122">web.search(query)</text>
+  <text class="field" x="514" y="146">-&gt; [Result]</text>
+  <text class="field" x="514" y="164">with Network, Budget</text>
+  <text class="sub"  x="514" y="196">the only door out of</text>
+  <text class="sub"  x="514" y="212">the process</text>
+  <rect class="plain" x="258" y="266" width="200" height="128"/>
+  <text class="kw"   x="274" y="290" style="fill: currentColor">model</text>
+  <text class="name" x="274" y="312">LocalLlama</text>
+  <text class="field" x="274" y="336">provider: "local"</text>
+  <text class="sub"  x="274" y="362">no provider is privileged;</text>
+  <text class="sub"  x="274" y="378">every answer is Generated&lt;T&gt;</text>
+  <rect class="plain" x="18" y="266" width="200" height="128"/>
+  <text class="name" x="34" y="292">capability</text>
+  <text class="field" x="34" y="314">Network · Filesystem · Shell</text>
+  <text class="field" x="34" y="332">Git · Secrets · Model · Human</text>
+  <text class="sub"  x="34" y="358">closed set, deny by default,</text>
+  <text class="sub"  x="34" y="374">cannot be created by code</text>
+  <rect class="plain" x="498" y="266" width="204" height="128"/>
+  <text class="name" x="514" y="292">budget</text>
+  <text class="field" x="514" y="314">tokens · tool_calls</text>
+  <text class="field" x="514" y="332">spend · time · attempts</text>
+  <text class="sub"  x="514" y="358">charged on request, not on</text>
+  <text class="sub"  x="514" y="374">success; narrows on delegation</text>
+  <path class="rel" d="M218 151 L258 151" marker-end="url(#dot)"/>
+  <text class="rellab" x="220" y="142">runs</text>
+  <path class="rel" d="M358 226 L358 266" marker-end="url(#dot)"/>
+  <text class="rellab" x="366" y="250">asks</text>
+  <path class="rel" d="M498 140 C 470 140, 470 120, 454 120"/>
+  <text class="rellab" x="440" y="112">calls</text>
+  <path class="rel" d="M218 300 C 240 300, 240 320, 258 320"/>
+  <text class="rellab" x="196" y="316">gates</text>
+  <path class="rel" d="M498 320 C 470 320, 470 300, 454 300"/>
+  <text class="rellab" x="470" y="292">limits</text>
+  <defs>
+    <marker id="dot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity=".5"/>
+    </marker>
+  </defs>
+</svg>

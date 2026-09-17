@@ -41,14 +41,16 @@ jobs:
           mdbook-version: "0.5.4"
       - name: Validate the book source
         run: python3 book/scripts/check_book.py
+      - name: Report the state of every translation
+        run: python3 book/scripts/check_translations.py
       - name: Use the official brand assets
         run: python3 book/scripts/sync_brand_assets.py --repo-root .
-      - name: Build the web book
-        run: mdbook build book
+      - name: Build every language into one site
+        run: python3 book/scripts/build_site.py
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
-          path: book/output/html
+          path: book/output/site
 
   deploy:
     name: deploy

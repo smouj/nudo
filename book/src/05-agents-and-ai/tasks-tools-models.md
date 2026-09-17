@@ -3,6 +3,11 @@
 > **Status:** Proposed  
 > **Summary:** NUDO separates objectives, effectful tools and model providers so autonomy can be bounded without baking one vendor into the language.
 
+
+{{#include ../diagrams/interfaces.svg}}
+
+*The four declarations, and what constrains each of them.*
+
 ## Task
 
 A task is a unit of autonomous work with objective, expected result, limits and

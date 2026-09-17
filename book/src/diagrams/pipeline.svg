@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 470" role="img" aria-labelledby="pipeline-title">
+  <title id="pipeline-title">The NUDO compiler pipeline, showing which stages exist today and which are planned</title>
+  <style>
+    .box   { fill: none; stroke: currentColor; stroke-width: 1.5; rx: 6; }
+    .done  { stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; }
+    .label { font: 600 14px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; }
+    .sub   { font: 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .65; }
+    .stage { font: 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .5; letter-spacing: .04em; }
+    .flow  { stroke: currentColor; stroke-width: 1.5; fill: none; opacity: .55; }
+    .mark  { font: 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .04em; }
+    .yes   { fill: var(--nudo-accent, #3F85FF); }
+    .no    { fill: currentColor; opacity: .45; }
+  </style>
+  <g>
+    <rect class="box done" x="24" y="18" width="216" height="46"/>
+    <text class="label" x="40" y="40">Source</text>
+    <text class="sub"   x="40" y="56">source file, spans, line index</text>
+    <text class="mark yes" x="196" y="40">M1</text>
+    <rect class="box done" x="24" y="88" width="216" height="46"/>
+    <text class="label" x="40" y="110">Lexer</text>
+    <text class="sub"   x="40" y="126">tokens + lexical diagnostics</text>
+    <text class="mark yes" x="196" y="110">M1</text>
+    <rect class="box" x="24" y="158" width="216" height="46"/>
+    <text class="label" x="40" y="180">Parser</text>
+    <text class="sub"   x="40" y="196">lossless syntax tree, recovery</text>
+    <text class="mark no" x="196" y="180">M2</text>
+    <rect class="box" x="24" y="228" width="216" height="46"/>
+    <text class="label" x="40" y="250">AST</text>
+    <text class="sub"   x="40" y="266">typed nodes over the tree</text>
+    <text class="mark no" x="196" y="250">M2</text>
+    <rect class="box" x="24" y="298" width="216" height="46"/>
+    <text class="label" x="40" y="320">HIR</text>
+    <text class="sub"   x="40" y="336">names resolved, desugared</text>
+    <text class="mark no" x="196" y="320">M3</text>
+    <rect class="box" x="24" y="368" width="216" height="46"/>
+    <text class="label" x="40" y="390">Types / effects</text>
+    <text class="sub"   x="40" y="406">including Generated / Verified</text>
+    <text class="mark no" x="196" y="390">M3–M6</text>
+    <rect class="box" x="480" y="158" width="216" height="46"/>
+    <text class="label" x="496" y="180">MIR</text>
+    <text class="sub"   x="496" y="196">control flow made explicit</text>
+    <text class="mark no" x="652" y="180">M4</text>
+    <rect class="box" x="480" y="228" width="216" height="46"/>
+    <text class="label" x="496" y="250">Interpreter</text>
+    <text class="sub"   x="496" y="266">first execution strategy</text>
+    <text class="mark no" x="652" y="250">M4</text>
+    <rect class="box" x="480" y="298" width="216" height="46"/>
+    <text class="label" x="496" y="320">WebAssembly</text>
+    <text class="sub"   x="496" y="336">WASI, capability preserved</text>
+    <text class="mark no" x="652" y="320">M12</text>
+    <rect class="box" x="480" y="18" width="216" height="46"/>
+    <text class="label" x="496" y="40">Diagnostics</text>
+    <text class="sub"   x="496" y="56">stable codes, shown at every stage</text>
+    <text class="mark yes" x="652" y="40">M1</text>
+  </g>
+  <g class="flow">
+    <path d="M132 64 L132 88" marker-end="url(#arrow)"/>
+    <path d="M132 134 L132 158" marker-end="url(#arrow)"/>
+    <path d="M132 204 L132 228" marker-end="url(#arrow)"/>
+    <path d="M132 274 L132 298" marker-end="url(#arrow)"/>
+    <path d="M132 344 L132 368" marker-end="url(#arrow)"/>
+    <path d="M240 391 C 420 391, 380 181, 480 181" marker-end="url(#arrow)"/>
+    <path d="M588 204 L588 228" marker-end="url(#arrow)"/>
+    <path d="M548 250 C 520 250, 520 320, 480 320" marker-end="url(#arrow)"/>
+    <path d="M348 41 C 420 41, 430 41, 480 41" stroke-dasharray="4 4"/>
+  </g>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity=".55"/>
+    </marker>
+  </defs>
+  <text class="stage" x="24" y="444">ACCENT = IMPLEMENTED TODAY · GREY = SPECIFIED, NOT BUILT</text>
+</svg>

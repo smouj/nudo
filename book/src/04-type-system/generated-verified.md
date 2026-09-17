@@ -3,6 +3,11 @@
 > **Status:** Proposed  
 > **Summary:** The trust types are intended to prevent probabilistic output from becoming trusted application data through an implicit conversion.
 
+
+{{#include ../diagrams/trust-flow.svg}}
+
+*A model output becomes a verified value only through an explicit step.*
+
 ## Why not `T`?
 
 If a model returns an `Article` directly, provenance about how that value was

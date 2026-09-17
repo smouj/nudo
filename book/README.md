@@ -31,7 +31,10 @@ Every chapter therefore carries a status line, and a chapter that describes
 proposed behaviour must say so in the chapter, not only in a global disclaimer.
 
 The label vocabulary is the repository's:
-**IMPLEMENTED**, **SPECIFIED**, **PLANNED**, **PROPOSED**.
+**IMPLEMENTED**, **SPECIFIED**, **PLANNED**, **PROPOSED** — used alone or in
+pairs, optionally with a short descriptor such as `Implemented foundation`. The
+rank word stays uppercase English in every language so that it remains
+machine-checkable; see [`i18n/README.md`](i18n/README.md).
 
 [`src/00-introduction/status.md`](src/00-introduction/status.md) is the
 chapter that states the real state of the toolchain, and it is the one chapter

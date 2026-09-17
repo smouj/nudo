@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" role="img" aria-labelledby="status-title">
+<title id="status-title">What exists in NUDO today, what is specified, and what is only planned</title>
+<style>
+.head { font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; letter-spacing: .04em; }
+.row  { font: 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; }
+.sub  { font: 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .6; }
+.legend { font: 11.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; }
+.done { fill: var(--nudo-accent, #3F85FF); }
+.spec { fill: currentColor; opacity: .55; }
+.plan { fill: currentColor; opacity: .22; }
+.rule { stroke: currentColor; stroke-width: 1; opacity: .18; }
+.frame { fill: none; stroke: currentColor; stroke-width: 1.5; opacity: .35; rx: 8; }
+</style>
+<text class="head" x="24" y="30">WHAT EXISTS TODAY</text>
+<text class="sub" x="24" y="50">Accent means the toolchain really does it. Nothing below is a promise.</text>
+<rect class="frame" x="18" y="66" width="684" height="286"/>
+<line class="rule" x1="18" y1="96" x2="702" y2="96"/>
+<text class="head" x="34" y="87">AREA</text>
+<text class="head" x="300" y="87">STATE</text>
+<text class="head" x="470" y="87">MILESTONE</text>
+<text class="row" x="34" y="124">Source model, spans, positions</text>
+<rect class="done" x="300" y="112" width="14" height="14" rx="3"/>
+<text class="row" x="324" y="124">implemented</text>
+<text class="sub" x="470" y="124">M1 — done</text>
+<text class="row" x="34" y="156">Lexer, tokens, lexical diagnostics</text>
+<rect class="done" x="300" y="144" width="14" height="14" rx="3"/>
+<text class="row" x="324" y="156">implemented</text>
+<text class="sub" x="470" y="156">M1 — done</text>
+<text class="row" x="34" y="188">nudo check, nudo --version, nudo --help</text>
+<rect class="done" x="300" y="176" width="14" height="14" rx="3"/>
+<text class="row" x="324" y="188">implemented</text>
+<text class="sub" x="470" y="188">M1 — done</text>
+<text class="row" x="34" y="220">Grammar: no left recursion, stated precedence</text>
+<rect class="done" x="300" y="208" width="14" height="14" rx="3"/>
+<text class="row" x="324" y="220">frozen</text>
+<text class="sub" x="470" y="220">M2.0 — done</text>
+<text class="row" x="34" y="252">Parser, lossless tree, AST</text>
+<rect class="spec" x="300" y="240" width="14" height="14" rx="3"/>
+<text class="row" x="324" y="252">specified</text>
+<text class="sub" x="470" y="252">M2 — next</text>
+<text class="row" x="34" y="284">Types, HIR, type checking</text>
+<rect class="plan" x="300" y="272" width="14" height="14" rx="3"/>
+<text class="row" x="324" y="284">specified</text>
+<text class="sub" x="470" y="284">M3</text>
+<text class="row" x="34" y="316">Interpreter, effects, trust types</text>
+<rect class="plan" x="300" y="304" width="14" height="14" rx="3"/>
+<text class="row" x="324" y="316">planned</text>
+<text class="sub" x="470" y="316">M4–M6</text>
+<text class="row" x="34" y="348">Agents, capabilities, policies, MCP, WASM</text>
+<rect class="plan" x="300" y="336" width="14" height="14" rx="3"/>
+<text class="row" x="324" y="348">planned</text>
+<text class="sub" x="470" y="348">M8–M12</text>
+<text class="legend" x="24" y="384">The same table is maintained by hand in ROADMAP.md. If the two ever disagree, ROADMAP.md is right.</text>
+<text class="legend" x="24" y="402">NUDO is pre-alpha: nothing here is fit for production use.</text>
+</svg>

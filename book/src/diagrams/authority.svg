@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" role="img" aria-labelledby="authority-title">
+  <title id="authority-title">Authority narrows along a delegation chain and can never widen</title>
+  <style>
+    .box   { fill: none; stroke: currentColor; stroke-width: 1.5; rx: 8; }
+    .accentbox { fill: none; stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; rx: 8; }
+    .label { font: 600 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; }
+    .sub   { font: 11.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .65; }
+    .cap   { font: 11.5px ui-monospace, SFMono-Regular, Menlo, monospace; fill: currentColor; opacity: .8; }
+    .flow  { stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; fill: none; }
+    .no    { stroke: currentColor; stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; opacity: .5; }
+    .nolab { font: 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .6; }
+  </style>
+  <rect class="accentbox" x="18" y="70" width="190" height="120"/>
+  <text class="label" x="34" y="96">Orchestrator</text>
+  <text class="cap"   x="34" y="120">Network</text>
+  <text class="cap"   x="34" y="138">Filesystem(/docs)</text>
+  <text class="cap"   x="34" y="156">Model</text>
+  <text class="sub"   x="34" y="178">holds three capabilities</text>
+  <rect class="box" x="264" y="70" width="190" height="120"/>
+  <text class="label" x="280" y="96">Researcher</text>
+  <text class="cap"   x="280" y="120">Network</text>
+  <text class="cap"   x="280" y="138">Model</text>
+  <text class="sub"   x="280" y="178">receives a subset</text>
+  <rect class="box" x="510" y="70" width="190" height="120"/>
+  <text class="label" x="526" y="96">Summariser</text>
+  <text class="cap"   x="526" y="120">Model</text>
+  <text class="sub"   x="526" y="178">receives a subset of that</text>
+  <path class="flow" d="M208 130 L264 130" marker-end="url(#accent-arrow)"/>
+  <path class="flow" d="M454 130 L510 130" marker-end="url(#accent-arrow)"/>
+  <text class="sub" x="212" y="120">delegate</text>
+  <text class="sub" x="458" y="120">delegate</text>
+  <path class="no" d="M208 230 L700 230"/>
+  <path class="no" d="M700 230 L700 190" marker-end="url(#plain-arrow)"/>
+  <text class="nolab" x="216" y="248">nothing may travel this way: an agent cannot ask for authority it does not hold</text>
+  <text class="label" x="18" y="34">Delegation may narrow. It may never widen.</text>
+  <text class="sub"   x="18" y="54">Without this rule every capability boundary can be walked around in one line.</text>
+  <defs>
+    <marker id="accent-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--nudo-accent, #3F85FF)"/>
+    </marker>
+    <marker id="plain-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity=".5"/>
+    </marker>
+  </defs>
+</svg>
