@@ -24,6 +24,12 @@ If you want to understand agent safety, read Agents and AI → Security → Runt
 
 ## Current reality
 
+{{#include diagrams/status.svg}}
+
+*What the toolchain does today, and what is only written down. The same table is
+maintained in [`ROADMAP.md`](https://github.com/smouj/nudo/blob/main/ROADMAP.md), which wins if the two disagree.*
+
+
 At revision R0, NUDO is pre-alpha. The repository foundation and lexical pipeline
 are the mature implementation layer. Parser, typed AST, type checker, interpreter,
 effect checker, agent runtime, policy system and WASM backend are design/roadmap

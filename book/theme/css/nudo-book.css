@@ -65,3 +65,70 @@ tr:nth-child(even) td { background: rgba(255,255,255,.2); }
   .content main { padding: 1.2rem; }
   h1 { font-size: 1.9em; }
 }
+
+/* ---------------------------------------------------------------- figures --
+   Diagrams are inlined from book/src/diagrams with {{#include}}, so they are
+   part of the page and inherit its colours. They arrive inside a paragraph, and
+   each is followed by an italic caption. */
+
+main p:has(> svg) { margin: 2.1em 0 .4em; text-align: center; }
+main svg { max-width: 100%; height: auto; display: inline-block; }
+main p:has(> svg) + p > em,
+main p:has(> svg) + p > em:only-child {
+  display: block;
+  text-align: center;
+  font-size: .88em;
+  color: var(--graphite);
+  border-top: 1px solid var(--grid);
+  padding-top: .5em;
+}
+
+/* ------------------------------------------------------------ status chips --
+   Every chapter opens with a status block. The rank of that status is the most
+   important thing on the page in a pre-alpha book, so it is not left as ordinary
+   emphasised text. */
+
+blockquote strong:first-child { text-transform: uppercase; letter-spacing: .06em; }
+blockquote code { background: rgba(255, 255, 255, .35); }
+
+/* A chapter's opening status block, distinguished from a quoted aside. */
+main blockquote:first-of-type {
+  border-left: 3px solid var(--nudo-brand-blue);
+  background: rgba(255, 255, 255, .22);
+}
+
+/* ------------------------------------------------------- language switcher -- */
+
+.nudo-languages {
+  display: flex;
+  align-items: center;
+  gap: .45em;
+  margin-right: .7em;
+}
+
+.nudo-languages__label {
+  font-family: var(--mono);
+  font-size: .68em;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--graphite);
+}
+
+.nudo-languages__select {
+  font-family: var(--sans);
+  font-size: .82em;
+  color: var(--ink);
+  background: var(--paper-light);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: .25em .45em;
+}
+
+.nudo-languages__select:focus-visible {
+  outline: 2px solid var(--nudo-brand-blue);
+  outline-offset: 1px;
+}
+
+@media (max-width: 620px) {
+  .nudo-languages__label { display: none; }
+}

@@ -3,6 +3,11 @@
 > **Status:** Proposed  
 > **Summary:** Effects describe what execution may do; capabilities describe which authority the current context can actually grant.
 
+
+{{#include ../diagrams/authority.svg}}
+
+*Authority narrows along a delegation chain, and cannot flow back.*
+
 These concepts must be related without being confused.
 
 - **Effect**: a static description that a computation can perform an operation such

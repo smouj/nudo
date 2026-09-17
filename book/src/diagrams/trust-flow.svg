@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-labelledby="trust-title">
+  <title id="trust-title">How an unchecked model output becomes a verified value</title>
+  <style>
+    .box    { fill: none; stroke: currentColor; stroke-width: 1.5; rx: 8; }
+    .plain  { fill: none; stroke: currentColor; stroke-width: 1.5; opacity: .45; rx: 8; }
+    .gate   { fill: none; stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; rx: 8; }
+    .type   { font: 600 14px ui-monospace, SFMono-Regular, Menlo, monospace; fill: currentColor; }
+    .label  { font: 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .65; }
+    .flow   { stroke: currentColor; stroke-width: 1.5; fill: none; opacity: .55; }
+    .gateflow { stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; fill: none; }
+    .no     { stroke: currentColor; stroke-width: 1.5; fill: none; opacity: .5; stroke-dasharray: 5 4; }
+    .cap    { font: 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .6; }
+    .badge  { font: 600 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--nudo-accent, #3F85FF); }
+  </style>
+  <rect class="box" x="16" y="96" width="150" height="72"/>
+  <text class="type"  x="32" y="126">Generated&lt;T&gt;</text>
+  <text class="label" x="32" y="148">a model produced it</text>
+  <rect class="gate" x="222" y="96" width="158" height="72"/>
+  <text class="type"  x="238" y="126">verify … with V</text>
+  <text class="label" x="238" y="148">explicit, fallible, recorded</text>
+  <rect class="box" x="436" y="96" width="158" height="72"/>
+  <text class="type"  x="452" y="126">Verified&lt;T&gt;</text>
+  <text class="label" x="452" y="148">passed stated criteria</text>
+  <rect class="plain" x="436" y="204" width="158" height="60"/>
+  <text class="type"  x="452" y="230" opacity=".7">T</text>
+  <text class="label" x="452" y="250">usable without ceremony</text>
+  <path class="gateflow" d="M166 132 L222 132" marker-end="url(#a2)"/>
+  <path class="gateflow" d="M380 132 L436 132" marker-end="url(#a2)"/>
+  <path class="flow"     d="M515 168 L515 204" marker-end="url(#a1)"/>
+  <path class="no" d="M91 168 L91 236 L436 236"/>
+  <text class="cap" x="104" y="230">no implicit conversion: this path is a compile error</text>
+  <rect class="plain" x="222" y="204" width="158" height="60"/>
+  <text class="type"  x="238" y="228">Provenance</text>
+  <text class="label" x="238" y="248">which model, which verifier, which inputs</text>
+  <path class="flow" d="M301 96 L301 96" />
+  <path class="flow" d="M380 168 C 400 186, 340 186, 301 204" marker-end="url(#a1)"/>
+  <text class="badge" x="16" y="40">GENERATED ≠ VERIFIED</text>
+  <text class="label" x="16" y="60">Different types. Nothing converts between them implicitly, in either direction.</text>
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity=".55"/>
+    </marker>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--nudo-accent, #3F85FF)"/>
+    </marker>
+  </defs>
+</svg>

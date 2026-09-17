@@ -3,6 +3,11 @@
 > **Status:** Specified  
 > **Summary:** NUDO is structured as explicit compiler stages so each transformation has a testable responsibility.
 
+
+{{#include ../diagrams/pipeline.svg}}
+
+*The pipeline, with the accent marking what exists today.*
+
 ```text
 SourceFile
    ↓
