@@ -47,4 +47,7 @@ RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --quiet $LOCKED
 step "documentation checks"
 python3 scripts/check-docs.py
 
+step "workflow policy"
+python3 scripts/check-workflows.py
+
 printf '\nall checks passed\n'

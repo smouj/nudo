@@ -67,12 +67,19 @@ authors = ["smouj"]
 # NUDO is pre-alpha: nothing is published to crates.io.
 publish = false
 
+# Internal dependencies carry an explicit version alongside their path.
+#
+# The version is not used to resolve anything today — the path wins — but a
+# path-only dependency is a wildcard requirement, and the dependency policy
+# (deny.toml) refuses wildcards. Spelling the version out keeps the policy
+# strict: a wildcard can then only come from an external crate, which is
+# exactly what `wildcards = "deny"` is there to catch.
 [workspace.dependencies]
-nudo-common = { path = "crates/nudo-common" }
-nudo-span = { path = "crates/nudo-span" }
-nudo-source = { path = "crates/nudo-source" }
-nudo-diagnostics = { path = "compiler/nudo-diagnostics" }
-nudo-lexer = { path = "compiler/nudo-lexer" }
+nudo-common = { path = "crates/nudo-common", version = "0.0.1" }
+nudo-span = { path = "crates/nudo-span", version = "0.0.1" }
+nudo-source = { path = "crates/nudo-source", version = "0.0.1" }
+nudo-diagnostics = { path = "compiler/nudo-diagnostics", version = "0.0.1" }
+nudo-lexer = { path = "compiler/nudo-lexer", version = "0.0.1" }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

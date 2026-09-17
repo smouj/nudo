@@ -71,23 +71,12 @@ jobs:
           fail-on-severity: low
           comment-summary-in-pr: on-failure
 
-  workflow-permissions:
-    name: workflow permissions
+  workflow-policy:
+    name: workflow policy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: No workflow may request write-all or write every scope
-        run: |
-          set -euo pipefail
-          status=0
-          if grep -rn "write-all" .github/workflows/; then
-            echo "::error::a workflow requests write-all permissions"
-            status=1
-          fi
-          for file in .github/workflows/*.yml; do
-            if ! grep -q "^permissions:" "$file"; then
-              echo "::error file=$file::workflow does not declare explicit permissions"
-              status=1
-            fi
-          done
-          exit $status
+      - name: Ensure PyYAML is available for the workflow parser
+        run: python3 -c "import yaml" 2>/dev/null || python3 -m pip install --quiet --user pyyaml
+      - name: Workflow permissions, action pinning and secret exposure
+        run: python3 scripts/check-workflows.py

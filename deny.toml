@@ -46,13 +46,10 @@ confidence-threshold = 0.9
 private = { ignore = true }
 
 [bans]
-version = 2
 # Two versions of the same crate in one graph is a bug waiting to happen.
 multiple-versions = "deny"
 # A wildcard version requirement means an unplanned upgrade on any build.
 wildcards = "deny"
-# Git dependencies bypass the registry's immutability.
-allow-git = []
 # Crates that would be a design problem, not just a dependency. Each entry is a
 # decision someone made once, and reversing it needs a reason.
 deny = [
@@ -60,7 +57,9 @@ deny = [
 ]
 
 [sources]
-version = 2
+# Git dependencies bypass the registry's immutability, and an unknown registry
+# bypasses review. Both are refused.
 unknown-registry = "deny"
 unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
