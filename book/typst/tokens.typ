@@ -1,0 +1,7 @@
+#let paper = rgb("f3ead8")
+#let paper-warm = rgb("e7dcc7")
+#let ink = rgb("2b2926")
+#let graphite = rgb("55514c")
+#let brand-blue = rgb("3f85ff")
+#let rust = rgb("8a6142")
+#let rule = rgb("b8ab93")

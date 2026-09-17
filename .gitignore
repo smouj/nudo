@@ -10,5 +10,14 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Book: generated on every build, never committed.
+/book/output/
+/book/typst/generated/
+
+# Book: the official logos are copied here by book/scripts/sync_brand_assets.py
+# at build time, so the repository keeps exactly one copy of each asset.
+/book/src/assets/brand/*.png
+/book/typst/assets/brand/*.png
+
 # Local scratch
 /.openclaw/

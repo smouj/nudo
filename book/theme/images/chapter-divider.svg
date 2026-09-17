@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="90" viewBox="0 0 1000 90">
+  <path d="M0 45H430M570 45H1000" stroke="#B8AB93"/>
+  <rect x="454" y="18" width="92" height="54" fill="none" stroke="#8A6142"/>
+  <text x="500" y="51" text-anchor="middle" font-family="monospace" font-size="16" fill="#8A6142">NUDO</text>
+</svg>
