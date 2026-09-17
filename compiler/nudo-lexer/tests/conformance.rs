@@ -38,9 +38,18 @@ fn case_dirs() -> Vec<PathBuf> {
     cases
 }
 
+/// Reads a corpus file with line endings normalised to `\n`.
+///
+/// The corpus is compared line by line, so a carriage return is a checkout
+/// artefact, not content. Windows checks these files out with CRLF unless
+/// `.gitattributes` says otherwise, and a contributor regenerating an
+/// expectation with a shell redirect writes CRLF on some systems. Normalising
+/// here means the corpus agrees with itself on every platform, which is the
+/// only way a second implementation can reproduce it.
 fn read(path: &Path) -> String {
-    fs::read_to_string(path)
-        .unwrap_or_else(|error| panic!("cannot read {}: {error}", path.display()))
+    let raw = fs::read_to_string(path)
+        .unwrap_or_else(|error| panic!("cannot read {}: {error}", path.display()));
+    raw.replace("\r\n", "\n")
 }
 
 #[test]
