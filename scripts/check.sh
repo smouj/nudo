@@ -53,4 +53,7 @@ python3 scripts/check-workflows.py
 step "documented console output"
 python3 scripts/check-console.py
 
+step "grammar"
+python3 scripts/check-grammar.py
+
 printf '\nall checks passed\n'
