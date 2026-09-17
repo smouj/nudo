@@ -1,0 +1,191 @@
+(* NUDO grammar — EBNF                                                    *)
+(*                                                                       *)
+(* STATUS: PRE-ALPHA AND PROVISIONAL.                                    *)
+(*                                                                       *)
+(* Only the "Lexical structure" section below is implemented, and only by *)
+(* the lexer (milestone M1). Every production marked "PROVISIONAL"       *)
+(* describes syntax NUDO is being designed towards; nothing accepts it.   *)
+(*                                                                       *)
+(* The normative narrative is spec/grammar.md and the chapters it links.  *)
+(* If this file and the specification disagree, the specification wins.   *)
+(*                                                                       *)
+(* Notation:                                                              *)
+(*   rule = ... ;        a production                                     *)
+(*   a b                 a followed by b                                  *)
+(*   a | b               a or b                                           *)
+(*   [ a ]               optional                                         *)
+(*   { a }               zero or more repetitions                         *)
+(*   "text"              a literal token                                  *)
+(*   (* comment *)       a comment                                        *)
+
+(* ==================================================================== *)
+(* Lexical structure                                       IMPLEMENTED  *)
+(* ==================================================================== *)
+
+source-file        = { trivia | token }, eof ;
+
+trivia             = whitespace | line-comment | block-comment ;
+
+whitespace         = ? any Unicode whitespace character ? ;
+
+line-comment       = "//", { ? any character except a line terminator ? } ;
+
+block-comment      = "/*", { block-comment-body }, "*/" ;
+block-comment-body = ? any character ? | block-comment ;
+
+eof                = ? end of file ? ;
+
+identifier         = identifier-start, { identifier-continue } ;
+identifier-start   = letter | "_" ;
+identifier-continue = letter | digit | "_" ;
+letter             = "A" | ... | "Z" | "a" | ... | "z" ;
+digit              = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+integer-literal    = digit, { separator-digit } ;
+separator-digit    = digit | ( "_", digit ) ;
+
+float-literal      = integer-literal, ".", digit, { separator-digit } ;
+
+text-literal       = '"', { text-character | escape-sequence }, '"' ;
+text-character     = ? any character except a quote, a backslash or a line terminator ? ;
+escape-sequence    = "\", ( "n" | "r" | "t" | "\" | '"' | "0" ) ;
+
+(* Reserved words. Only these two are reserved today; every other word in  *)
+(* this grammar is an ordinary identifier until a NEP reserves it.         *)
+keyword            = "fn" | "let" ;
+
+(* Punctuation of the pre-alpha token set. *)
+punctuation        = "(" | ")" | "{" | "}" | ":" | "," | "->" | "="
+                   | "+" | "-" | "*" | "/" | ";" ;
+
+token              = identifier | integer-literal | float-literal
+                   | text-literal | keyword | punctuation ;
+
+(* ==================================================================== *)
+(* Items                                                          PROVISIONAL *)
+(* ==================================================================== *)
+
+program            = { item } ;
+
+item               = function-decl
+                   | struct-decl
+                   | enum-decl
+                   | agent-decl            (* PROVISIONAL *)
+                   | task-decl             (* PROVISIONAL *)
+                   | tool-decl             (* PROVISIONAL *)
+                   | model-decl            (* PROVISIONAL *)
+                   | const-decl            (* PROVISIONAL *)
+                   | binding ;
+
+function-decl      = "fn", identifier, parameter-list,
+                     [ "->", type ], [ effect-clause ], block ;
+
+parameter-list     = "(", [ parameter, { ",", parameter } ], ")" ;
+parameter          = identifier, ":", type ;
+
+effect-clause      = "with", capability-list ;              (* PROVISIONAL *)
+
+struct-decl        = "struct", identifier, "{", { field }, "}" ;
+field              = identifier, ":", type ;
+
+enum-decl          = "enum", identifier, "{", { variant }, "}" ;
+variant            = identifier, [ "(", [ field, { ",", field } ], ")" ] ;
+
+const-decl         = "const", identifier, ":", type, "=", expression, ";" ;
+
+binding            = "let", identifier, [ ":", type ], "=", expression, ";" ;
+
+(* --- agents, tasks, tools and models ------------------------------- *)
+
+agent-decl         = "agent", identifier, "{", { agent-clause }, "}" ;  (* PROVISIONAL *)
+agent-clause       = role-clause | tools-clause | allow-clause | budget-clause ;
+role-clause        = "role", ":", text-literal ;
+tools-clause       = "tools", ":", { tool-name } ;
+allow-clause       = "allow", ":", capability-list ;
+tool-name          = identifier, ".", identifier ;
+capability-list    = capability, { ",", capability } ;
+capability         = identifier ;
+
+task-decl          = "task", identifier, parameter-list,
+                     "->", type, "{", { task-clause }, "}" ;        (* PROVISIONAL *)
+task-clause        = agent-clause
+                   | "agent", ":", identifier
+                   | verify-clause
+                   | budget-clause ;
+verify-clause      = "verify", ":", identifier ;
+
+budget-clause      = "budget", ":", budget-literal ;            (* PROVISIONAL *)
+budget-literal     = "Budget", "(", budget-field, { ",", budget-field }, ")" ;
+budget-field       = identifier, ":", expression ;
+
+tool-decl          = "tool", qualified-name, parameter-list,
+                     [ "->", type ], [ effect-clause ], block ;  (* PROVISIONAL *)
+qualified-name     = identifier, ".", identifier ;
+
+model-decl         = "model", identifier, "{", { model-field }, "}" ;  (* PROVISIONAL *)
+model-field        = identifier, ":", expression ;
+
+(* ==================================================================== *)
+(* Types                                                          PROVISIONAL *)
+(* ==================================================================== *)
+
+type               = path-type
+                   | generic-type
+                   | sequence-type
+                   | function-type
+                   | optional-type ;
+
+path-type          = identifier, { "::", identifier } ;
+generic-type       = identifier, "<", type, { ",", type }, ">" ;  (* PROVISIONAL *)
+sequence-type      = "[", type, "]" ;
+function-type      = "Fn", "(", [ type, { ",", type } ], ")", "->", type ;
+optional-type      = type, "?" ;
+
+(* ==================================================================== *)
+(* Expressions                                                    PROVISIONAL *)
+(* ==================================================================== *)
+
+block              = "{", { statement }, [ expression ], "}" ;
+
+statement          = binding | expression-statement ;
+
+expression         = literal
+                   | path-expression
+                   | call-expression
+                   | field-expression
+                   | index-expression
+                   | unary-expression
+                   | binary-expression
+                   | if-expression
+                   | match-expression
+                   | block
+                   | ask-expression        (* PROVISIONAL *)
+                   | verify-expression     (* PROVISIONAL *)
+                   | delegate-expression ; (* PROVISIONAL *)
+
+literal            = integer-literal | float-literal | text-literal
+                   | "true" | "false" ;
+
+path-expression    = identifier, { "::", identifier } ;
+call-expression    = expression, argument-list ;
+argument-list      = "(", [ expression, { ",", expression } ], ")" ;
+field-expression   = expression, ".", identifier ;
+index-expression   = expression, "[", expression, "]" ;
+
+unary-expression   = ( "-" | "!" ), expression ;
+binary-expression  = expression, binary-operator, expression ;
+binary-operator    = "+" | "-" | "*" | "/"
+                   | "<" | ">" | "<=" | ">=" | "==" | "!="
+                   | "&&" | "||" ;                              (* PROVISIONAL *)
+
+if-expression      = "if", expression, block, [ "else", ( block | if-expression ) ] ;
+match-expression   = "match", expression, "{", { match-arm }, "}" ;
+match-arm          = pattern, "=>", expression ;
+pattern            = identifier, [ "(", [ identifier, { ",", identifier } ], ")" ] ;
+
+(* --- the agentic expressions -------------------------------------- *)
+
+ask-expression     = "ask", identifier, block ;                 (* PROVISIONAL *)
+verify-expression  = "verify", expression, "with", identifier ; (* PROVISIONAL *)
+delegate-expression = "delegate", identifier, block,
+                      [ "with", "budget", ":", budget-literal ] ; (* PROVISIONAL *)
