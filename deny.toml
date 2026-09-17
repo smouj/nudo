@@ -1,0 +1,66 @@
+# cargo-deny policy.
+#
+# The pre-alpha workspace has no third-party dependencies, so every check below
+# passes trivially today. That is the point: this file is the tripwire that
+# fires the moment a dependency appears, and it makes the cost of adding one
+# visible before it is paid.
+#
+# Enforcement: .github/workflows/security.yml. Rationale: AGENTS.md ("do not add
+# a dependency without justification").
+
+[graph]
+# Every supported target. A crate that only builds on one platform is a
+# portability regression, and this list is what catches it.
+targets = [
+    { triple = "x86_64-unknown-linux-gnu" },
+    { triple = "aarch64-unknown-linux-gnu" },
+    { triple = "x86_64-pc-windows-msvc" },
+    { triple = "aarch64-apple-darwin" },
+]
+
+[advisories]
+version = 2
+# Fail on any advisory that affects the build.
+yanked = "deny"
+# An unmaintained crate is a liability, not an emergency: report it, do not
+# block on it. Blocking on this trains people to add ignores.
+unmaintained = "workspace"
+ignore = []
+
+[licenses]
+version = 2
+# NUDO is MIT OR Apache-2.0. Anything else needs a deliberate decision, so the
+# allow-list is short and additions to it are reviewed.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-DFS-2016",
+    "Zlib",
+]
+confidence-threshold = 0.9
+# Notice files are not vendored; licence text travels with the dependency.
+private = { ignore = true }
+
+[bans]
+version = 2
+# Two versions of the same crate in one graph is a bug waiting to happen.
+multiple-versions = "deny"
+# A wildcard version requirement means an unplanned upgrade on any build.
+wildcards = "deny"
+# Git dependencies bypass the registry's immutability.
+allow-git = []
+# Crates that would be a design problem, not just a dependency. Each entry is a
+# decision someone made once, and reversing it needs a reason.
+deny = [
+    { name = "openssl", reason = "forces a system dependency; use rustls or a platform API deliberately" },
+]
+
+[sources]
+version = 2
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
