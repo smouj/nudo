@@ -15,8 +15,36 @@ would be a promise the project cannot keep.
 
 ## [Unreleased]
 
+### Changed
+
+* **The expression grammar is frozen and parseable.** It no longer contains left
+  recursion, which a recursive-descent parser cannot handle; precedence is stated
+  once as a chain of grammar levels that the productions implement, instead of a
+  prose table that could drift. `scripts/check-grammar.py` enforces both rules,
+  and fails if the three copies of the precedence chain disagree. Comparison no
+  longer chains silently, `?` is a type operator only, and the deliberate absence
+  of an assignment level is documented with the decision it waits on.
+* `spec/expressions.md`, `spec/grammar.md` and `grammar/syntax-reference.md` now
+  state exactly the grammar's precedence, associativity and lookahead
+  requirements, and say which parts are implemented.
+* `spec/errors.md` requires diagnostics to show the *chain* that introduced a
+  requirement, and records `--json` as planned rather than pretended.
+
+### Fixed
+
+* The EBNF header embedded a comment delimiter inside a comment, which breaks any
+  EBNF reader. Found by the new grammar checker while it was being written.
+
 ### Added
 
+* `scripts/check-grammar.py` — left recursion, undefined and unreachable
+  productions, and the precedence chain against its two other copies.
+* [`docs/internals/parser-design.md`](docs/internals/parser-design.md) — the M2
+  design: strategy, tree representation with the rowan trade-off, recovery
+  contract, testing, and the four decisions that block implementation.
+* [NEP-0005](neps/0005-keyword-policy.md) — keyword policy: a small reserved core
+  and contextual recognition elsewhere, which resolves a real parse conflict
+  between `true`/`false` and identifiers.
 * The NUDO language specification: authority order, lexical structure, grammar,
   types, effects, errors, and the agent/trust chapters
   (see [`spec/`](spec/README.md)).
