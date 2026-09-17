@@ -116,6 +116,49 @@ and nowhere else. Stages construct diagnostics; only the CLI prints them.
 * A multi-line span underlines the first line and stops; it does not draw a
   second caret block.
 
+## Chains, not just positions
+
+Some diagnostics are about a single token. The interesting ones are about a path
+through the program:
+
+```text
+error[NDO3001]: `fetch` needs the `Network` capability
+  --> app.nudo:12:5
+   |
+12 |     let body = fetch(url)
+   |                ^^^^^ this call
+   |
+   = note: `fetch` declares `with Network`
+   = note: reached from `render` (line 8), which has no `with` clause
+   = help: declare `fn render(...) -> Text with Network`, or call a function that
+           does not need it
+```
+
+A diagnostic that names only the final call site makes the reader reconstruct the
+path themselves. Where a requirement propagates, the diagnostic **must** show the
+chain that introduced it — the call, the declaration that demanded the capability
+or the type, and each step between them. This is a requirement on the stages that
+produce these diagnostics (M3 onward), not a style suggestion:
+
+* trust errors (`Generated<T>` where `Verified<T>` is required) show the value's
+  origin and the verification that is missing;
+* capability and effect errors show the declaration that demanded it and the path
+  that reached the call;
+* budget errors show what was spent and where.
+
+## Structured output
+
+Human-readable output is not a machine interface. A tool — an editor, a CI job, a
+repair agent — needs the same information as data: code, severity, message, file,
+span, labels, notes and help.
+
+`nudo check --json` is **PLANNED, not implemented**, and deliberately not
+implemented in M1: a schema published before the parser exists would have to
+change as soon as real syntax errors appear. When it arrives it is specified here
+first, with a version field, and the human renderer and the JSON renderer are
+required to describe the same diagnostics — a mismatch between them is a bug in
+whichever is wrong.
+
 ## The diagnostic contract for agents
 
 Diagnostics are the interface through which an agent repairs a program, so:

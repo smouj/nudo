@@ -34,6 +34,7 @@ Invoke-Step "rustdoc (broken links denied)" {
 Invoke-Step "documentation checks" { python scripts/check-docs.py }
 Invoke-Step "workflow policy" { python scripts/check-workflows.py }
 Invoke-Step "documented console output" { python scripts/check-console.py }
+Invoke-Step "grammar" { python scripts/check-grammar.py }
 
 Write-Host ""
 Write-Host "all checks passed"

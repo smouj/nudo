@@ -92,6 +92,8 @@ jobs:
           RUSTDOCFLAGS: -D warnings
       - name: Repository documentation checks
         run: python3 scripts/check-docs.py
+      - name: Grammar is parseable by recursive descent and states its precedence
+        run: python3 scripts/check-grammar.py
 
   msrv:
     name: msrv (1.85.0)

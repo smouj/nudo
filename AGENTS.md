@@ -71,6 +71,7 @@ That is the whole pipeline, and it is the same one CI runs:
 | Documentation | `python3 scripts/check-docs.py` |
 | Workflow policy | `python3 scripts/check-workflows.py` |
 | Documented console output | `python3 scripts/check-console.py` |
+| Grammar | `python3 scripts/check-grammar.py` |
 
 A task is not complete until all of these pass on the commit you are reporting.
 If something fails and you cannot fix it, say so plainly, name the blocker and

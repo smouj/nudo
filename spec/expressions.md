@@ -16,24 +16,66 @@ fn add(a: Int, b: Int) -> Int {
 This is deliberately Rust-shaped: it keeps expressions and statements from
 needing two spellings of the same idea.
 
+<!-- PRECEDENCE: expression > logical-or > logical-and > equality > comparison > additive > multiplicative > unary-expression > postfix-expression > primary-expression -->
+
 ## Operators
 
-Provisional precedence, highest first:
+Precedence is decided, not provisional. It is expressed as a chain of grammar
+levels, each defined in terms of the next, which is what makes a
+recursive-descent parser possible and what stops the grammar and the prose from
+drifting apart:
 
-| Level | Operators |
-| ----- | --------- |
-| 1 | postfix call `f(x)`, field `a.b`, index `a[i]` |
-| 2 | unary `-`, `!` |
-| 3 | `*`, `/` |
-| 4 | `+`, `-` |
-| 5 | comparison `<`, `>`, `<=`, `>=` |
-| 6 | equality `==`, `!=` |
-| 7 | logical `&&` |
-| 8 | logical `||` |
+```text
+expression
+  │
+logical-or          ||                          left
+  │
+logical-and         &&                          left
+  │
+equality            ==  !=                      left
+  │
+comparison          <  >  <=  >=                none: a < b < c is an error
+  │
+additive            +  -                        left
+  │
+multiplicative      *  /                        left
+  │
+unary-expression    -x  !x                      prefix, right
+  │
+postfix-expression  f(x)  a.b  a[i]             left, chains
+  │
+primary-expression  literals, paths, ( … ), blocks, if, match, ask, verify, delegate
+```
 
-Operator precedence is a common source of quiet bugs, and an `Int`/`Float`
-mismatch must be an error rather than a coercion. The exact table is provisional
-and will be frozen with conformance cases when the parser lands.
+Rules that follow, and are normative:
+
+* **No left recursion.** `nudo-parser` is a recursive-descent parser, so no
+  production may derive a form that starts with itself. The grammar is checked
+  mechanically for this.
+* **Postfix forms chain.** `a.b(c)[d]` is a single expression.
+* **Comparison does not chain.** `a < b < c` is a syntax error, not
+  `(a < b) < c`. Comparisons combine with `&&`.
+* **No implicit numeric conversion.** An `Int`/`Float` mismatch is a type error,
+  not a coercion.
+* **No truthiness.** A condition is a `Bool`.
+
+**There is no assignment expression.** An assignment needs a mutable binding, and
+whether NUDO has mutable bindings at all is an open question
+([`declarations.md`](declarations.md)). When that is answered, assignment takes
+the position above `logical-or`, and a NEP records it. Writing the level now,
+with nothing to assign to, would be inventing a language feature to fill a gap in
+a diagram.
+
+**`?` is a type operator only.** `T?` is an optional type
+([`types.md`](types.md)). Expression-level error propagation is an open question
+with no syntax: the `?`-suffix form that other languages use is a proposal, not a
+decision, and it would need a NEP because it changes control flow.
+
+The precedence chain above is the single source of truth. The same marker appears
+in [`../grammar/nudo.ebnf`](../grammar/nudo.ebnf) and
+[`../grammar/syntax-reference.md`](../grammar/syntax-reference.md), and
+`scripts/check-grammar.py` fails if the three disagree or if the productions stop
+implementing it.
 
 ## `let`
 

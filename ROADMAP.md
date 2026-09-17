@@ -45,20 +45,60 @@ not reserved; Unicode identifiers are an open question
 ([`DESIGN.md`](DESIGN.md#open-questions)); a literal's *value* is not computed
 until the parser needs it.
 
-## M2 — Parser and AST — **planned**
+## M2 — Parser and syntax tree — **next**
 
-* [ ] Lossless syntax tree (`nudo-syntax`): every byte of input is reachable
-* [ ] Recursive-descent parser with error recovery
-* [ ] Typed AST and visitors (`nudo-ast`)
-* [ ] `NDO1001` and the rest of the `1xxx` family in use
-* [ ] Formatter able to round-trip without losing a byte
-* [ ] Conformance cases for valid and invalid programs
+### M2.0 — Grammar freeze — **done**
 
-**Exit criteria:** the parser accepts every `fixtures/valid` program, rejects
-every `fixtures/invalid` one with the declared diagnostics, and the formatter is
-idempotent on the conformance corpus.
+The syntactic grammar is decided before anything parses it, and its two
+load-bearing rules are enforced mechanically rather than by reviewer attention:
+
+* [x] **No left recursion.** Recursive descent cannot parse it, and the grammar
+      had four such productions (`call-expression`, `field-expression`,
+      `binary-expression`, `optional-type`) when this was checked.
+* [x] **Precedence stated once**, as a chain of grammar levels that the
+      productions implement, copied identically into the two documents that
+      describe it.
+* [x] `scripts/check-grammar.py` fails the pipeline if either rule breaks, or if
+      the three copies of the precedence chain disagree.
+* [x] The M2 design is written down before the code:
+      [`docs/internals/parser-design.md`](docs/internals/parser-design.md).
+
+**Gate.** Four decisions block a *correct* parser, not a compiling one. Two are
+cheap and should be taken first: the keyword policy
+([NEP-0005](neps/0005-keyword-policy.md), which also resolves a real parse
+conflict between `true`/`false` and identifiers) and whether generics use angle
+brackets.
+
+### M2.1 — Parser and syntax tree
+
+* [ ] `nudo-syntax`: lossless tree, `SyntaxKind`, error nodes, and the property
+      test that the tree's token texts re-concatenate to the original file
+* [ ] `nudo-parser`: recursive descent with precedence climbing on the declared
+      chain, and recovery with a progress guarantee (no hangs, no cascades)
+* [ ] `nudo-ast`: typed wrappers for consumers that want structure, not text
+* [ ] `NDO1001` and the rest of the `1xxx` family in use, with expected/found
+* [ ] `nudo check` parses, so a clean run stops meaning "lexically correct"
+* [ ] A tree dump in a stable format, matching what `--dump-tokens` gives tokens
+* [ ] Conformance cases under `tests/conformance/parser/`
+
+**Exit criteria:** every `fixtures/valid` program parses to a tree with no error
+nodes, every `fixtures/invalid` one is rejected with the declared diagnostics, the
+losslessness property holds across the corpus, and the tree can reprint its source
+byte for byte. The formatter itself is M10; M2 owes the tree that makes it
+possible.
 
 ## M3 — Type system — **planned**
+
+**Gates.** These must be decided before type checking is implemented, because
+they change what the checker *does*, not how it is written. Each is a NEP, and
+each needs positive, negative and boundary examples:
+
+| Decision | Blocks |
+| -------- | ------ |
+| Integer width and overflow semantics | Every arithmetic rule, and `Int` in every signature |
+| The error model: `Result` shape, and whether anything richer exists | Every fallible function |
+| The final form of `verify` ([NEP-0002](neps/0002-generated-verified.md)) | The trust types, which are the reason the language exists |
+| Whether generics use angle brackets | Types, and one token of parser lookahead |
 
 * [ ] Primitive types, structs, enums, generics
 * [ ] `Result` and `Generated<T>` / `Verified<T>` as distinct types
@@ -69,17 +109,41 @@ idempotent on the conformance corpus.
 **Exit criteria:** no `Generated<T>` value is usable as a `Verified<T>` without
 an explicit verification step, proven by a conformance case.
 
-## M4 — Interpreter — **planned**
+## M4 — Interpreter, as one vertical slice — **planned**
 
-* [ ] MIR lowering and a tree-walking interpreter
-* [ ] Deterministic execution of ordinary programs
-* [ ] `nudo run`, `nudo build`, `nudo repl`
-* [ ] Runtime diagnostics with stable `NDO6xxx` codes
+M4 is deliberately not "an interpreter". It is **one path from source to output
+that really runs**, because a project with nine well-documented subsystems and no
+executable program is still a specification. The smallest useful program is the
+target:
+
+```nudo
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+fn main() {
+    let result = add(20, 22);
+    print(result);
+}
+```
+
+Everything that requires, and nothing beyond it:
+
+* [ ] Functions: parameters, return values, calls
+* [ ] `let`, `Int`, `Bool`, `Text`
+* [ ] Arithmetic and comparison operators, `if`
+* [ ] MIR lowering for the above, and a tree-walking interpreter
+* [ ] `print`, which is the first `std` API and the first effect — so the
+      pre-alpha standard library is one function behind one capability, not a
+      directory tree
+* [ ] `nudo run`, and the runtime diagnostics that a real program needs
+      (`NDO6xxx`)
 * [ ] Runtime startup benchmark
 
-**Exit criteria:** the examples in `examples/00-` through `examples/02-` run and
-produce their documented output. The later examples are design previews and are
-excluded from this criterion until the syntax they use is accepted.
+**Exit criteria:** the program above prints `42`, and the examples in
+`examples/00-` through `examples/02-` run and produce their documented output.
+The later examples are design previews and are excluded until the syntax they use
+is accepted.
 
 ## M5 — Effect system — **planned**
 
@@ -118,6 +182,12 @@ against a local model, with no network access required.
 * [ ] Sandbox boundary for tools (`nudo-sandbox`)
 * [ ] `NDO5xxx` codes
 * [ ] Threat model reviewed against a working implementation
+* [ ] **The 30-second demonstration**, end to end and runnable: `ask` produces a
+      `Generated<T>` → using it where `Verified<T>` is required fails to compile
+      → `verify` produces a `Verified<T>` → a tool needs `Network` → the compiler
+      refuses the call without a grant → with the grant, the run leaves a trace
+      and provenance. One program that runs demonstrates this better than twenty
+      pages that describe it.
 
 **Exit criteria:** a program that attempts an ungranted effect fails before the
 effect happens, and the failure names the capability and the request site.
