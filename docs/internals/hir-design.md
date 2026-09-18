@@ -50,6 +50,12 @@ Hir
 * **Spans are preserved everywhere.** Every `Def`, `Expr` and `Stmt` carries the
   span it came from, and every `Reference` carries the span of the name. A
   diagnostic written at M3 is still renderable at M8.
+* **A definition carries its structure.** A `struct`'s fields and an `enum`'s
+  variants are recorded with their types, lowered in the declaration's own scope
+  so that a declaration's type parameter is visible inside its own fields. They
+  are records, not definitions: a field is reached through a value
+  (`article.title`), never on its own, so it belongs to its owner rather than to
+  a scope.
 * **Names are kept for diagnostics only.** `ExprKind::Path` holds both the name
   as written and its `Resolution`, because an error message needs the text and a
   later stage needs the target. Keeping the text is not a failure to resolve.

@@ -1,0 +1,8 @@
+struct Article {
+    title: Text
+    body: Text
+}
+
+fn headline(article: Article) -> Text {
+    article.titel
+}

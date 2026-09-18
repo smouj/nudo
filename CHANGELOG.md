@@ -17,6 +17,17 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **M3.2: nominal structure and field access.** HIR now records what a `struct`
+  and an `enum` are made of - fields and variants with their types, lowered in the
+  declaration's own scope so a declaration's type parameter is visible inside its
+  own fields - and the checker types `article.title` from the field's annotation.
+  A field the type does not have is `NDO2007`, naming the field and listing what
+  the type does have; reading a field of a value that has none says the same thing
+  in the same code. Reading an enum's payload stays silent until `match` exists.
+  **Construction is not implemented, and cannot be**: the grammar has no syntax
+  that builds a nominal value, so it is a NEP's decision rather than a checker
+  task.
+
 * **M3.2: calls are checked.** A call takes the type of its signature's result,
   checks its arity (`NDO2005`), checks each argument against its parameter
   (`NDO2004`, reported at the argument because that is what to change), and
