@@ -132,7 +132,6 @@ fn check_reports_syntax_errors_that_lex_cleanly() {
 #[test]
 fn check_reports_every_preview_example_as_not_accepted() {
     for name in [
-        "04-results",
         "05-agent",
         "06-tools",
         "07-generated-verified",
@@ -151,7 +150,13 @@ fn check_reports_every_preview_example_as_not_accepted() {
 
 #[test]
 fn check_accepts_the_examples_the_readme_calls_readable() {
-    for name in ["00-hello-world", "01-variables", "02-functions", "03-types"] {
+    for name in [
+        "00-hello-world",
+        "01-variables",
+        "02-functions",
+        "03-types",
+        "04-results",
+    ] {
         let path = repo_path(&format!("examples/{name}/main.nudo"));
         let output = nudo(&["check", path.to_str().expect("utf-8 path")]);
         assert_eq!(

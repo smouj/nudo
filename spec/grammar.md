@@ -109,9 +109,6 @@ its syntax is frozen:
 | `agent-decl` | Whether `role:`, `tools:` and `allow:` stay clauses or become fields |
 | `task-decl` | Whether `verify:` is a clause or a value |
 | `pattern` | Whether patterns grow beyond enum variants and bindings |
-| `return` | Whether early exit exists, and what it is spelled (this chapter's sibling
-[`declarations.md`](declarations.md) describes `return` as if it existed; the
-EBNF has no such production) |
 
 Decided since, each by a NEP:
 
@@ -119,6 +116,7 @@ Decided since, each by a NEP:
 | ---------- | -------- |
 | `ask-expression` | A primary expression that yields `Generated<T>`; `ask` stays contextual ([NEP-0002](../neps/0002-generated-verified.md)) |
 | `verify-expression` | Its operand is a **named value** (a path, optionally called), and it yields `Result<Verified<T>, VerificationError>` ([NEP-0002](../neps/0002-generated-verified.md)) |
+| Early exit | There is no `return`; a block's value is its final expression, and `if` and `match` are expressions ([NEP-0012](../neps/0012-early-exit.md)) |
 | `generic-type` | Angle brackets, invariant arguments ([NEP-0006](../neps/0006-generic-syntax.md)) |
 | `generic-parameter-list` | Declarations declare their parameters ([NEP-0010](../neps/0010-declaration-site-generics.md)) |
 | `binding` | Immutable; no assignment, ever, in this edition ([NEP-0009](../neps/0009-mutability.md)) |

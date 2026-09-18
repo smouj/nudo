@@ -17,7 +17,9 @@ fn add(a: Int, b: Int) -> Int {
 ```
 
 A block's last expression is its value, so no `return` is needed for the common
-case. `return` exists for early exit.
+case. There is no `return` at all: early exit is not part of the language, and a
+conditional result is written as the final expression of the block
+([NEP-0012](../../neps/0012-early-exit.md)).
 
 ## Types — M3
 

@@ -50,6 +50,11 @@ would be a promise the project cannot keep.
 * `M3.0`, `M3.1`, `M3.2` and `M3.3` in [`ROADMAP.md`](ROADMAP.md), with the
   closure test M3 is judged by: `publish(draft)` must fail to compile, and the
   handled `Result` of a verification must be accepted.
+* **[NEP-0012](neps/0012-early-exit.md) — early exit.** There is no `return` in
+  this edition: a block's value is its final expression, and `if` and `match` are
+  expressions, so a conditional result is written where the value is.
+  `return` stays an ordinary identifier, and
+  `tests/conformance/parser/0017-no-return` pins that a stray one is `NDO1001`.
 
 ### Changed
 
@@ -69,12 +74,19 @@ would be a promise the project cannot keep.
 * `spec/types.md`, `spec/expressions.md`, `spec/declarations.md`,
   `spec/generics.md`, `spec/grammar.md` and `spec/trust/verified.md` state the
   decided semantics instead of naming them as open questions.
+* **`examples/04-results` is read by the toolchain.** With early exit settled
+  away ([NEP-0012](neps/0012-early-exit.md)), the example writes its failure as
+  the value of an `if` instead of returning it, and it moves from the design
+  previews to the readable set in `examples/README.md` and the three example
+  tests.
 
 ### Fixed
 
-* `spec/declarations.md` described `return` as if it existed. The EBNF has no
-  `return-statement`, so the chapter now says so, and `examples/04-results` is
-  rejected for that reason as well as for its generics.
+* **The specification no longer describes a `return` the grammar never had.**
+  `spec/declarations.md`, `spec/expressions.md`, `spec/grammar.md`,
+  `docs/language/tour.md` and the manual's parser chapter now state the decision
+  ([NEP-0012](neps/0012-early-exit.md)) instead of claiming a statement the EBNF
+  never had; the four book translations were brought to the same revision.
 
 * **The parser, the lossless syntax tree and the typed AST.** `nudo-syntax`
   holds a tree in which every byte of the file is reachable — whitespace and

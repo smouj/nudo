@@ -10,7 +10,7 @@
   "02-language-design/modules.md": "6ab2a23ce3c05c157bb55ccd8136882bd57816d9d7b3d7bd750c09e6150b08ec",
   "03-compiler/diagnostics.md": "0df2ff882818a2e0f546d982eb46d7af945b47468a5aa9ca0c9772ccd35b9517",
   "03-compiler/lexer.md": "63b20d9d7b589f98d0409afdc3d60ca1ff38106d7e0622a736646e4cdbe82c6f",
-  "03-compiler/parser.md": "64d7e52a0d5f706f7fe5bb615d2cbf90b62c11908d169cbf5ba9a9060e05e035",
+  "03-compiler/parser.md": "dc3a658cbb8a160391ee80909575dd14f9a1cd0dc512ba75c7b6654995328256",
   "03-compiler/pipeline.md": "9e66287d381261a7f45b038ec396578ef429e73277fc4ba28f64a42d2f6e9e33",
   "04-type-system/fundamentals.md": "f6336cd9f6a7065253af1d64959b2dc9f3420a033a0468e38d0ed08046a02684",
   "04-type-system/generated-verified.md": "5c5c421640958d58481497ca2ca15061f0c1c8a1a3af4425e236419d41368535",

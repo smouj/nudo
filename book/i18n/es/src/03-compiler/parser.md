@@ -58,11 +58,14 @@ nada de ello.
 
 ## Lo que falta deliberadamente
 
-* Los parámetros genéricos en el punto de declaración (`enum Outcome<T, E>`) no están
-  en la gramática congelada y se rechazan; NEP-0006 registra por qué.
-* `verify (expr) with V` se rechaza, porque `verify` es una palabra contextual y el
-  parser solo tiene un token de anticipación. La limitación está fijada por una prueba
-  y desaparece cuando NEP-0002 decida qué es `verify`.
+* Nada, por ahora: los parámetros genéricos en el punto de declaración
+  (`enum Outcome<T, E>`) y el operando nombrado de `verify` se analizan desde M3.1,
+  y cada uno tiene un caso de conformidad que lo fija. Tampoco hay ningún `return`
+  que añadir: la EBNF nunca lo tuvo, y
+  [NEP-0012](https://github.com/smouj/nudo/blob/main/neps/0012-early-exit.md)
+  decide que la salida temprana es el valor de un bloque y no una sentencia. Un
+  `return` suelto es un token inesperado y un `NDO1001`, fijado por
+  `tests/conformance/parser/0017-no-return`.
 * Las rutas de la gramática usan `::` y sus listas están separadas por comas, mientras
   que varios ejemplos del manual y de `examples/` escriben `web.search` uno por línea.
   El parser sigue la gramática; los ejemplos dicen que son avances, y qué grafía

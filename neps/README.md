@@ -38,12 +38,15 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 | [0009](0009-mutability.md) | Mutability and bindings | Accepted |
 | [0010](0010-declaration-site-generics.md) | Declaration-site generic parameters | Accepted |
 | [0011](0011-path-and-list-spelling.md) | Path and list spelling | Accepted |
+| [0012](0012-early-exit.md) | Early exit | Accepted |
 
 NEPs 0002 and 0007–0011 are the **semantic gates of M3**, taken together and
 before `nudo-typeck` exists, so that the checker is written against decided
 answers rather than guesses. [NEP-0001](0001-agent-types.md),
 [NEP-0003](0003-capability-system.md) and [NEP-0004](0004-effects.md) remain
-drafts, and gate M5–M8.
+drafts, and gate M5–M8. [NEP-0012](0012-early-exit.md) is not a gate: it settles
+a question the specification had left in prose, and removes rather than adds a
+feature.
 
 ## States
 

@@ -27,11 +27,16 @@ use nudo_lexer::tokenize;
 use nudo_source::SourceMap;
 
 /// Examples the toolchain can read: they must lex cleanly.
-const READABLE: &[&str] = &["00-hello-world", "01-variables", "02-functions", "03-types"];
+const READABLE: &[&str] = &[
+    "00-hello-world",
+    "01-variables",
+    "02-functions",
+    "03-types",
+    "04-results",
+];
 
 /// Examples that illustrate proposed syntax: they must say so.
 const PREVIEWS: &[&str] = &[
-    "04-results",
     "05-agent",
     "06-tools",
     "07-generated-verified",

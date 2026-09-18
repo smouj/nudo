@@ -59,11 +59,14 @@ absichtlich nichts davon.
 
 ## Was absichtlich fehlt
 
-* Generische Parameter an der Deklarationsstelle (`enum Outcome<T, E>`) stehen nicht
-  in der eingefrorenen Grammatik und werden zurückgewiesen; NEP-0006 hält fest, warum.
-* `verify (expr) with V` wird zurückgewiesen, weil `verify` ein kontextabhängiges Wort
-  ist und der Parser ein Token Lookahead hat. Die Einschränkung ist durch einen Test
-  festgehalten und verschwindet, wenn NEP-0002 entscheidet, was `verify` ist.
+* Derzeit nichts: Generische Parameter an der Deklarationsstelle
+  (`enum Outcome<T, E>`) und der benannte Operand von `verify` werden seit M3.1
+  geparst, und jeder wird durch einen Konformitätsfall festgehalten. Es gibt auch
+  kein `return` nachzutragen: Die EBNF hatte nie eines, und
+  [NEP-0012](https://github.com/smouj/nudo/blob/main/neps/0012-early-exit.md)
+  legt fest, dass ein früher Ausstieg der Wert eines Blocks ist und keine Anweisung.
+  Ein verirrtes `return` ist ein unerwartetes Token und ein `NDO1001`, festgehalten
+  durch `tests/conformance/parser/0017-no-return`.
 * Die Pfade der Grammatik verwenden `::` und ihre Listen sind komma-getrennt, während
   mehrere Beispiele im Handbuch und in `examples/` `web.search` je Zeile schreiben.
   Der Parser folgt der Grammatik; die Beispiele sagen, dass sie Vorschauen sind, und

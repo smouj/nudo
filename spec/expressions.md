@@ -112,10 +112,17 @@ match status {
 * `if` is an expression, not a statement.
 * `match` must be exhaustive.
 * There is no implicit truthiness: the condition is `Bool`.
+* **There is no `return`, and no early exit.** A block's value is its final
+  expression, and both `if` and `match` are expressions, so a conditional result
+  is written where the value is. Nothing leaves a block early, and the word
+  `return` stays an ordinary identifier
+  ([NEP-0012](../neps/0012-early-exit.md)). The rule this rests on is the one in
+  [Shape](#shape): the optional final expression is the block's value.
 
 Loops are provisional. Whether NUDO has `for`, `while`, iterators, or both is
 not decided, and a loop syntax invented early is a loop syntax the language is
-stuck with.
+stuck with. An exit form for a loop — `break`, `continue`, an early `return` —
+is decided with the loop, not before it.
 
 ## The agentic expressions
 

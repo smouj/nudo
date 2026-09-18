@@ -25,10 +25,23 @@ fn identity<T>(value: T) -> T {
 * A function that performs an effect declares it
   ([`effects.md`](effects.md)).
 * Functions are values: `add` has type `Fn(Int, Int) -> Int`.
-* **`return` is not in the grammar yet.** This chapter has always described it as
-  existing for early exit; the frozen EBNF has no `return-statement`, so
-  `examples/04-results` is rejected for that reason as well as for its generics.
-  Adding it is a language change and needs a NEP.
+* **There is no early exit.** A function body is a block whose last expression is
+  its value, and because `if` and `match` are expressions, a conditional result is
+  written where the value is:
+
+  ```nudo
+  fn divide(a: Int, b: Int) -> Result<Int, MathError> {
+      if b == 0 {
+          Result::Err(MathError::DivisionByZero)
+      } else {
+          Result::Ok(a / b)
+      }
+  }
+  ```
+
+  There is no `return` statement, and `return` is neither reserved nor
+  contextual — it stays an ordinary identifier
+  ([NEP-0012](../neps/0012-early-exit.md)).
 
 ## Structs
 
