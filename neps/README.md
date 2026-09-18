@@ -28,11 +28,22 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 | NEP | Title | State |
 | --- | ----- | ----- |
 | [0001](0001-agent-types.md) | Agent types | Draft |
-| [0002](0002-generated-verified.md) | `Generated<T>` and `Verified<T>` | Discussion |
+| [0002](0002-generated-verified.md) | `Generated<T>` and `Verified<T>` | Accepted |
 | [0003](0003-capability-system.md) | Capability system | Draft |
 | [0004](0004-effects.md) | Effect system | Draft |
 | [0005](0005-keyword-policy.md) | Keyword policy | Accepted |
 | [0006](0006-generic-syntax.md) | Generic syntax | Accepted |
+| [0007](0007-integer-semantics.md) | Integer semantics | Accepted |
+| [0008](0008-error-model.md) | The error model | Accepted |
+| [0009](0009-mutability.md) | Mutability and bindings | Accepted |
+| [0010](0010-declaration-site-generics.md) | Declaration-site generic parameters | Accepted |
+| [0011](0011-path-and-list-spelling.md) | Path and list spelling | Accepted |
+
+NEPs 0002 and 0007–0011 are the **semantic gates of M3**, taken together and
+before `nudo-typeck` exists, so that the checker is written against decided
+answers rather than guesses. [NEP-0001](0001-agent-types.md),
+[NEP-0003](0003-capability-system.md) and [NEP-0004](0004-effects.md) remain
+drafts, and gate M5–M8.
 
 ## States
 

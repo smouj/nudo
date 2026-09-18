@@ -9,12 +9,16 @@ let draft: Generated<Article> =
         "Create an article from the supplied research."
     }
 
-let article: Verified<Article> =
+let checked: Result<Verified<Article>, VerificationError> =
     verify draft with ArticleVerifier
 
-publish(article)
+match checked {
+    Ok(article) => publish(article)
+    Err(reason) => report(reason)
+}
 ```
 
 The important property is not the exact surface syntax. The invariant is that
 `publish` cannot accidentally receive an unverified generated value when its
-signature requires `Verified<Article>`.
+signature requires `Verified<Article>` — and that the rejection is a value the
+caller handles, not a panic.

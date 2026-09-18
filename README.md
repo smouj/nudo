@@ -118,7 +118,7 @@ let draft: Generated<Article> =
         "Create an article."
     }
 
-let article: Verified<Article> =
+let checked: Result<Verified<Article>, VerificationError> =
     verify draft with ArticleVerifier
 ```
 

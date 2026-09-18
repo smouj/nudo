@@ -20,15 +20,19 @@ The type system is constrained by the rest of the language, not chosen freely:
 
 | Type | Meaning |
 | ---- | ------- |
-| `Int` | A signed integer. Width is deliberately unspecified for now |
+| `Int` | A signed 64-bit integer, two's complement ([NEP-0007](../neps/0007-integer-semantics.md)) |
 | `Float` | An IEEE-754 binary floating-point number |
 | `Bool` | `true` or `false` |
 | `Text` | A UTF-8 string |
 | `Unit` | The type of an expression that produces nothing |
 
-Whether `Int` has a defined width, and whether sized integers exist alongside
-it, is an **open question**. It is a real decision with real consequences for
-overflow behaviour, and it will not be settled by accident.
+`Int` is fixed at 64 bits, and arithmetic **traps** on overflow and on division
+by zero rather than wrapping ([NEP-0007](../neps/0007-integer-semantics.md)). A
+literal that does not fit is a compile error. `Int` and `Float` do not mix:
+mixed arithmetic is a type error, and the conversion is written down.
+
+Sized and unsigned integers are not in this edition; adding them needs a NEP that
+says what narrowing does.
 
 ## Composite types
 
@@ -40,6 +44,8 @@ overflow behaviour, and it will not be settled by accident.
 | `Fn(A, B) -> C` | A function value |
 | `Agent`, `Task`, `Tool`, `Model` | Declared items used as types (see [`declarations.md`](declarations.md)) |
 | `T?` | The absence of a value, or its presence |
+| `Result<T, E>` | **Intrinsic**: `Ok(T)` or `Err(E)`, the type of every fallible operation ([NEP-0008](../neps/0008-error-model.md)) |
+| `Name<T, U>` | A generic type, declared by the program or built in ([NEP-0010](../neps/0010-declaration-site-generics.md)) |
 
 ## Trust types
 
@@ -103,9 +109,10 @@ describes, not an accident of having the same fields.
 
 ## Open questions
 
-* Integer width and overflow semantics.
 * Whether `Bool` is distinct from an enum with two variants.
 * Whether `Text` is a primitive or a type over a sequence of bytes.
-* Variance in generic positions ([`generics.md`](generics.md)).
 * How the type system represents an agent's capability set when the agent's
   tools are supplied at runtime.
+* Whether sized and unsigned integer types exist, and what narrowing does
+  ([NEP-0007](../neps/0007-integer-semantics.md)).
+* How much generic inference is allowed ([NEP-0010](../neps/0010-declaration-site-generics.md)).
