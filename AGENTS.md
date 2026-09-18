@@ -50,6 +50,42 @@ implementing it. Stop and write the specification change first.
 * **Keep commits and pull requests small and auditable.** Conventional Commits,
   see [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## GitHub state-changing operations
+
+GitHub command output is evidence about the command, not the source of truth for
+the pull request. A non-zero exit code may happen before a mutation reaches
+GitHub, or after the mutation succeeded while cleanup failed. Never infer the
+repository state from the process exit code alone.
+
+For any operation that changes GitHub state (merge, close/reopen, comment,
+branch cleanup):
+
+1. read the pull request's `state`, merged status and HEAD before the mutation;
+2. perform the mutation in the foreground;
+3. read the state again afterwards;
+4. classify the result from GitHub's state, not from the command's exit code.
+
+The classifications that matter are explicit:
+
+* already `MERGED` before the command: successful no-op;
+* already `CLOSED` and not merged before the command: closed elsewhere, not a
+  merge failure;
+* open before, merged afterwards: success even if a later cleanup step errors;
+* open before, closed afterwards without a merge: **problem** — report it and do
+  not silently classify it as "nothing to do";
+* still open after an API or transport error: the mutation did not complete.
+
+In the current agent execution environment, read-only GitHub operations (status,
+checks, logs) may run in the background, but state-changing operations must run
+in the foreground: background API mutations have repeatedly been rejected by the
+egress proxy. Do not retry a mutation until the post-command state has been
+read.
+
+Git TLS trust is configured through Git itself (`http.sslCAInfo` /
+`GIT_SSL_CAINFO`), not by assuming `SSL_CERT_FILE` is read by Git. Do not
+paper over a trust-store problem with per-command flags when the environment can
+be configured once.
+
 ## Required validation before declaring a task complete
 
 Run the real thing; do not describe what you would run.
