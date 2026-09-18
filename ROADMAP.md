@@ -155,7 +155,9 @@ work rather than left as a surprise.
 
 The first slice is implemented: `nudo-typeck` types primitives and literals,
 compares annotations, types paths from what resolution found, and reports
-`NDO2004` with `expected` and `found` as structure. Calls, generics, structs,
+`NDO2004` with `expected` and `found` as structure. Calls are checked too:
+arity (`NDO2005`), each argument against its parameter, and calling something
+that is not a function (`NDO2006`). Generics, structs,
 enums, `Result` exhaustiveness and effects are the following slices; until each
 arrives those expressions type as an error that reports nothing, so the checker
 is never wrong about work it does not do. See
@@ -170,7 +172,8 @@ rules of their own.
 * [x] Primitive types: `Int` (with NEP-0007's rules), `Float`, `Bool`, `Text`,
       `Unit` — typed in the first slice; `Int`'s arithmetic rules arrive with
       expression typing
-* [ ] Structs, enums, generics and instantiation, arity checking
+* [x] Arity checking: a call passes exactly what the signature takes
+* [ ] Structs, enums, generics and instantiation
 * [ ] `Result<T, E>` as an intrinsic type, and exhaustiveness of `match` on it
 * [ ] Function types and calls; no implicit numeric conversion
 * [ ] Agent, task and tool type declarations
