@@ -151,16 +151,17 @@ work rather than left as a surprise.
 * [x] `nudo-parser`: accept `generic-parameter-list` and the restricted `verify`
       operand that M3.0's NEPs added to the grammar, with a conformance case each
 
-### M3.2 — Basic type system — **first slice done**
+### M3.2 — Basic type system — **in progress**
 
-The first slice is implemented: `nudo-typeck` types primitives and literals,
-compares annotations, types paths from what resolution found, and reports
-`NDO2004` with `expected` and `found` as structure. Calls are checked too:
-arity (`NDO2005`), each argument against its parameter, and calling something
-that is not a function (`NDO2006`). Generics, structs,
-enums, `Result` exhaustiveness and effects are the following slices; until each
-arrives those expressions type as an error that reports nothing, so the checker
-is never wrong about work it does not do. See
+`nudo-typeck` is implemented and growing by vertical slices. It types
+primitives and literals, compares annotations, types paths from resolution, and
+reports `NDO2004` with structured `expected` and `found`. Calls are checked
+for arity (`NDO2005`), argument types and callability (`NDO2006`). Nominal
+declarations now carry their structure in HIR, field access is typed with
+`NDO2007`, and match arms carry the pattern information the checker needs.
+Generic instantiation, match typing and exhaustiveness, nominal construction and
+`Result<T, E>` are the next slices. Until a rule exists, the checker stays
+silent rather than inventing semantics. See
 [`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
 
 Two gates are taken before this one is written, so that the checker is written
@@ -181,9 +182,13 @@ rules of their own.
       so a program can hold a nominal value (a parameter, a return) but cannot
       make one. It needs a NEP - the syntax is a language decision, not a parser
       gap - and it is recorded here rather than invented in the checker.
-* [ ] Structs, enums, generics and instantiation
-* [ ] `Result<T, E>` as an intrinsic type, and exhaustiveness of `match` on it
-* [ ] Function types and calls; no implicit numeric conversion
+* [ ] Generic instantiation and bounded inference, following accepted
+      [NEP-0013](neps/0013-generic-inference.md)
+* [ ] `match` typing: variant validation, payload binding, arm type agreement
+      and exhaustiveness; HIR already records each arm's pattern
+* [ ] `Result<T, E>` as an intrinsic type, using the same exhaustive `match`
+      rules as every other enum
+* [x] Function types and calls; no implicit numeric conversion
 * [ ] Agent, task and tool type declarations
 * [ ] Type errors with stable `NDO2xxx` codes
 
