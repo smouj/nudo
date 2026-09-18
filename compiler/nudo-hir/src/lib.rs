@@ -71,6 +71,17 @@ impl DefId {
     pub const fn index(self) -> u32 {
         self.0
     }
+
+    /// The definition at `index`.
+    ///
+    /// For consumers that walk the arena in order — the type checker does — and
+    /// that therefore have an index rather than an id. It is not a way to invent
+    /// a definition: an index that was never declared has no entry in the arena,
+    /// and every accessor here returns `None` for it.
+    #[must_use]
+    pub const fn from_index(index: u32) -> Self {
+        DefId(index)
+    }
 }
 
 /// Identifies an expression in the HIR.

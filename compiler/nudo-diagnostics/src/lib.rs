@@ -159,6 +159,9 @@ pub mod codes {
     /// expected, or the other way round.
     pub const WRONG_NAMESPACE: DiagnosticCode = DiagnosticCode::new("NDO2003", "WRONG_NAMESPACE");
 
+    /// A value whose type is not the one its annotation promised.
+    pub const TYPE_MISMATCH: DiagnosticCode = DiagnosticCode::new("NDO2004", "TYPE_MISMATCH");
+
     // ---------------------------------------------------------------- 8xxx --
     /// The file being compiled does not use the `.nudo` extension.
     pub const UNEXPECTED_FILE_EXTENSION: DiagnosticCode =
@@ -176,6 +179,7 @@ pub mod codes {
         UNRESOLVED_NAME,
         DUPLICATE_NAME,
         WRONG_NAMESPACE,
+        TYPE_MISMATCH,
         UNEXPECTED_FILE_EXTENSION,
     ];
 
@@ -194,6 +198,7 @@ pub mod codes {
         UNRESOLVED_NAME,
         DUPLICATE_NAME,
         WRONG_NAMESPACE,
+        TYPE_MISMATCH,
         UNEXPECTED_FILE_EXTENSION,
     ];
 
