@@ -1,0 +1,4 @@
+# nudo-typeck v1
+def 0009 struct `Article` 1:8: <unknown>
+def 0010 function `headline` 5:4: Fn(Article) -> Text
+def 0011 parameter `article` 5:13: Article
