@@ -1,0 +1,8 @@
+fn twice() {}
+
+fn twice() {}
+
+fn shadowing(value: Int) -> Int {
+    let value = value;
+    value
+}

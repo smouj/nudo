@@ -139,6 +139,14 @@ fn invalid_fixtures_produce_exactly_what_they_declare() {
         let (sources, parsed) = parse_file(&path);
         let diagnostics = parsed.diagnostics();
 
+        // Resolution's codes belong to another stage; see fixtures/README.md.
+        let declared: Vec<Expectation> = declared
+            .into_iter()
+            .filter(|item| !item.code.starts_with("NDO2"))
+            .collect();
+        if declared.is_empty() {
+            continue;
+        }
         let mut expected_codes: Vec<String> =
             declared.iter().map(|item| item.code.clone()).collect();
         let mut actual_codes: Vec<String> = diagnostics

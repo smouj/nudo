@@ -141,14 +141,13 @@ implemented yet, and the grammar changes two of these decisions require
 (`generic-parameter-list`, the restricted `verify` operand) are recorded as M3.1
 work rather than left as a surprise.
 
-### M3.1 — HIR and name resolution
+### M3.1 — HIR and name resolution — **done**
 
-* [ ] `nudo-hir`: `DefId`, `ItemId`, `ExprId`, `LocalId`, `ScopeId`, `TypeRefId`,
-      with spans preserved and no dependence on syntactic text
-* [ ] Lowering from AST to HIR
-* [ ] Name resolution: namespaces, shadowing, duplicates, types versus values,
-      paths
-* [ ] `NDO2001` (`unresolved name`) and the rest of the `2xxx` family in use
+* [x] `nudo-hir`: `DefId`, `ExprId`, `StmtId`, `ScopeId`, with spans preserved and
+      no dependence on syntactic text
+* [x] Lowering from AST to HIR, two passes so that items are hoisted
+* [x] Name resolution: namespaces, shadowing, duplicates, types versus values, paths
+* [x] `NDO2001`, `NDO2002` and `NDO2003` in use, with conformance cases
 * [x] `nudo-parser`: accept `generic-parameter-list` and the restricted `verify`
       operand that M3.0's NEPs added to the grammar, with a conformance case each
 

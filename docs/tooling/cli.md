@@ -15,7 +15,7 @@ USAGE:
 
 | Command | Does |
 | ------- | ---- |
-| `nudo check <FILE>...` | Reads `.nudo` files, lexes them, parses them, reports lexical and syntax diagnostics |
+| `nudo check <FILE>...` | Reads `.nudo` files, lexes them, parses them, resolves their names, and reports lexical, syntax and resolution diagnostics |
 | `nudo --version` | Prints the version and the release channel |
 | `nudo --help` | Lists the implemented commands and the planned ones |
 
@@ -25,6 +25,7 @@ USAGE:
 | ------ | ------- |
 | `--dump-tokens` | Prints the token stream in the stable `nudo-tokens v1` format |
 | `--dump-tree` | Prints the syntax tree in the stable `nudo-tree v1` format |
+| `--dump-resolutions` | Prints what each name resolved to, `nudo-hir v1` format |
 | `--color <WHEN>` | `auto` (default), `always`, `never` |
 | `-h`, `--help` | Command help |
 
@@ -109,6 +110,6 @@ in [`../../spec/errors.md`](../../spec/errors.md).
 
 ## What `check` does not do
 
-It does not type-check or run the program. A clean result means "no lexical or
-syntax diagnostics". The toolchain says so in its own help text, because a
+It does not type-check or run the program. A clean result means "no lexical,
+syntax or name diagnostics". The toolchain says so in its own help text, because a
 command that overstates what it checked is worse than a command that does less.

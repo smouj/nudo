@@ -1,0 +1,12 @@
+# nudo-hir v1
+def 0009 function `calculate` 1:4
+def 0010 function `main` 6:4
+def 0011 parameter `value` 1:14
+def 0012 binding `doubled` 2:9
+def 0013 binding `total` 7:9
+ref 1:21 type `Int` -> def 0000 builtin-type `Int`
+ref 1:29 type `Int` -> def 0000 builtin-type `Int`
+ref 2:19 value `value` -> def 0011 parameter `value`
+ref 2:27 value `value` -> def 0011 parameter `value`
+ref 3:5 value `doubled` -> def 0012 binding `doubled`
+ref 7:17 value `calculate` -> def 0009 function `calculate`

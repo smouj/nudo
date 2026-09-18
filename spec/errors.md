@@ -21,7 +21,7 @@ The first digit after `NDO` is the family:
 | Family | Area | Status |
 | ------ | ---- | ------ |
 | `NDO1xxx` | lexical structure and syntax | partially implemented |
-| `NDO2xxx` | types | reserved |
+| `NDO2xxx` | names and types | partially implemented |
 | `NDO3xxx` | effects | reserved |
 | `NDO4xxx` | agents, tasks and tools | reserved |
 | `NDO5xxx` | capabilities and policies | reserved |
@@ -39,6 +39,9 @@ program.
 | Code | Name | Severity | State |
 | ---- | ---- | -------- | ----- |
 | `NDO1001` | `UNEXPECTED_TOKEN` | error | **implemented** (parser, M2) |
+| `NDO2001` | `UNRESOLVED_NAME` | error | **implemented** (resolution, M3.1) |
+| `NDO2002` | `DUPLICATE_NAME` | error | **implemented** (resolution, M3.1) |
+| `NDO2003` | `WRONG_NAMESPACE` | error | **implemented** (resolution, M3.1) |
 | `NDO1002` | `UNKNOWN_CHARACTER` | error | **implemented** |
 | `NDO1003` | `UNTERMINATED_STRING` | error | **implemented** |
 | `NDO1004` | `UNTERMINATED_BLOCK_COMMENT` | error | **implemented** |

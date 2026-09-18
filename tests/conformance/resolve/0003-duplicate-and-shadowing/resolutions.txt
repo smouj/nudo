@@ -1,0 +1,10 @@
+# nudo-hir v1
+def 0009 function `twice` 1:4
+def 0010 function `twice` 3:4
+def 0011 function `shadowing` 5:4
+def 0012 parameter `value` 5:14
+def 0013 binding `value` 6:9
+ref 5:21 type `Int` -> def 0000 builtin-type `Int`
+ref 5:29 type `Int` -> def 0000 builtin-type `Int`
+ref 6:17 value `value` -> def 0012 parameter `value`
+ref 7:5 value `value` -> def 0013 binding `value`

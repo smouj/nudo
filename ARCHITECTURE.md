@@ -39,7 +39,7 @@ nudo-syntax         lossless syntax tree              implemented (M2)
 nudo-parser         syntax tree                       implemented (M2)
 nudo-ast            abstract syntax tree             implemented (M2)
     ↓
-nudo-hir            name resolution, desugaring      planned (M3)
+nudo-hir            name resolution, desugaring      implemented (M3)
     ↓
 nudo-typeck         types, including trust types     planned (M3)
     ↓
@@ -85,7 +85,7 @@ change when work starts.
 | `nudo-syntax` | Lossless syntax tree, preserved trivia, used by parser, formatter and LSP. | **Implemented (M2)** |
 | `nudo-parser` | Recursive-descent parser producing the syntax tree. | **Implemented (M2)** |
 | `nudo-ast` | Typed AST and visitors. | **Implemented (M2)** |
-| `nudo-hir` | Name resolution and desugaring into a resolved IR. | Planned (M3) |
+| `nudo-hir` | Name resolution and desugaring into a resolved IR. | **Implemented (M3.1)** |
 | `nudo-typeck` | Type checking, including `Generated<T>`, `Verified<T>`, agent and task types. | Planned (M3) |
 | `nudo-effects` | Effect and capability inference and checking. | Planned (M5) |
 | `nudo-mir` | Mid-level IR: control flow made explicit, backends consume this. | Planned (M4) |

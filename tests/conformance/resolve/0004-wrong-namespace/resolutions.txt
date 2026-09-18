@@ -1,0 +1,4 @@
+# nudo-hir v1
+def 0009 struct `User` 1:8
+def 0010 function `make` 5:4
+ref 6:5 value `User` -> unresolved

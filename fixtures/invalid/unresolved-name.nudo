@@ -1,0 +1,6 @@
+// EXPECT: NDO2001
+// A name the resolver cannot find is a compile error, not a runtime surprise.
+
+fn main() {
+    let value = missing_name;
+}

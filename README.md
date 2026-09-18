@@ -159,7 +159,7 @@ Parser           compiler/nudo-parser       ← implemented (M2)
 Syntax tree      compiler/nudo-syntax       ← implemented (M2)
 AST              compiler/nudo-ast          ← implemented (M2)
   ↓
-HIR
+HIR              compiler/nudo-hir          ← implemented (M3)
   ↓
 Type checking    compiler/nudo-typeck       ← planned (M3)
   ↓
@@ -182,7 +182,8 @@ the dependency rules between them.
 | Language specification | Written, pre-alpha, expected to change |
 | Lexer | Implemented and tested (milestone M1) |
 | Parser, lossless syntax tree, AST | Implemented and tested (milestone M2) |
-| `nudo check` | Implemented: reads `.nudo` files, reports lexical and syntax diagnostics |
+| HIR and name resolution | Implemented and tested (milestone M3.1) |
+| `nudo check` | Implemented: reads `.nudo` files, reports lexical, syntax and name diagnostics |
 | `nudo --version`, `nudo --help` | Implemented |
 | Types, effects | Planned |
 | Interpreter, WASM backend | Planned |
@@ -193,9 +194,9 @@ $ nudo check examples/00-hello-world/main.nudo
 checked 1 file: 0 errors and 0 warnings
 ```
 
-`nudo check` lexes and parses. A clean run means "no lexical or syntax
-diagnostics", not "this program is correct": nothing is type-checked, and
-nothing runs.
+`nudo check` lexes, parses and resolves names. A clean run means "no lexical,
+syntax or name diagnostics", not "this program is correct": nothing is
+type-checked, and nothing runs.
 
 ## Roadmap
 

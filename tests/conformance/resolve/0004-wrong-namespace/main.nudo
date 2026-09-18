@@ -1,0 +1,7 @@
+struct User {
+    name: Text
+}
+
+fn make() {
+    User
+}
