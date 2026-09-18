@@ -1,0 +1,109 @@
+# nudo-tree v1
+SourceFile 0..153
+  StructDecl 0..48
+    KeywordStruct "struct" 0..6
+    Whitespace " " 6..7
+    Ident "Pair" 7..11
+    GenericParameterList 11..17
+      Lt "<" 11..12
+      Ident "A" 12..13
+      Comma "," 13..14
+      Whitespace " " 14..15
+      Ident "B" 15..16
+      Gt ">" 16..17
+    Whitespace " " 17..18
+    LBrace "{" 18..19
+    Whitespace "\n    " 19..24
+    Field 24..32
+      Ident "first" 24..29
+      Colon ":" 29..30
+      Whitespace " " 30..31
+      PathType 31..32
+        Path 31..32
+          Ident "A" 31..32
+    Whitespace "\n    " 32..37
+    Field 37..46
+      Ident "second" 37..43
+      Colon ":" 43..44
+      Whitespace " " 44..45
+      PathType 45..46
+        Path 45..46
+          Ident "B" 45..46
+    Whitespace "\n" 46..47
+    RBrace "}" 47..48
+  Whitespace "\n\n" 48..50
+  EnumDecl 50..107
+    KeywordEnum "enum" 50..54
+    Whitespace " " 54..55
+    Ident "Outcome" 55..62
+    GenericParameterList 62..68
+      Lt "<" 62..63
+      Ident "T" 63..64
+      Comma "," 64..65
+      Whitespace " " 65..66
+      Ident "E" 66..67
+      Gt ">" 67..68
+    Whitespace " " 68..69
+    LBrace "{" 69..70
+    Whitespace "\n    " 70..75
+    Variant 75..87
+      Ident "Ok" 75..77
+      LParen "(" 77..78
+      Field 78..86
+        Ident "value" 78..83
+        Colon ":" 83..84
+        Whitespace " " 84..85
+        PathType 85..86
+          Path 85..86
+            Ident "T" 85..86
+      RParen ")" 86..87
+    Whitespace "\n    " 87..92
+    Variant 92..105
+      Ident "Err" 92..95
+      LParen "(" 95..96
+      Field 96..104
+        Ident "error" 96..101
+        Colon ":" 101..102
+        Whitespace " " 102..103
+        PathType 103..104
+          Path 103..104
+            Ident "E" 103..104
+      RParen ")" 104..105
+    Whitespace "\n" 105..106
+    RBrace "}" 106..107
+  Whitespace "\n\n" 107..109
+  FunctionDecl 109..152
+    KeywordFn "fn" 109..111
+    Whitespace " " 111..112
+    Ident "identity" 112..120
+    GenericParameterList 120..123
+      Lt "<" 120..121
+      Ident "T" 121..122
+      Gt ">" 122..123
+    ParameterList 123..133
+      LParen "(" 123..124
+      Parameter 124..132
+        Ident "value" 124..129
+        Colon ":" 129..130
+        Whitespace " " 130..131
+        PathType 131..132
+          Path 131..132
+            Ident "T" 131..132
+      RParen ")" 132..133
+    Whitespace " " 133..134
+    Arrow "->" 134..136
+    Whitespace " " 136..137
+    PathType 137..138
+      Path 137..138
+        Ident "T" 137..138
+    Whitespace " " 138..139
+    Block 139..152
+      LBrace "{" 139..140
+      Whitespace "\n    " 140..145
+      PathExpression 145..150
+        Path 145..150
+          Ident "value" 145..150
+      Whitespace "\n" 150..151
+      RBrace "}" 151..152
+  Whitespace "\n" 152..153
+  Eof "" 153..153

@@ -152,16 +152,14 @@ instead of producing a diagnostic.
 
 Recorded here rather than discovered by whoever writes the formatter.
 
-* **`verify (expr) with V` is rejected.** `verify` is a contextual word, so the
-  parser decides from one token whether `verify` is being used as a name or is
-  starting a verification. It reads a verification when the next token starts an
-  operand and is not `(`, `.` or `[`. `verify draft with V` works,
-  `verify(draft)` is a call, and `verify (draft) with V` is a syntax error. The
-  limitation disappears when NEP-0002 decides whether `verify` is a keyword, a
-  function or a protocol.
-* **Declaration-site generic parameters are not in the grammar**, so
-  `enum Outcome<T, E>` is rejected. That is NEP-0006's deliberately narrow
-  scope, not an oversight; see its unresolved questions.
+* **`verify` takes a named value.** The one-token limitation this document used
+  to record is gone, removed by restricting the operand rather than by reserving
+  the word: `verify draft with V` is a verification, `verify(draft)` is a call on
+  a name, and `verify (draft) with V` is not in the grammar at all. NEP-0002
+  decided it, and `tests/conformance/parser/0015-verify-named-operand` pins it.
+* **Declaration-site generic parameters are accepted** since NEP-0010, so
+  `enum Outcome<T, E>` parses. What remains open is inference: how much of a
+  type argument a caller may leave out, which is M3.2's question.
 * **The grammar's `path` uses `::`, but the examples write `web.search`,** and a
   list inside a declaration is comma-separated while the examples write one per
   line. The parser follows the grammar; the examples are marked as previews and
@@ -193,8 +191,8 @@ The four decisions this document listed as gates, and where they stand:
 | # | Decision | State |
 | - | -------- | ----- |
 | 1 | Keyword policy ([NEP-0005](../../neps/0005-keyword-policy.md)) | **Accepted and implemented.** A ten-word reserved core, everything else contextual. |
-| 2 | Generic syntax | **Accepted and implemented** ([NEP-0006](../../neps/0006-generic-syntax.md)): angle brackets, invariant arguments, no bounds, no declaration-site parameters. |
-| 3 | `verify` form ([NEP-0002](../../neps/0002-generated-verified.md)) | **Still open.** The parser implements the grammar as frozen and records the one-token limitation above. If NEP-0002 makes `verify` a keyword, the limitation disappears. |
+| 2 | Generic syntax | **Accepted and implemented** ([NEP-0006](../../neps/0006-generic-syntax.md)): angle brackets, invariant arguments, no bounds. Declaration-site parameters followed in [NEP-0010](../../neps/0010-declaration-site-generics.md) and are implemented too. |
+| 3 | `verify` form ([NEP-0002](../../neps/0002-generated-verified.md)) | **Accepted and implemented.** `verify` stays contextual, its operand is a named value, and it yields `Result<Verified<T>, VerificationError>`. |
 | 4 | Mutability | **Still open.** There is no assignment level in the grammar, so there is nothing for the parser to do; when mutability is decided it adds a level above `logical-or`. |
 
 Decisions 3 and 4 do not block a correct parser for the frozen grammar: the

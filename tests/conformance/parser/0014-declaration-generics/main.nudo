@@ -1,0 +1,13 @@
+struct Pair<A, B> {
+    first: A
+    second: B
+}
+
+enum Outcome<T, E> {
+    Ok(value: T)
+    Err(error: E)
+}
+
+fn identity<T>(value: T) -> T {
+    value
+}

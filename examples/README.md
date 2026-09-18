@@ -31,7 +31,7 @@ read.
 
 | Example | Illustrates | Why it is not accepted yet |
 | ------- | ----------- | -------------------------- |
-| [`04-results/`](04-results/main.nudo) | Errors as values, no exceptions | Generic parameters on a declaration; `return` |
+| [`04-results/`](04-results/main.nudo) | Errors as values, no exceptions | `return` is not in the grammar |
 | [`05-agent/`](05-agent/main.nudo) | An agent as a bounded executor | Newline-separated, dotted tool names |
 | [`06-tools/`](06-tools/main.nudo) | Tools, scoped capabilities, effects | Dotted tool names; a capability with an argument |
 | [`07-generated-verified/`](07-generated-verified/main.nudo) | `Generated<T>` vs `Verified<T>` | Two `let`s with no `;` |

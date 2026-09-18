@@ -149,8 +149,8 @@ work rather than left as a surprise.
 * [ ] Name resolution: namespaces, shadowing, duplicates, types versus values,
       paths
 * [ ] `NDO2001` (`unresolved name`) and the rest of the `2xxx` family in use
-* [ ] `nudo-parser`: accept `generic-parameter-list` and the restricted `verify`
-      operand that M3.0's NEPs added to the grammar
+* [x] `nudo-parser`: accept `generic-parameter-list` and the restricted `verify`
+      operand that M3.0's NEPs added to the grammar, with a conformance case each
 
 ### M3.2 — Basic type system
 
