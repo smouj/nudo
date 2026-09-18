@@ -210,6 +210,29 @@ fn check_help_documents_the_scope() {
     let output = nudo(&["check", "--help"]);
     assert!(output.status.success());
     let text = stdout(&output);
-    assert!(text.contains("Milestones M1 and M2"));
+    assert!(text.contains("Milestones M1-M3"));
     assert!(text.contains("--dump-tree"));
+}
+
+#[test]
+fn check_dumps_resolutions_on_stdout() {
+    let path = repo_path("fixtures/valid/hello.nudo");
+    let output = nudo(&[
+        "check",
+        "--dump-resolutions",
+        path.to_str().expect("utf-8 path"),
+    ]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let text = stdout(&output);
+    assert!(text.starts_with("# nudo-hir v1\n"), "{text}");
+    assert!(text.contains("function `main`"), "{text}");
+}
+
+#[test]
+fn check_reports_an_unresolved_name() {
+    let path = repo_path("fixtures/invalid/unresolved-name.nudo");
+    let output = nudo(&["check", path.to_str().expect("utf-8 path")]);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(stderr(&output).contains("NDO2001"), "{}", stderr(&output));
+    assert!(stderr(&output).contains("missing_name"));
 }

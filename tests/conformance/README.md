@@ -18,17 +18,22 @@ tests/conformance/
 │       ├── main.nudo          # input, always this file name
 │       ├── tokens.txt         # expected token dump
 │       └── diagnostics.txt    # expected diagnostics (optional)
-└── parser/
-    └── 0001-function/
+├── parser/
+│   └── 0001-function/
+│       ├── main.nudo          # input, always this file name
+│       ├── tree.txt           # expected syntax tree dump
+│       └── diagnostics.txt    # expected diagnostics (optional)
+└── resolve/
+    └── 0001-resolves-a-program/
         ├── main.nudo          # input, always this file name
-        ├── tree.txt           # expected syntax tree dump
+        ├── resolutions.txt    # expected resolutions dump
         └── diagnostics.txt    # expected diagnostics (optional)
 ```
 
 * The directory name is `<4-digit index>-<kebab-case-slug>`.
 * The input file is always named `main.nudo`, so that expectations never
   encode a machine-specific path.
-* Cases are grouped by pipeline stage. `lexer/` and `parser/` exist today; see
+* Cases are grouped by pipeline stage. `lexer/`, `parser/` and `resolve/` exist today; see
   [`../README.md`](../README.md) for the planned areas.
 
 ## Format: `tokens.txt`
@@ -130,7 +135,8 @@ checked 1 file: 0 errors and 0 warnings
 ```
 
 For the token corpus, use the same command with `--dump-tokens`, `tokens.txt`
-and the `lexer/` directory.
+and the `lexer/` directory. For the resolution corpus, `--dump-resolutions`,
+`resolutions.txt` and the `resolve/` directory.
 
 If the diff contains anything you did not intend to change, you have found a
 regression, not a snapshot to update.

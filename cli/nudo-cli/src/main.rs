@@ -101,8 +101,9 @@ USAGE:
     {TOOLCHAIN_NAME} --help
 
 IMPLEMENTED
-    check      Read .nudo sources and report lexical and syntax diagnostics
-               (milestones M1 and M2: lexing and parsing; nothing is executed)
+    check      Read .nudo sources and report lexical, syntax and name
+               diagnostics (milestones M1-M3: lexing, parsing and name
+               resolution; nothing is executed)
 
 PLANNED (declared, not implemented)
 {planned}
@@ -112,6 +113,8 @@ OPTIONS
     --color <WHEN>    Colour diagnostics: auto (default), always, never
     --dump-tokens     With `check`: print the token stream instead of nothing
     --dump-tree       With `check`: print the syntax tree instead of nothing
+    --dump-resolutions
+                      With `check`: print what each name resolved to
 
 EXIT CODES
     0    success, no error diagnostics
@@ -140,14 +143,17 @@ USAGE:
 OPTIONS:
     --dump-tokens     Print the token stream in the stable `nudo-tokens v1` format
     --dump-tree       Print the syntax tree in the stable `nudo-tree v1` format
+    --dump-resolutions
+                      Print what each name resolved to, `nudo-hir v1` format
     --color <WHEN>    Colour diagnostics: auto (default), always, never
     -h, --help        Print this help
 
 SCOPE:
-    Milestones M1 and M2. `check` reads each file, lexes it, parses it and
-    reports lexical and syntax diagnostics. Type checking, effect checking and
-    execution are planned and are not implemented, so a clean run means
-    \"no lexical or syntax diagnostics\", not \"this program is correct\"."
+    Milestones M1-M3. `check` reads each file, lexes it, parses it, resolves
+    its names and reports lexical, syntax and resolution diagnostics. Type
+    checking, effect checking and execution are planned and are not
+    implemented, so a clean run means \"no lexical, syntax or name
+    diagnostics\", not \"this program is correct\"."
     );
 }
 
@@ -156,6 +162,7 @@ fn cmd_check(args: &[String]) -> u8 {
     let mut color = ColorChoice::Auto;
     let mut dump_tokens = false;
     let mut dump_tree = false;
+    let mut dump_resolutions = false;
 
     let mut index = 0;
     while index < args.len() {
@@ -167,6 +174,7 @@ fn cmd_check(args: &[String]) -> u8 {
             }
             "--dump-tokens" => dump_tokens = true,
             "--dump-tree" => dump_tree = true,
+            "--dump-resolutions" => dump_resolutions = true,
             "--color" => {
                 index += 1;
                 let Some(value) = args.get(index) else {
@@ -260,9 +268,19 @@ fn cmd_check(args: &[String]) -> u8 {
         if dump_tree {
             dump.push_str(&nudo_syntax::dump_tree(parsed.tree()));
         }
+        // Resolution runs only on a file the parser accepted: a file that is not
+        // a program has no names to resolve, and resolving one would bury the
+        // parser's diagnostics under a cascade about a tree nobody agreed to.
+        if !parsed.has_errors() {
+            let resolved = nudo_hir::lower(parsed.tree(), *id);
+            diagnostics.extend_from(resolved.diagnostics.clone());
+            if dump_resolutions {
+                dump.push_str(&nudo_hir::dump_resolutions(&resolved.hir, file));
+            }
+        }
     }
 
-    if (dump_tokens || dump_tree) && !dump.is_empty() {
+    if (dump_tokens || dump_tree || dump_resolutions) && !dump.is_empty() {
         print!("{dump}");
         let _ = std::io::stdout().flush();
     }

@@ -143,6 +143,19 @@ structure — a new value computed from an old one — or by a store the runtime
 Items are visible inside their module. `pub` and explicit re-exports are
 provisional and described in [`modules.md`](modules.md).
 
+What is implemented today is narrower and decided
+([NEP-0009](../neps/0009-mutability.md) and the M3.1 resolver):
+
+* **Two namespaces.** A *type* (a struct, an enum, a built-in type, a type
+  parameter) and a *value* (a function, a binding, a constant, a parameter) may
+  share a name, and using one where the other belongs is `NDO2003` rather than
+  "not found".
+* **A duplicate name in one scope is `NDO2002`; shadowing in a nested scope is
+  allowed.** The scope is what makes the difference.
+* **An unresolved name is `NDO2001`**, reported at the name.
+* **A path with `::` reaches into a module, which is planned (M10).** Until then
+  a multi-segment path is reported as unresolved, with a note saying why.
+
 ## What a declaration must never do
 
 * Annotate a type the specification does not define.

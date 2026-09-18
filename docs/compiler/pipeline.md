@@ -16,7 +16,7 @@ Parser           compiler/nudo-parser       ← implemented (M2)
 Syntax tree      compiler/nudo-syntax       ← implemented (M2)
 AST              compiler/nudo-ast          ← implemented (M2)
   ↓
-HIR
+HIR              compiler/nudo-hir          ← implemented (M3)
   ↓
 Type checking    compiler/nudo-typeck       ← planned (M3)
   ↓

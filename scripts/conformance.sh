@@ -13,5 +13,6 @@ cd "$(dirname "$0")/.."
 
 cargo test --package nudo-lexer --test conformance -- --nocapture
 cargo test --package nudo-parser --test conformance -- --nocapture
+cargo test --package nudo-hir --test conformance -- --nocapture
 
 echo "conformance corpus: ok"

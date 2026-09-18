@@ -24,8 +24,14 @@ would be a promise the project cannot keep.
   which removes the one-token limitation M2 documented. Each has a conformance
   case: `0014-declaration-generics`, `0015-verify-named-operand` and
   `0016-verify-parenthesised`.
-* `NDO2001`, `NDO2002` and `NDO2003` in the registry, for the name resolution
-  that lands with the rest of M3.1.
+* `NDO2001`, `NDO2002` and `NDO2003` in the registry, and in use.
+* **M3.1: `nudo-hir` and name resolution.** A semantic representation that is
+  not an AST copy — parentheses are gone, a name is a `DefId` or a marked
+  unresolved — with two namespaces, hoisted items, shadowing versus duplicates,
+  and an initialiser lowered before its own name is in scope. `nudo check`
+  resolves names after a clean parse, `--dump-resolutions` prints the result, and
+  `tests/conformance/resolve` holds four cases. The design and its deliberately
+  missing pieces are in [`docs/internals/hir-design.md`](docs/internals/hir-design.md).
 
 * **M3.0 — the semantic gates.** Six NEPs decide the semantics the type checker
   will be written against, each with the alternatives it rejected:

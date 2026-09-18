@@ -1,0 +1,4 @@
+# nudo-hir v1
+def 0009 function `main` 1:4
+def 0010 binding `value` 2:9
+ref 2:17 value `missing_name` -> unresolved

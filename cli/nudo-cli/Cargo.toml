@@ -16,6 +16,7 @@ path = "src/main.rs"
 [dependencies]
 nudo-common.workspace = true
 nudo-diagnostics.workspace = true
+nudo-hir.workspace = true
 nudo-lexer.workspace = true
 nudo-parser.workspace = true
 nudo-source.workspace = true

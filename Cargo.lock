@@ -42,6 +42,7 @@ version = "0.0.1"
 dependencies = [
  "nudo-common",
  "nudo-diagnostics",
+ "nudo-hir",
  "nudo-lexer",
  "nudo-parser",
  "nudo-source",
@@ -84,6 +85,13 @@ version = "0.0.1"
 [[package]]
 name = "nudo-hir"
 version = "0.0.1"
+dependencies = [
+ "nudo-diagnostics",
+ "nudo-parser",
+ "nudo-source",
+ "nudo-span",
+ "nudo-syntax",
+]
 
 [[package]]
 name = "nudo-lexer"

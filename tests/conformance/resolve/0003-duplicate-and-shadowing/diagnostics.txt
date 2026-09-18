@@ -1,0 +1,2 @@
+# nudo-diagnostics v1
+error NDO2002 3:4
