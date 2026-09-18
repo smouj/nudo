@@ -1,0 +1,49 @@
+# nudo-tree v1
+SourceFile 0..69
+  FunctionDecl 0..68
+    KeywordFn "fn" 0..2
+    Whitespace " " 2..3
+    Ident "f" 3..4
+    ParameterList 4..6
+      LParen "(" 4..5
+      RParen ")" 5..6
+    Whitespace " " 6..7
+    Block 7..68
+      LBrace "{" 7..8
+      Whitespace "\n    " 8..13
+      Binding 13..27
+        KeywordLet "let" 13..16
+        Whitespace " " 16..17
+        Ident "agent" 17..22
+        Whitespace " " 22..23
+        Equals "=" 23..24
+        Whitespace " " 24..25
+        LiteralExpression 25..26
+          IntLiteral "1" 25..26
+        Semi ";" 26..27
+      Whitespace "\n    " 27..32
+      Binding 32..47
+        KeywordLet "let" 32..35
+        Whitespace " " 35..36
+        Ident "verify" 36..42
+        Whitespace " " 42..43
+        Equals "=" 43..44
+        Whitespace " " 44..45
+        LiteralExpression 45..46
+          IntLiteral "2" 45..46
+        Semi ";" 46..47
+      Whitespace "\n    " 47..52
+      BinaryExpression 52..66
+        PathExpression 52..57
+          Path 52..57
+            Ident "agent" 52..57
+        Whitespace " " 57..58
+        Plus "+" 58..59
+        Whitespace " " 59..60
+        PathExpression 60..66
+          Path 60..66
+            Ident "verify" 60..66
+      Whitespace "\n" 66..67
+      RBrace "}" 67..68
+  Whitespace "\n" 68..69
+  Eof "" 69..69

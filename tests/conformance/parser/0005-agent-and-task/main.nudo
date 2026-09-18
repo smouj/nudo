@@ -1,0 +1,12 @@
+agent Researcher {
+    role: "Research reliable information."
+    tools: web::search, web::open
+    allow: Network
+    budget: Budget(tokens: 20_000, tool_calls: 30)
+}
+
+task ResearchTopic(topic: Text) -> Verified<Report> {
+    agent: Researcher
+    verify: SourcesRequired
+    budget: Budget(tokens: 20_000)
+}

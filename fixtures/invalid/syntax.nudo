@@ -1,0 +1,8 @@
+// EXPECT: NDO1001
+// A file can use only tokens the lexer knows and still not be a program.
+// Before M2 this lexed cleanly and `nudo check` exited 0, which is exactly the
+// false confidence the roadmap set out to remove.
+
+fn main() {
+    let value = ;
+}

@@ -1,0 +1,3 @@
+fn f(xs: [Int], maybe: Text?, handler: Fn(Int) -> Text) -> Result<Int, Text> {
+    xs
+}

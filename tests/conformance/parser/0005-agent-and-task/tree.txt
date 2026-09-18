@@ -1,0 +1,123 @@
+# nudo-tree v1
+SourceFile 0..310
+  AgentDecl 0..167
+    Ident "agent" 0..5
+    Whitespace " " 5..6
+    Ident "Researcher" 6..16
+    Whitespace " " 16..17
+    LBrace "{" 17..18
+    Whitespace "\n    " 18..23
+    RoleClause 23..61
+      Ident "role" 23..27
+      Colon ":" 27..28
+      Whitespace " " 28..29
+      TextLiteral "\"Research reliable information.\"" 29..61
+    Whitespace "\n    " 61..66
+    ToolsClause 66..95
+      Ident "tools" 66..71
+      Colon ":" 71..72
+      Whitespace " " 72..73
+      Path 73..84
+        Ident "web" 73..76
+        ColonColon "::" 76..78
+        Ident "search" 78..84
+      Comma "," 84..85
+      Whitespace " " 85..86
+      Path 86..95
+        Ident "web" 86..89
+        ColonColon "::" 89..91
+        Ident "open" 91..95
+    Whitespace "\n    " 95..100
+    AllowClause 100..114
+      Ident "allow" 100..105
+      Colon ":" 105..106
+      Whitespace " " 106..107
+      CapabilityList 107..114
+        Capability 107..114
+          Ident "Network" 107..114
+    Whitespace "\n    " 114..119
+    BudgetClause 119..165
+      Ident "budget" 119..125
+      Colon ":" 125..126
+      Whitespace " " 126..127
+      BudgetLiteral 127..165
+        Ident "Budget" 127..133
+        LParen "(" 133..134
+        BudgetField 134..148
+          Ident "tokens" 134..140
+          Colon ":" 140..141
+          Whitespace " " 141..142
+          LiteralExpression 142..148
+            IntLiteral "20_000" 142..148
+        Comma "," 148..149
+        Whitespace " " 149..150
+        BudgetField 150..164
+          Ident "tool_calls" 150..160
+          Colon ":" 160..161
+          Whitespace " " 161..162
+          LiteralExpression 162..164
+            IntLiteral "30" 162..164
+        RParen ")" 164..165
+    Whitespace "\n" 165..166
+    RBrace "}" 166..167
+  Whitespace "\n\n" 167..169
+  TaskDecl 169..309
+    Ident "task" 169..173
+    Whitespace " " 173..174
+    Ident "ResearchTopic" 174..187
+    ParameterList 187..200
+      LParen "(" 187..188
+      Parameter 188..199
+        Ident "topic" 188..193
+        Colon ":" 193..194
+        Whitespace " " 194..195
+        PathType 195..199
+          Path 195..199
+            Ident "Text" 195..199
+      RParen ")" 199..200
+    Whitespace " " 200..201
+    Arrow "->" 201..203
+    Whitespace " " 203..204
+    GenericType 204..220
+      Path 204..212
+        Ident "Verified" 204..212
+      Lt "<" 212..213
+      PathType 213..219
+        Path 213..219
+          Ident "Report" 213..219
+      Gt ">" 219..220
+    Whitespace " " 220..221
+    LBrace "{" 221..222
+    Whitespace "\n    " 222..227
+    TaskAgentClause 227..244
+      Ident "agent" 227..232
+      Colon ":" 232..233
+      Whitespace " " 233..234
+      Path 234..244
+        Ident "Researcher" 234..244
+    Whitespace "\n    " 244..249
+    VerifyClause 249..272
+      Ident "verify" 249..255
+      Colon ":" 255..256
+      Whitespace " " 256..257
+      Path 257..272
+        Ident "SourcesRequired" 257..272
+    Whitespace "\n    " 272..277
+    BudgetClause 277..307
+      Ident "budget" 277..283
+      Colon ":" 283..284
+      Whitespace " " 284..285
+      BudgetLiteral 285..307
+        Ident "Budget" 285..291
+        LParen "(" 291..292
+        BudgetField 292..306
+          Ident "tokens" 292..298
+          Colon ":" 298..299
+          Whitespace " " 299..300
+          LiteralExpression 300..306
+            IntLiteral "20_000" 300..306
+        RParen ")" 306..307
+    Whitespace "\n" 307..308
+    RBrace "}" 308..309
+  Whitespace "\n" 309..310
+  Eof "" 310..310

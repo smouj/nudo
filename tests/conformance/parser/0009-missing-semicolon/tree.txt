@@ -1,0 +1,26 @@
+# nudo-tree v1
+SourceFile 0..32
+  FunctionDecl 0..31
+    KeywordFn "fn" 0..2
+    Whitespace " " 2..3
+    Ident "main" 3..7
+    ParameterList 7..9
+      LParen "(" 7..8
+      RParen ")" 8..9
+    Whitespace " " 9..10
+    Block 10..31
+      LBrace "{" 10..11
+      Whitespace "\n    " 11..16
+      Binding 16..29
+        KeywordLet "let" 16..19
+        Whitespace " " 19..20
+        Ident "value" 20..25
+        Whitespace " " 25..26
+        Equals "=" 26..27
+        Whitespace " " 27..28
+        LiteralExpression 28..29
+          IntLiteral "1" 28..29
+      Whitespace "\n" 29..30
+      RBrace "}" 30..31
+  Whitespace "\n" 31..32
+  Eof "" 32..32

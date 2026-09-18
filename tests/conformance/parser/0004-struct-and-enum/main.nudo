@@ -1,0 +1,9 @@
+struct User {
+    name: Text
+    age: Int
+}
+
+enum Status {
+    Pending
+    Failed(reason: Text)
+}

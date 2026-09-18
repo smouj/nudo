@@ -1,0 +1,22 @@
+# nudo-tree v1
+SourceFile 0..20
+  Error 0..5
+    RParen ")" 0..1
+    Whitespace " " 1..2
+    RParen ")" 2..3
+    Whitespace " " 3..4
+    RParen ")" 4..5
+  Whitespace "\n\n" 5..7
+  FunctionDecl 7..19
+    KeywordFn "fn" 7..9
+    Whitespace " " 9..10
+    Ident "main" 10..14
+    ParameterList 14..16
+      LParen "(" 14..15
+      RParen ")" 15..16
+    Whitespace " " 16..17
+    Block 17..19
+      LBrace "{" 17..18
+      RBrace "}" 18..19
+  Whitespace "\n" 19..20
+  Eof "" 20..20

@@ -1,0 +1,76 @@
+# nudo-tree v1
+SourceFile 0..88
+  FunctionDecl 0..87
+    KeywordFn "fn" 0..2
+    Whitespace " " 2..3
+    Ident "f" 3..4
+    ParameterList 4..55
+      LParen "(" 4..5
+      Parameter 5..14
+        Ident "xs" 5..7
+        Colon ":" 7..8
+        Whitespace " " 8..9
+        SequenceType 9..14
+          LBracket "[" 9..10
+          PathType 10..13
+            Path 10..13
+              Ident "Int" 10..13
+          RBracket "]" 13..14
+      Comma "," 14..15
+      Whitespace " " 15..16
+      Parameter 16..28
+        Ident "maybe" 16..21
+        Colon ":" 21..22
+        Whitespace " " 22..23
+        OptionalType 23..28
+          PathType 23..27
+            Path 23..27
+              Ident "Text" 23..27
+          Question "?" 27..28
+      Comma "," 28..29
+      Whitespace " " 29..30
+      Parameter 30..54
+        Ident "handler" 30..37
+        Colon ":" 37..38
+        Whitespace " " 38..39
+        FunctionType 39..54
+          Ident "Fn" 39..41
+          LParen "(" 41..42
+          PathType 42..45
+            Path 42..45
+              Ident "Int" 42..45
+          RParen ")" 45..46
+          Whitespace " " 46..47
+          Arrow "->" 47..49
+          Whitespace " " 49..50
+          PathType 50..54
+            Path 50..54
+              Ident "Text" 50..54
+      RParen ")" 54..55
+    Whitespace " " 55..56
+    Arrow "->" 56..58
+    Whitespace " " 58..59
+    GenericType 59..76
+      Path 59..65
+        Ident "Result" 59..65
+      Lt "<" 65..66
+      PathType 66..69
+        Path 66..69
+          Ident "Int" 66..69
+      Comma "," 69..70
+      Whitespace " " 70..71
+      PathType 71..75
+        Path 71..75
+          Ident "Text" 71..75
+      Gt ">" 75..76
+    Whitespace " " 76..77
+    Block 77..87
+      LBrace "{" 77..78
+      Whitespace "\n    " 78..83
+      PathExpression 83..85
+        Path 83..85
+          Ident "xs" 83..85
+      Whitespace "\n" 85..86
+      RBrace "}" 86..87
+  Whitespace "\n" 87..88
+  Eof "" 88..88

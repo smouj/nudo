@@ -1,4 +1,12 @@
-// Every binding form the pre-alpha lexer accepts.
+// Every binding form the pre-alpha toolchain accepts.
+//
+// Comma-separated lists appear where the grammar allows them: parameters and
+// arguments. There is no sequence literal in the language yet, so `1, 2, 3` is
+// not an expression and is not written here.
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
 
 let empty = 0;
 let underscored = 1_000_000;
@@ -7,4 +15,4 @@ let mixed = 12_345.678_9;
 let text = "quoted \"text\" with escapes";
 let sum = 1 + 2 - 3 * 4 / 5;
 let nested = (((1)));
-let list = 1, 2, 3;
+let call = add(1, 2);

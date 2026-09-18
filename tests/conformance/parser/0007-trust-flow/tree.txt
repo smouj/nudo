@@ -1,0 +1,103 @@
+# nudo-tree v1
+SourceFile 0..204
+  Binding 0..56
+    KeywordLet "let" 0..3
+    Whitespace " " 3..4
+    Ident "draft" 4..9
+    Colon ":" 9..10
+    Whitespace " " 10..11
+    GenericType 11..29
+      Path 11..20
+        Ident "Generated" 11..20
+      Lt "<" 20..21
+      PathType 21..28
+        Path 21..28
+          Ident "Article" 21..28
+      Gt ">" 28..29
+    Whitespace " " 29..30
+    Equals "=" 30..31
+    Whitespace " " 31..32
+    AskExpression 32..55
+      Ident "ask" 32..35
+      Whitespace " " 35..36
+      Path 36..42
+        Ident "Writer" 36..42
+      Whitespace " " 42..43
+      Block 43..55
+        LBrace "{" 43..44
+        Whitespace " " 44..45
+        LiteralExpression 45..53
+          TextLiteral "\"create\"" 45..53
+        Whitespace " " 53..54
+        RBrace "}" 54..55
+    Semi ";" 55..56
+  Whitespace "\n" 56..57
+  Binding 57..124
+    KeywordLet "let" 57..60
+    Whitespace " " 60..61
+    Ident "article" 61..68
+    Colon ":" 68..69
+    Whitespace " " 69..70
+    GenericType 70..87
+      Path 70..78
+        Ident "Verified" 70..78
+      Lt "<" 78..79
+      PathType 79..86
+        Path 79..86
+          Ident "Article" 79..86
+      Gt ">" 86..87
+    Whitespace " " 87..88
+    Equals "=" 88..89
+    Whitespace " " 89..90
+    VerifyExpression 90..123
+      Ident "verify" 90..96
+      Whitespace " " 96..97
+      PathExpression 97..102
+        Path 97..102
+          Ident "draft" 97..102
+      Whitespace " " 102..103
+      Ident "with" 103..107
+      Whitespace " " 107..108
+      Path 108..123
+        Ident "ArticleVerifier" 108..123
+    Semi ";" 123..124
+  Whitespace "\n" 124..125
+  Binding 125..203
+    KeywordLet "let" 125..128
+    Whitespace " " 128..129
+    Ident "work" 129..133
+    Whitespace " " 133..134
+    Equals "=" 134..135
+    Whitespace " " 135..136
+    DelegateExpression 136..202
+      Ident "delegate" 136..144
+      Whitespace " " 144..145
+      Path 145..155
+        Ident "Researcher" 145..155
+      Whitespace " " 155..156
+      Block 156..167
+        LBrace "{" 156..157
+        Whitespace " " 157..158
+        LiteralExpression 158..165
+          TextLiteral "\"topic\"" 158..165
+        Whitespace " " 165..166
+        RBrace "}" 166..167
+      Whitespace " " 167..168
+      Ident "with" 168..172
+      Whitespace " " 172..173
+      Ident "budget" 173..179
+      Colon ":" 179..180
+      Whitespace " " 180..181
+      BudgetLiteral 181..202
+        Ident "Budget" 181..187
+        LParen "(" 187..188
+        BudgetField 188..201
+          Ident "tokens" 188..194
+          Colon ":" 194..195
+          Whitespace " " 195..196
+          LiteralExpression 196..201
+            IntLiteral "4_000" 196..201
+        RParen ")" 201..202
+    Semi ";" 202..203
+  Whitespace "\n" 203..204
+  Eof "" 204..204

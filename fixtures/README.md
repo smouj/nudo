@@ -11,8 +11,15 @@ when you want to pin language-visible behaviour.
 
 | Directory | Rule |
 | --------- | ---- |
-| `valid/`   | Must lex with **zero** diagnostics. |
-| `invalid/` | Must lex with exactly the diagnostics declared in the file. |
+| `valid/`   | Must lex **and parse** with zero diagnostics. |
+| `invalid/` | Must produce exactly the diagnostics declared in the file. |
+
+Since M2 there are two stages behind these rules, so a fixture may fail either
+one. Each stage's test speaks only about the diagnostics it is responsible for:
+`compiler/nudo-lexer/tests/fixtures.rs` checks the lexical subset,
+`compiler/nudo-parser/tests/fixtures.rs` checks the whole set and the tree.
+Between them, a code that is declared but never produced fails, and so does one
+that is produced but never declared.
 
 ## Declaring expected diagnostics
 
@@ -34,7 +41,9 @@ codes: a fixture may not declare fewer diagnostics than it triggers, and it may
 not declare diagnostics it does not trigger. A `valid/` fixture may not declare
 any.
 
-The annotations are checked by `compiler/nudo-lexer/tests/fixtures.rs`.
+`NDO1001` needs care: the parser does not report a token it cannot place when
+the lexer already rejected a byte in front of it, so a fixture that declares
+`NDO1002` and a syntax error from the same bytes declares only the `NDO1002`.
 
 ## Naming
 
@@ -45,4 +54,5 @@ than the symptom: `unterminated-text.nudo`, not `bug-42.nudo`.
 
 `valid/not-a-nudo-file.txt` is a deliberate exception: it exists so that the CLI
 test can check the `NDO8001` warning about a file that does not use the `.nudo`
-extension. It holds the same text as `valid/hello.nudo`.
+extension. It holds the same text as `valid/hello.nudo`. Tests that run the
+compiler skip files whose extension is not `.nudo`.

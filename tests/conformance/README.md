@@ -13,18 +13,23 @@ make a red test green is forbidden. See [`../../AGENTS.md`](../../AGENTS.md).
 
 ```text
 tests/conformance/
-└── lexer/
-    └── 0001-hello-world/
+├── lexer/
+│   └── 0001-hello-world/
+│       ├── main.nudo          # input, always this file name
+│       ├── tokens.txt         # expected token dump
+│       └── diagnostics.txt    # expected diagnostics (optional)
+└── parser/
+    └── 0001-function/
         ├── main.nudo          # input, always this file name
-        ├── tokens.txt         # expected token dump
+        ├── tree.txt           # expected syntax tree dump
         └── diagnostics.txt    # expected diagnostics (optional)
 ```
 
 * The directory name is `<4-digit index>-<kebab-case-slug>`.
 * The input file is always named `main.nudo`, so that expectations never
   encode a machine-specific path.
-* Cases are grouped by pipeline stage. `lexer/` is the only stage that exists
-  today; see [`../README.md`](../README.md) for the planned areas.
+* Cases are grouped by pipeline stage. `lexer/` and `parser/` exist today; see
+  [`../README.md`](../README.md) for the planned areas.
 
 ## Format: `tokens.txt`
 
@@ -75,16 +80,57 @@ corpus.
 
 The token dump itself always ends its lines with LF, on every platform.
 
+## Format: `tree.txt`
+
+The syntax tree dump produced by `nudo check --dump-tree`, format
+`nudo-tree v1`:
+
+```text
+# nudo-tree v1
+SourceFile 0..13
+  FunctionDecl 0..12
+    KeywordFn "fn" 0..2
+    Ident "main" 3..7
+    ParameterList 7..9
+      LParen "(" 7..8
+      RParen ")" 8..9
+```
+
+* line 1 is the format header and never changes;
+* one line per element, in tree order, so a parent is followed by its children;
+* two spaces of indentation per level of nesting;
+* the element's name, exactly as listed in `SyntaxKind` in
+  `compiler/nudo-syntax/src/lib.rs`;
+* for a token, the lexeme in Rust debug form;
+* every line ends with the byte range the element covers, so a reader can find
+  the same element in the source. Byte offsets, not line/column: the tree is
+  compared byte for byte, and the token corpus already covers positions;
+* trivia — whitespace and comments — appears in the tree. That is the point of
+  a lossless tree, and it is why a dump is longer than the file it came from.
+
+The same `diagnostics.txt` format is used for both stages, and the same `NDO`
+codes: a parser case that is rejected says which code rejected it.
+
 ## Regenerating expectations
 
 Expectations are reviewed artefacts, not build output. When a case legitimately
 changes, regenerate deliberately and read the diff:
 
 ```sh
-cargo run --package nudo-cli -- check --dump-tokens \
-    tests/conformance/lexer/0001-hello-world/main.nudo \
-    | tail -n +1 > tests/conformance/lexer/0001-hello-world/tokens.txt
+cargo run --package nudo-cli -- check --dump-tree \
+    tests/conformance/parser/0001-function/main.nudo \
+    | sed '/^checked /d' > tests/conformance/parser/0001-function/tree.txt
 ```
+
+The `sed` drops the summary line, which `check` prints to stdout after a dump
+and which is not part of the format:
+
+```text
+checked 1 file: 0 errors and 0 warnings
+```
+
+For the token corpus, use the same command with `--dump-tokens`, `tokens.txt`
+and the `lexer/` directory.
 
 If the diff contains anything you did not intend to change, you have found a
 regression, not a snapshot to update.
@@ -95,5 +141,6 @@ regression, not a snapshot to update.
 scripts/conformance.sh
 ```
 
-The reference driver is `compiler/nudo-lexer/tests/conformance.rs`. It is only
-one consumer of the corpus; the corpus itself is implementation-neutral.
+The reference drivers are `compiler/nudo-lexer/tests/conformance.rs` and
+`compiler/nudo-parser/tests/conformance.rs`. They are only consumers of the
+corpus; the corpus itself is implementation-neutral.

@@ -1,0 +1,76 @@
+# nudo-tree v1
+SourceFile 0..162
+  FunctionDecl 0..161
+    KeywordFn "fn" 0..2
+    Whitespace " " 2..3
+    Ident "describe" 3..11
+    ParameterList 11..27
+      LParen "(" 11..12
+      Parameter 12..26
+        Ident "status" 12..18
+        Colon ":" 18..19
+        Whitespace " " 19..20
+        PathType 20..26
+          Path 20..26
+            Ident "Status" 20..26
+      RParen ")" 26..27
+    Whitespace " " 27..28
+    Arrow "->" 28..30
+    Whitespace " " 30..31
+    PathType 31..35
+      Path 31..35
+        Ident "Text" 31..35
+    Whitespace " " 35..36
+    Block 36..161
+      LBrace "{" 36..37
+      Whitespace "\n    " 37..42
+      MatchExpression 42..159
+        KeywordMatch "match" 42..47
+        Whitespace " " 47..48
+        PathExpression 48..54
+          Path 48..54
+            Ident "status" 48..54
+        Whitespace " " 54..55
+        LBrace "{" 55..56
+        Whitespace "\n        " 56..65
+        MatchArm 65..89
+          Pattern 65..72
+            Path 65..72
+              Ident "Pending" 65..72
+          Whitespace " " 72..73
+          FatArrow "=>" 73..75
+          Whitespace " " 75..76
+          LiteralExpression 76..89
+            TextLiteral "\"not started\"" 76..89
+        Whitespace "\n        " 89..98
+        MatchArm 98..120
+          Pattern 98..106
+            Path 98..106
+              Ident "Complete" 98..106
+          Whitespace " " 106..107
+          FatArrow "=>" 107..109
+          Whitespace " " 109..110
+          LiteralExpression 110..120
+            TextLiteral "\"finished\"" 110..120
+        Whitespace "\n        " 120..129
+        MatchArm 129..153
+          Pattern 129..143
+            Path 129..135
+              Ident "Failed" 129..135
+            LParen "(" 135..136
+            Pattern 136..142
+              Path 136..142
+                Ident "reason" 136..142
+            RParen ")" 142..143
+          Whitespace " " 143..144
+          FatArrow "=>" 144..146
+          Whitespace " " 146..147
+          PathExpression 147..153
+            Path 147..153
+              Ident "reason" 147..153
+        Whitespace "\n    " 153..158
+        RBrace "}" 158..159
+      Whitespace "\n" 159..160
+      RBrace "}" 160..161
+  Whitespace "\n" 161..162
+  Eof "" 162..162

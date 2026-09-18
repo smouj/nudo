@@ -2,8 +2,8 @@
 //
 //   nudo check fixtures/valid/hello.nudo
 //
-// reports zero diagnostics. This file is NOT executable: the parser, the type
-// checker and the interpreter are planned and do not exist yet.
+// reports zero diagnostics. This file is NOT executable: the type checker and
+// the interpreter are planned and do not exist yet.
 
 fn main() {
     let greeting = "hello, nudo";
