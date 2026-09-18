@@ -24,9 +24,6 @@ question is only what it looks like and how much it can express.
 * **Bounds.** Whether `T: SomeCapability` exists, and how a bound interacts with
   the effect system rather than duplicating it. The grammar has no bound syntax,
   on purpose.
-* **Inference.** How much inference is allowed. The rest of the language leans
-  towards explicitness at declaration sites, and generics are where that
-  principle is most expensive to hold.
 * **Specialisation.** Whether it exists at all. The answer is probably no before
   1.0, and if it arrives it needs a NEP that says what it costs.
 * **How a generic item is compiled**, which is M4's problem rather than a syntax
@@ -54,11 +51,18 @@ question is only what it looks like and how much it can express.
 * No bounds, and no implicit generic anything.
 * A generic type parameter may not be used to smuggle a capability: `fn f<T>(x:
   T)` cannot perform effects by virtue of `T`.
+* **Inference is local and bounded** ([NEP-0013](../neps/0013-generic-inference.md)):
+  type arguments come from the arguments at the call site and from the type the
+  context already expects; a `let` is monomorphic; a parameter that cannot be
+  inferred is a compile error that asks for a written type. No unification across
+  items, no let-generalisation, no turbofish, no guesses.
 
 ## Process
 
-Done, in two steps. [NEP-0006](../neps/0006-generic-syntax.md) decided how a type
+Done, in three steps. [NEP-0006](../neps/0006-generic-syntax.md) decided how a type
 is parameterised, and [NEP-0010](../neps/0010-declaration-site-generics.md)
-decided where parameters are declared and that `Result` is intrinsic. What
-remains open — bounds, inference, specialisation — needs further NEPs, and until
+decided where parameters are declared and that `Result` is intrinsic, and
+[NEP-0013](../neps/0013-generic-inference.md) bounded inference to what is
+written to the left. What
+remains open — bounds and specialisation — needs further NEPs, and until
 then this chapter is the place that says so.

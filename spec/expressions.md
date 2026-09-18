@@ -110,7 +110,10 @@ match status {
 ```
 
 * `if` is an expression, not a statement.
-* `match` must be exhaustive.
+* `match` must be exhaustive, and uniformly so: an unhandled variant is an
+error whatever the enum is, including `Result<Verified<T>, E>`. NUDO has no
+must-use rule in this edition, so an ignored `Result` is not an error
+([NEP-0014](../neps/0014-trust-types-obey-the-rules.md)).
 * There is no implicit truthiness: the condition is `Bool`.
 * **There is no `return`, and no early exit.** A block's value is its final
   expression, and both `if` and `match` are expressions, so a conditional result

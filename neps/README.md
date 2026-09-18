@@ -39,6 +39,8 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 | [0010](0010-declaration-site-generics.md) | Declaration-site generic parameters | Accepted |
 | [0011](0011-path-and-list-spelling.md) | Path and list spelling | Accepted |
 | [0012](0012-early-exit.md) | Early exit | Accepted |
+| [0013](0013-generic-inference.md) | Generic inference | Accepted |
+| [0014](0014-trust-types-obey-the-rules.md) | Trust types obey the ordinary rules | Accepted |
 
 NEPs 0002 and 0007–0011 are the **semantic gates of M3**, taken together and
 before `nudo-typeck` exists, so that the checker is written against decided

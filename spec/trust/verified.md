@@ -45,7 +45,11 @@ there is no way to obtain a `Verified<T>` without handling the rejection.
    result is `Generated<Verified<T>>` and how the loop closes. This was the
    principal open question of the trust model, and it is answered by
    *not* answering it in this edition.
-6. **No downgrade without a reason.** `Verified<T>` can be treated as a `T`; it
+6. **No special rules.** `Verified<T>` and `Generated<T>` obey the ordinary
+   rules: `match` over a `Result<Verified<T>, E>` is exhaustive in the normal way,
+   and there is no must-use rule for `Result` in this edition
+   ([NEP-0014](../../neps/0014-trust-types-obey-the-rules.md)).
+7. **No downgrade without a reason.** `Verified<T>` can be treated as a `T`; it
    cannot be silently turned back into `Generated<T>` as a way to launder
    provenance.
 

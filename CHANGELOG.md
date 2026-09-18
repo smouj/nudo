@@ -17,6 +17,15 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **The gates M3.2 opens with.**
+  [NEP-0013](neps/0013-generic-inference.md) bounds generic inference: from the
+  arguments and the expected type, one pass, monomorphic `let`, and a compile
+  error that asks for a written type rather than a guessed one.
+  [NEP-0014](neps/0014-trust-types-obey-the-rules.md) states that
+  `Generated<T>`, `Verified<T>` and `Result<Verified<T>, E>` get no rules of
+  their own: exhaustiveness is uniform, and there is no must-use rule in this
+  edition.
+
 * **M3.1, the syntax half.** `generic-parameter-list` on `fn`, `struct`, `enum`,
   `task` and `tool` ([NEP-0010](neps/0010-declaration-site-generics.md)), so a
   program can declare a parameterised type of its own; and `verify`'s operand

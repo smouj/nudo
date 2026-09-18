@@ -153,6 +153,12 @@ work rather than left as a surprise.
 
 ### M3.2 — Basic type system
 
+Two gates are taken before this one is written, so that the checker is written
+against answers: [NEP-0013](neps/0013-generic-inference.md) bounds inference to
+the arguments and the expected type, and
+[NEP-0014](neps/0014-trust-types-obey-the-rules.md) keeps the trust types free of
+rules of their own.
+
 * [ ] Primitive types: `Int` (with NEP-0007's rules), `Float`, `Bool`, `Text`,
       `Unit`
 * [ ] Structs, enums, generics and instantiation, arity checking
