@@ -34,6 +34,8 @@ const EXIT_DIAGNOSTICS: u8 = 1;
 /// not implemented yet.
 const EXIT_USAGE: u8 = 2;
 
+mod terminal;
+
 /// Commands the toolchain declares but does not implement in this pre-alpha.
 const PLANNED_COMMANDS: &[(&str, &str)] = &[
     ("new", "Create a new NUDO package"),
@@ -115,6 +117,8 @@ OPTIONS
     --dump-tree       With `check`: print the syntax tree instead of nothing
     --dump-resolutions
                       With `check`: print what each name resolved to
+    --plain           With `check`: one line per event
+    --ci              With `check`: a deterministic report for a log
 
 EXIT CODES
     0    success, no error diagnostics
@@ -145,6 +149,8 @@ OPTIONS:
     --dump-tree       Print the syntax tree in the stable `nudo-tree v1` format
     --dump-resolutions
                       Print what each name resolved to, `nudo-hir v1` format
+    --plain           One line per event, whatever the terminal can do
+    --ci              A deterministic report that ends in PASS or FAIL
     --color <WHEN>    Colour diagnostics: auto (default), always, never
     -h, --help        Print this help
 
@@ -163,6 +169,8 @@ fn cmd_check(args: &[String]) -> u8 {
     let mut dump_tokens = false;
     let mut dump_tree = false;
     let mut dump_resolutions = false;
+    let mut force_plain = false;
+    let mut force_ci = false;
 
     let mut index = 0;
     while index < args.len() {
@@ -175,6 +183,8 @@ fn cmd_check(args: &[String]) -> u8 {
             "--dump-tokens" => dump_tokens = true,
             "--dump-tree" => dump_tree = true,
             "--dump-resolutions" => dump_resolutions = true,
+            "--plain" => force_plain = true,
+            "--ci" => force_ci = true,
             "--color" => {
                 index += 1;
                 let Some(value) = args.get(index) else {
@@ -217,6 +227,18 @@ fn cmd_check(args: &[String]) -> u8 {
 
     let use_color = color.resolve(std::io::stderr().is_terminal());
 
+    // Presentation only. The terminal layer decides how to show what the
+    // compiler produced; it never decides what the compiler produces.
+    let mut environment = terminal::Environment::detect(color);
+    environment.force_plain = force_plain;
+    environment.force_ci = force_ci;
+    let mut capabilities = terminal::Capabilities::from(&environment);
+    let show_structure = !(dump_tokens || dump_tree || dump_resolutions);
+    if !show_structure {
+        // A dump is machine-readable output: structure around it is noise.
+        capabilities.mode = terminal::Mode::Plain;
+    }
+
     // Load everything first: a diagnostic renderer borrows the source map.
     let mut sources = SourceMap::new();
     let mut loaded: Vec<(PathBuf, nudo_source::SourceId)> = Vec::new();
@@ -237,12 +259,16 @@ fn cmd_check(args: &[String]) -> u8 {
     let renderer = Renderer::new(&sources, use_color);
     let mut diagnostics = Diagnostics::new();
     let mut dump = String::new();
+    let mut stage_reports: Vec<terminal::report::FileReport> = Vec::new();
 
     for (path, id) in &loaded {
         let Some(file) = sources.get(*id) else {
             continue;
         };
+        let mut stages: Vec<terminal::Stage> = Vec::new();
+        let mut source_status = terminal::Status::Success;
         if !has_source_extension(&path.display().to_string()) {
+            source_status = terminal::Status::Warning;
             diagnostics.push(
                 Diagnostic::warning(
                     codes::UNEXPECTED_FILE_EXTENSION,
@@ -256,7 +282,13 @@ fn cmd_check(args: &[String]) -> u8 {
                 .with_help("NUDO sources are named `*.nudo`"),
             );
         }
+        stages.push(terminal::Stage::new("SOURCE", "source", source_status));
         let lexed = nudo_lexer::tokenize(file);
+        let lex_errors = lexed.diagnostics().error_count();
+        stages.push(
+            terminal::Stage::new("LEX", "lex", stage_status(lex_errors))
+                .with_detail(format!("{} tokens", lexed.tokens().len())),
+        );
         if dump_tokens {
             // The token dump is the lexer's, so that its format stays exactly
             // what the conformance corpus pins: no trivia, indices over the
@@ -265,6 +297,21 @@ fn cmd_check(args: &[String]) -> u8 {
         }
         let parsed = nudo_parser::parse(file);
         diagnostics.extend_from(parsed.diagnostics().clone());
+        // The parser carries the lexer's diagnostics, so the ones it added are
+        // the difference: this is what makes the pipeline a record of work
+        // rather than a checklist.
+        let parse_errors = parsed
+            .diagnostics()
+            .as_slice()
+            .iter()
+            .filter(|diagnostic| diagnostic.severity().is_error())
+            .count()
+            .saturating_sub(lex_errors);
+        stages.push(terminal::Stage::new(
+            "PARSE",
+            "parse",
+            stage_status(parse_errors),
+        ));
         if dump_tree {
             dump.push_str(&nudo_syntax::dump_tree(parsed.tree()));
         }
@@ -273,14 +320,52 @@ fn cmd_check(args: &[String]) -> u8 {
         // parser's diagnostics under a cascade about a tree nobody agreed to.
         if !parsed.has_errors() {
             let resolved = nudo_hir::lower(parsed.tree(), *id);
+            let resolution_errors = resolved.diagnostics.error_count();
+            let definitions = resolved
+                .hir
+                .defs()
+                .iter()
+                .filter(|definition| definition.kind != nudo_hir::DefKind::BuiltinType)
+                .count();
             diagnostics.extend_from(resolved.diagnostics.clone());
+            stages.push(
+                terminal::Stage::new("HIR", "hir", stage_status(resolution_errors))
+                    .with_detail(format!("{definitions} definitions")),
+            );
             if dump_resolutions {
                 dump.push_str(&nudo_hir::dump_resolutions(&resolved.hir, file));
             }
+        } else {
+            // Name resolution *would* have run, and did not. Saying so is not
+            // the same as advertising a stage that does not exist: the pipeline
+            // records what this command intended to do with this file.
+            stages.push(
+                terminal::Stage::new("HIR", "hir", terminal::Status::Pending)
+                    .with_detail("not reached"),
+            );
         }
+        stage_reports.push(terminal::report::FileReport::new(
+            path.display().to_string(),
+            stages,
+        ));
     }
 
-    if (dump_tokens || dump_tree || dump_resolutions) && !dump.is_empty() {
+    if show_structure {
+        print!("{}", terminal::report::header(&capabilities));
+        for report in &stage_reports {
+            print!(
+                "{}",
+                terminal::report::file_header(&capabilities, &report.path)
+            );
+            print!(
+                "{}",
+                terminal::report::stages_block(&capabilities, &report.stages)
+            );
+        }
+        let _ = std::io::stdout().flush();
+    }
+
+    if !show_structure && !dump.is_empty() {
         print!("{dump}");
         let _ = std::io::stdout().flush();
     }
@@ -292,6 +377,19 @@ fn cmd_check(args: &[String]) -> u8 {
     }
 
     if errors > 0 {
+        if show_structure {
+            print!(
+                "{}",
+                terminal::report::summary(
+                    &capabilities,
+                    loaded.len(),
+                    errors,
+                    warnings,
+                    None::<&str>
+                )
+            );
+            let _ = std::io::stdout().flush();
+        }
         eprintln!(
             "\n{TOOLCHAIN_NAME}: {} and {}",
             count(errors, "error"),
@@ -308,13 +406,36 @@ fn cmd_check(args: &[String]) -> u8 {
         return EXIT_USAGE;
     }
 
-    println!(
+    let contract = format!(
         "checked {}: {} and {}",
         count(loaded.len(), "file"),
         count(errors, "error"),
         count(warnings, "warning")
     );
+    if show_structure {
+        print!(
+            "{}",
+            terminal::report::summary(
+                &capabilities,
+                loaded.len(),
+                errors,
+                warnings,
+                Some(&contract)
+            )
+        );
+    } else {
+        println!("{contract}");
+    }
     EXIT_OK
+}
+
+/// The state a stage reports, from the errors it produced.
+fn stage_status(errors: usize) -> terminal::Status {
+    if errors == 0 {
+        terminal::Status::Success
+    } else {
+        terminal::Status::Error
+    }
 }
 
 /// Formats a count with an English plural, for example `1 file`, `2 files`.
