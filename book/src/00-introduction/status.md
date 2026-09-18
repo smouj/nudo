@@ -5,9 +5,10 @@
 
 ## Implemented foundation
 
-The working path is currently centered on source loading, spans, lexing, tokens,
-diagnostics and lexical `nudo check` behaviour. The project also has repository,
-CI, security, governance, conformance and documentation infrastructure.
+The working path is currently centred on source loading, spans, lexing, tokens,
+diagnostics, the lossless syntax tree, the parser, the typed AST, and `nudo check`
+over all of it. The project also has repository, CI, security, governance,
+conformance and documentation infrastructure.
 
 ## Planned compiler path
 
@@ -16,9 +17,9 @@ Source
   ↓
 Lexer             implemented
   ↓
-Lossless syntax   planned
+Lossless syntax   implemented
   ↓
-Parser / AST      planned
+Parser / AST      implemented
   ↓
 HIR / typecheck   planned
   ↓
@@ -28,6 +29,10 @@ MIR
   ↓
 Interpreter / WASM
 ```
+
+"Implemented" means a stage has behaviour and tests today. A clean `nudo check`
+run means the file lexes and parses; it does not mean the program is correct, and
+it does not run.
 
 ## Why status labels matter
 

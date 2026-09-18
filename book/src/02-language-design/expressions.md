@@ -1,10 +1,12 @@
 # 02.2 — Expressions and precedence
 
-> **Status:** Specified  
-> **Summary:** Precedence, associativity and the ban on left recursion are decided and enforced. The parser that implements them is M2.
+> **Status:** Implemented  
+> **Summary:** Precedence, associativity and the ban on left recursion are decided, enforced, and implemented by the parser.
 
 Precedence is not formatting trivia. `a + b * c` must have one meaning in every
-conforming implementation.
+conforming implementation, and the parser produces exactly that shape: the tree
+for `1 + 2 * 3` has the multiplication as the inner node and the addition above
+it.
 
 These are no longer open questions. They are stated once, as a chain of grammar
 levels in

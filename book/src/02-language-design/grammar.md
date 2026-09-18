@@ -1,7 +1,7 @@
 # 02.1 — Grammar and syntax discipline
 
-> **Status:** Proposed  
-> **Summary:** The grammar is a contract between source text and parser; provisional agent syntax must remain visibly provisional until accepted.
+> **Status:** Implemented / Proposed  
+> **Summary:** The grammar is a contract between source text and parser, implemented by the parser and enforced by a checker; provisional agent syntax remains visibly provisional until accepted.
 
 ## Small syntax, strong semantics
 
