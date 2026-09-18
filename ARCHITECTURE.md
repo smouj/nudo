@@ -158,7 +158,7 @@ The runtime is not implemented. Its intended shape, for review purposes:
 
 | Concern | Decision |
 | ------- | -------- |
-| Implementation language | Rust, stable toolchain, MSRV declared in `Cargo.toml` |
+| Bootstrap implementation | Rust, stable toolchain, MSRV declared in `Cargo.toml` |
 | Third-party dependencies | none in the pre-alpha workspace; a new one needs a justification |
 | Edition | workspace-wide, declared once |
 | Formatting | `rustfmt`, enforced by CI |
@@ -166,6 +166,41 @@ The runtime is not implemented. Its intended shape, for review purposes:
 | Portable targets | Windows x86_64, Linux x86_64, Linux ARM64, macOS ARM64, WASI |
 | Specification format | Markdown, plus EBNF for the grammar |
 | Error codes | stable `NDO` codes, allocated by family (`spec/errors.md`) |
+
+## Self-hosting direction
+
+Rust is NUDO's **bootstrap implementation**, not a permanent language
+requirement. Self-hosting begins only when NUDO can express the compiler's real
+needs without privileged syntax or implementation-only escape hatches. Until
+then, correctness and specification fidelity take priority over rewriting Rust
+code for its own sake.
+
+The intended bootstrap path is:
+
+```text
+Stage 0   Rust implementation
+    ↓
+Stage 1   compiler.nudo built by Stage 0
+    ↓
+Stage 2   compiler.nudo rebuilt by Stage 1
+```
+
+A self-hosting milestone is reached when the NUDO implementation can rebuild its
+own compiler and the Stage 1/Stage 2 results are equivalent under a documented
+reproducibility criterion. The standard library and toolchain should migrate
+progressively where that makes the implementation clearer and exercises the
+language honestly.
+
+Self-hosting does **not** mean that every layer below NUDO is written in NUDO.
+WASI, operating-system interfaces, syscalls, machine code and other host
+boundaries may remain external. The goal is that the canonical NUDO compiler and
+toolchain no longer require another general-purpose language for their own
+implementation.
+
+This is a long-term architectural direction, not active M3 scope. New language
+and compiler decisions should avoid making a future lexer, parser, HIR, type
+checker, MIR and tooling implementation needlessly awkward to express in NUDO,
+but they must still be justified on their own merits.
 
 ## Where to add things
 
