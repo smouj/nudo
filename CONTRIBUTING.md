@@ -51,10 +51,11 @@ you add a check to CI, add it there in the same pull request.
 cargo run --package nudo-cli -- --version
 cargo run --package nudo-cli -- check examples/00-hello-world/main.nudo
 cargo run --package nudo-cli -- check --dump-tokens fixtures/valid/hello.nudo
+cargo run --package nudo-cli -- check --dump-tree fixtures/valid/hello.nudo
 ```
 
-Expect `check` to do lexical analysis only. It is milestone M1; see
-[`ROADMAP.md`](ROADMAP.md).
+Expect `check` to lex and parse. It is milestones M1 and M2; see
+[`ROADMAP.md`](ROADMAP.md). Nothing is type-checked and nothing runs.
 
 ### Measure
 

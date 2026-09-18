@@ -33,13 +33,13 @@ test pass is forbidden — see [`../AGENTS.md`](../AGENTS.md).
 | Chapter | Contents | State |
 | ------- | -------- | ----- |
 | [`lexical-structure.md`](lexical-structure.md) | Encoding, whitespace, comments, tokens, literals | **Implemented** (M1) |
-| [`grammar.md`](grammar.md) | Where the grammar lives and how to read it | Provisional |
-| [`declarations.md`](declarations.md) | Items: functions, structs, enums, agents, tasks, tools | Proposed |
-| [`expressions.md`](expressions.md) | Expressions, statements, control flow | Proposed |
+| [`grammar.md`](grammar.md) | Where the grammar lives and how to read it | **Implemented** (M2) |
+| [`declarations.md`](declarations.md) | Items: functions, structs, enums, agents, tasks, tools | Syntax implemented (M2); meaning proposed |
+| [`expressions.md`](expressions.md) | Expressions, statements, control flow | Syntax implemented (M2); agentic forms provisional |
 | [`types.md`](types.md) | The type system, including trust types | Proposed |
-| [`generics.md`](generics.md) | Generic parameters, bounds and inference | Proposed |
+| [`generics.md`](generics.md) | Generic parameters, bounds and inference | Syntax implemented (M2); the rest open |
 | [`modules.md`](modules.md) | Modules, packages, manifests, visibility | Proposed |
-| [`errors.md`](errors.md) | Diagnostic model and the stable `NDO` code registry | **Registry in use** (M1) |
+| [`errors.md`](errors.md) | Diagnostic model and the stable `NDO` code registry | **Registry in use** (M1–M2) |
 | [`effects.md`](effects.md) | Effects and how they are checked | Proposed |
 | [`concurrency.md`](concurrency.md) | Tasks, structured concurrency, cancellation | Proposed |
 
@@ -78,8 +78,9 @@ test pass is forbidden — see [`../AGENTS.md`](../AGENTS.md).
 
 * **MUST**, **MUST NOT**, **SHOULD** and **MAY** carry their usual meanings.
 * `text` in a code span is literal source.
-* A chapter marked *Proposed* has no implementation and no conformance cases. It
-  describes an intention that reviewers should attack.
+* A chapter marked *Proposed* has no implementation. It describes an intention
+  that reviewers should attack. A chapter whose syntax is implemented but whose
+  meaning is not says so in its own state line.
 * A chapter marked *Implemented* has cases in
   [`../tests/conformance`](../tests/conformance/README.md). If the behaviour and
   the chapter disagree, that is a bug in the implementation.

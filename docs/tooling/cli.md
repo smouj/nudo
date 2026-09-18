@@ -15,7 +15,7 @@ USAGE:
 
 | Command | Does |
 | ------- | ---- |
-| `nudo check <FILE>...` | Reads `.nudo` files, lexes them, reports lexical diagnostics |
+| `nudo check <FILE>...` | Reads `.nudo` files, lexes them, parses them, reports lexical and syntax diagnostics |
 | `nudo --version` | Prints the version and the release channel |
 | `nudo --help` | Lists the implemented commands and the planned ones |
 
@@ -24,6 +24,7 @@ USAGE:
 | Option | Meaning |
 | ------ | ------- |
 | `--dump-tokens` | Prints the token stream in the stable `nudo-tokens v1` format |
+| `--dump-tree` | Prints the syntax tree in the stable `nudo-tree v1` format |
 | `--color <WHEN>` | `auto` (default), `always`, `never` |
 | `-h`, `--help` | Command help |
 
@@ -35,7 +36,19 @@ $ nudo check --dump-tokens examples/00-hello-world/main.nudo
 # nudo-tokens v1
 0000 3:1-3:3 KeywordFn "fn"
 ...
+
+$ nudo check --dump-tree examples/03-types/main.nudo
+# nudo-tree v1
+SourceFile 0..250
+  StructDecl 0..62
+    KeywordStruct "struct" 0..6
+...
 ```
+
+The tree dump is longer than the file it describes, on purpose: whitespace and
+comments are part of the tree, because a formatter, an editor and an automated
+rewrite all need them. See
+[`../../docs/internals/parser-design.md`](../internals/parser-design.md).
 
 ## What is declared but not implemented
 
@@ -96,6 +109,6 @@ in [`../../spec/errors.md`](../../spec/errors.md).
 
 ## What `check` does not do
 
-It does not parse, type-check, or run the program. A clean result means "no
-lexical diagnostics". The toolchain says so in its own help text, because a
+It does not type-check or run the program. A clean result means "no lexical or
+syntax diagnostics". The toolchain says so in its own help text, because a
 command that overstates what it checked is worse than a command that does less.

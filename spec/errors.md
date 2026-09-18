@@ -1,6 +1,6 @@
 # Diagnostics and error codes
 
-**State: the registry is in use** (milestone M1). Codes marked *implemented*
+**State: the registry is in use** (milestones M1–M2). Codes marked *implemented*
 are emitted today; codes marked *reserved* are allocated so that nobody invents
 a competing one, and are not emitted by anything yet.
 
@@ -38,7 +38,7 @@ program.
 
 | Code | Name | Severity | State |
 | ---- | ---- | -------- | ----- |
-| `NDO1001` | `UNEXPECTED_TOKEN` | error | reserved (parser, M2) |
+| `NDO1001` | `UNEXPECTED_TOKEN` | error | **implemented** (parser, M2) |
 | `NDO1002` | `UNKNOWN_CHARACTER` | error | **implemented** |
 | `NDO1003` | `UNTERMINATED_STRING` | error | **implemented** |
 | `NDO1004` | `UNTERMINATED_BLOCK_COMMENT` | error | **implemented** |
@@ -91,13 +91,24 @@ Rules for messages:
 
 A stage reports as many real problems as it can, then continues:
 
-* the lexer skips an unlexable character and keeps going;
+* the lexer reports an unlexable character and keeps it as a token, so that no
+  byte of the file is unaccounted for;
 * a malformed literal still produces a token;
+* the parser reports the token it could not place, puts it in an `Error` node and
+  resumes at the next `;`, `}` or item;
 * a stage never stops at the first error, and never loops forever on bad input.
 
 Recovery rules exist so that one typo does not produce one message followed by
 fifty cascading ones. Cascading diagnostics are treated as a bug in the stage
-that emitted them.
+that emitted them. Three rules make that concrete:
+
+* **Every recovery step consumes a token.** A recovery that loops is a hang, and
+  a hang on user input is a bug.
+* **One position, one diagnostic.** If the lexer already rejected a byte, the
+  parser does not report the construct that byte made unreadable. The reader
+  sees one mistake, and an agent repairing the file fixes one byte.
+* **A cap, not a cascade.** The parser reports at most 24 syntax errors per file.
+  A file of nonsense stops producing messages long before it stops being read.
 
 ## Rendering
 

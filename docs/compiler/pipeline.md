@@ -11,9 +11,10 @@ Lexer            compiler/nudo-lexer        ← implemented (M1)
   ↓
 Tokens
   ↓
-Parser           compiler/nudo-parser       ← planned (M2)
+Parser           compiler/nudo-parser       ← implemented (M2)
   ↓
-Syntax tree → AST
+Syntax tree      compiler/nudo-syntax       ← implemented (M2)
+AST              compiler/nudo-ast          ← implemented (M2)
   ↓
 HIR
   ↓

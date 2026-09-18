@@ -69,20 +69,31 @@ instead of pretending.
 
 ## Reserved words
 
-The current toolchain reserves exactly two words:
+The toolchain reserves a small core, everywhere, always:
 
 ```text
-fn    let
+fn    let    struct    enum    if    else    match    const    true    false
 ```
 
-Everything else that the language may eventually reserve — `struct`, `enum`,
-`agent`, `task`, `tool`, `model`, `policy`, `verify`, `ask`, `allow` and so on —
-is an ordinary identifier today, and appears in the grammar as provisional.
+Everything else the grammar mentions — `agent`, `task`, `tool`, `model`, `role`,
+`tools`, `allow`, `budget`, `with`, `verify`, `ask`, `delegate` — is
+**contextual**: it introduces its construct in the position where that construct
+belongs, and stays an ordinary identifier everywhere else. `agent` cannot name a
+function's parameter list, and a program may still have a binding named
+`agent` or a function named `verify`.
 
-This is deliberate. Reserving a word is a breaking change for every program that
-uses it as a name, so it happens when the feature lands, not before. The current
-state is reported by `nudo check`, which never claims to understand syntax it
-does not implement.
+The policy is [NEP-0005](../neps/0005-keyword-policy.md), and the split is
+normative: the reserved list lives in `compiler/nudo-lexer` (`KEYWORDS`) because
+reserving a word is a lexical decision, and the contextual list lives in the
+parser, because recognising a word in position is a syntactic one.
+
+Two words were reserved for a concrete reason: `true` and `false` were
+identifiers until M2, which made `true` ambiguous between a literal and a path in
+expression position. `scripts/check-grammar.py` reported the overlap before the
+parser existed, and reserving the two words settled it.
+
+Reserving a word is a breaking change for every program that uses it as a name,
+so it happens when the feature lands, not before, and it needs a NEP.
 
 ## Numbers
 
@@ -99,9 +110,8 @@ float        := integer, ".", digit, { digit | "_" digit }
   ends, and the `.` is lexed on its own.
 * A digit sequence immediately followed by an identifier character is
   `NDO1005`: `123abc` is one malformed literal, not a number followed by a name.
-* The current implementation lexes the token and does not compute its value.
-  Value computation, radix literals and suffixes arrive with the parser (M2) and
-  require a NEP.
+* The lexer produces the token and does not compute its value. Value
+  computation, radix literals and suffixes are not implemented and need a NEP.
 
 ## Text literals
 
@@ -130,24 +140,44 @@ what "this literal ends here" means.
 
 ## Punctuation
 
-The token set of the pre-alpha lexer:
+The token set of the pre-alpha toolchain:
 
 | Token | Lexeme | Token | Lexeme |
 | ----- | ------ | ----- | ------ |
-| `LParen` | `(` | `Plus` | `+` |
-| `RParen` | `)` | `Minus` | `-` |
-| `LBrace` | `{` | `Star` | `*` |
-| `RBrace` | `}` | `Slash` | `/` |
-| `Colon` | `:` | `Semi` | `;` |
-| `Comma` | `,` | `Arrow` | `->` |
-| `Equals` | `=` | | |
+| `LParen` | `(` | `EqEq` | `==` |
+| `RParen` | `)` | `BangEq` | `!=` |
+| `LBrace` | `{` | `Lt` | `<` |
+| `RBrace` | `}` | `Gt` | `>` |
+| `LBracket` | `[` | `LtEq` | `<=` |
+| `RBracket` | `]` | `GtEq` | `>=` |
+| `Colon` | `:` | `AmpAmp` | `&&` |
+| `ColonColon` | `::` | `PipePipe` | `||` |
+| `Comma` | `,` | `Bang` | `!` |
+| `Dot` | `.` | `Plus` | `+` |
+| `Question` | `?` | `Minus` | `-` |
+| `Arrow` | `->` | `Star` | `*` |
+| `FatArrow` | `=>` | `Slash` | `/` |
+| `Equals` | `=` | `Semi` | `;` |
 
-`->` is one token, not `-` followed by `>`. `/` is a comment only when followed
-by `/` or `*`; otherwise it is `Slash`.
+Longest match wins: `==` is one token, `=` and `=` are two. `->` and `=>` are
+single tokens, and there is no shift operator, so `>>` is two `Gt` tokens — which
+is what makes `Result<Result<Int, Text>, Text>` close properly.
 
-Any other character is `NDO1002`, and the lexer skips it and continues. Adding a
-token is a specification change: the token set grows with the grammar, not ahead
-of it.
+`&` and `|` on their own are not tokens: they are reported as `NDO1002`, because
+NUDO has no bitwise operators. `/` is a comment only when followed by `/` or
+`*`; otherwise it is `Slash`.
+
+## Unknown characters
+
+A character that starts no token is reported as `NDO1002` **and still produces a
+token** (`Unknown`) covering exactly that character.
+
+That is not decoration. The syntax tree guarantees that concatenating the text of
+every token reproduces the file byte for byte, and a byte that belongs to no
+token would break that guarantee silently — in the one case where a formatter or
+a repair tool most needs it. The parser never dispatches on an `Unknown` token:
+the diagnostic already names it, and reporting it again would report one mistake
+twice.
 
 ## End of file
 

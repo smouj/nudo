@@ -1,35 +1,34 @@
 # Parser design (M2)
 
-**Status: decision document. Nothing here is implemented.**
-
-This is the design M2 is built from. It exists before the parser so that the
-decisions are reviewable while they are still cheap, and so that the shape of
-`nudo-syntax`, `nudo-parser` and `nudo-ast` is argued rather than discovered.
+**Status: implemented.** `nudo-syntax`, `nudo-parser` and `nudo-ast` exist and
+are covered by `tests/conformance/parser`, `fixtures/` and the property tests
+next to each crate. This document is kept as the record of *why* the parser has
+the shape it has, and of what was deliberately left out; the code is the
+implementation of it, not a description in a separate place.
 
 Read [`../../grammar/nudo.ebnf`](../../grammar/nudo.ebnf) and
 [`../../spec/grammar.md`](../../spec/grammar.md) first; this document assumes the
 grammar's two rules (no left recursion, stated precedence).
 
-## What M2 must produce
+## What M2 produced
 
-| Deliverable | Contract |
-| ----------- | -------- |
-| Lossless syntax tree | Every byte of the source is reachable from the tree, including whitespace and comments |
-| Error nodes | Malformed input produces `Error` nodes, never a truncated tree |
-| Recovery | Parsing continues after a bad `;`, `}`, `)` or item, and never cascades |
-| Typed AST | `nudo-ast` wraps the tree for consumers that want structure, not text |
-| Diagnostics | `NDO1xxx` with an expected/found pair and an exact span |
-| Round trip | The formatter (M10) must be able to reprint the file byte-for-byte from the tree alone |
+| Deliverable | Contract | Where |
+| ----------- | -------- | ----- |
+| Lossless syntax tree | Every byte of the source is reachable from the tree, including whitespace and comments | `compiler/nudo-syntax` |
+| Error nodes | Malformed input produces `Error` nodes, never a truncated tree | `compiler/nudo-syntax`, `nudo-parser` |
+| Recovery | Parsing continues after a bad `;`, `}`, `)` or item, never cascades, never loops | `compiler/nudo-parser` |
+| Typed AST | `nudo-ast` wraps the tree for consumers that want structure, not text | `compiler/nudo-ast` |
+| Diagnostics | `NDO1001` with an expected/found pair and an exact span | `compiler/nudo-diagnostics` |
+| Round trip | `parse → print` is the identity, byte for byte | `SyntaxTree::reprint`, checked by every conformance case |
 
-The last row is the reason the tree must be lossless. A parser that discards
-whitespace cannot support a formatter, an editor, or a safe rewrite — and "safe
-rewrite" is the whole reason an agent can be allowed near source code.
+`nudo check` now lexes **and parses**; `--dump-tree` prints the tree in a stable
+format, as `--dump-tokens` prints tokens.
 
 ## Strategy
 
-**Recursive descent with precedence climbing.** One function per grammar
-production, one function per precedence level, and the level functions call the
-next one down — exactly the shape of the declared chain.
+**Recursive descent with precedence climbing**, one function per grammar
+production and one per precedence level, each calling the next one down. Built as
+designed.
 
 Alternatives considered:
 
@@ -40,151 +39,189 @@ Alternatives considered:
 | Recursive ascent / GLR | Needed for genuinely ambiguous grammars. NUDO's grammar is not ambiguous, and a parser that tolerates ambiguity hides grammar bugs instead of reporting them. |
 | Hand-written with a separate lexer (chosen) | Keeps the existing `nudo-lexer` and its tested guarantees, keeps the grammar readable, and makes recovery a local decision rather than a recovery-mode inside a generated table. |
 
-Precedence climbing is why the grammar's levels are *linear*: `parse_logical_or`
-calls `parse_logical_and`, and so on down to `parse_primary`. A level function
-parses one operand at the next level down, then loops while the lookahead is one
-of its operators.
-
 ### Lookahead requirements
 
-The parser needs one token of lookahead in exactly three places:
+The parser needs one token of lookahead, and uses it in exactly the three places
+this document predicted:
 
 | Place | Why |
 | ----- | --- |
-| `path-type` vs `generic-type` | `Foo` and `Foo<…>` share a prefix |
-| Item dispatch | `fn`, `struct`, `agent`, a reserved word, or an error |
-| Statement dispatch | `let`, a block, or an expression |
+| `path-type` versus `generic-type` | `Foo` and `Foo<…>` share a prefix |
+| Item dispatch | `fn`, `let`, `const`, `struct`, `enum`, a contextual word, or an error |
+| Statement dispatch | `let`, or an expression |
 
-Two-token lookahead is not required anywhere. That is a design constraint, not an
-accident: a grammar that needs unbounded lookahead cannot be parsed by the
-strategy above without backtracking, and backtracking destroys both the error
-messages and the recovery story.
+No two-token lookahead, and no backtracking anywhere.
 
 ## Tree representation
 
-The decision that matters most, and the one most likely to be revisited.
-
 | Option | Cost | Gets us | Verdict |
 | ------ | ---- | ------- | ------- |
-| **rowan** (the rust-analyzer library) | One dependency, plus its own conventions (`SyntaxKind` as `u16`, green/red split) | Mature, cheap sharing, the exact shape an editor wants, incremental reparse as a later addition | **Not now.** It is the right answer *if* incremental reparse becomes a requirement. Adopting it in M2 means taking a dependency for a property — incrementality — that nothing in M2 needs, and it would be the project's first third-party dependency. |
-| **Hand-rolled immutable tree** (`Rc<SyntaxNode>` or an arena) | More code, our own invariants to test | No dependency, full control of the API, easy to keep the "every byte reachable" property explicit | **Chosen for M2.** |
-| **Concrete syntax tree with typed wrappers only** | Least code | Structure without losslessness | No. It cannot support the formatter, and the formatter is a stated M2 exit criterion. |
+| **rowan** | One dependency, plus its own conventions | Mature, cheap sharing, the shape an editor wants, incremental reparse later | **Not now.** It is the right answer *if* incremental reparse becomes a requirement; adopting it in M2 would take the project's first third-party dependency for a property nothing needs yet. |
+| **Hand-rolled immutable tree** (arena) | More code, our own invariants to test | No dependency, full control, the losslessness property made explicit | **Chosen, and built.** |
+| **Concrete syntax tree with typed wrappers only** | Least code | Structure without losslessness | No. It cannot support the formatter, which is a stated M2 exit criterion. |
 
 ### Shape
 
 ```text
 nudo-syntax
   SyntaxKind    one enum, every node and token kind
-  SyntaxTree    the root, owning the source text and the node arena
-  SyntaxNode    a handle: kind, span, parent, children
+  SyntaxTree    the root, owning the source text, the tokens and the node arena
+  SyntaxNode    a handle: kind, span, children
   SyntaxToken   a handle: kind, span, text
+  TreeBuilder   how the parser builds a tree
+  dump_tree     the stable text format the corpus compares
 ```
 
-* Nodes are stored in one arena inside the tree; handles are indices, so the tree
-  is cheap to move and needs no reference counting.
-* Trivia (whitespace, comments) is attached to the *following* token, which is
-  the convention that makes reprinting straightforward.
-* Every node's span covers exactly its children's spans; the root's span is the
-  whole file.
-* An `Error` node holds whatever tokens the parser could not place, and is
-  reachable so that the formatter can reprint it and the editor can highlight it.
+Two decisions were added during implementation, because the design as written
+could not express them:
+
+* **Checkpoints.** A left operand is already a sibling of the operator that
+  should own it by the time the operator is seen. `TreeBuilder::checkpoint`
+  marks a position in the node being built, and `start_node_at` wraps everything
+  added since then in a new node. Without it, `a + b * c` and `a.b(c)[d]` cannot
+  be built with the correct shape.
+* **Trivia belongs to the enclosing node.** Trivia is still attached to the
+  following token, but a node opened at that token first lets the trivia land in
+  its parent. So `PathType` for ` Int` is `Int`, not ` Int`, and a node's span
+  begins exactly at its first token. Comments written above an item therefore
+  belong to the file, which is where a later formatter can find them.
 
 ### The invariant that makes it lossless
-
-For any source file:
 
 ```text
 concatenating the text of every token in the tree, in order, equals the file
 ```
 
-That is a property test, not a comment. If it holds, no byte was dropped, and a
-formatter built on the tree can reproduce the original.
+This is checked as a property (`SyntaxTree::is_lossless`), by every conformance
+case, by every fixture, and by `SyntaxTree::validate`, which also checks that
+every token appears exactly once, in order, and that no node is unreachable.
+
+Making it true for *every* file, including broken ones, forced one change in the
+lexer: a character that starts no token used to be reported and dropped. It is now
+reported **and kept** as an `Unknown` token. A byte that belongs to no token is a
+byte the tree cannot account for, and that is precisely the case — a file a
+formatter or a repair tool has to round-trip — where dropping it is worst.
 
 ## Recovery
 
-Recovery is a feature with its own contract, because a parser that reports fifty
-cascading errors after one missing brace is unusable — for a person and for an
-agent trying to repair the file.
+Built as designed, with three rules that are tested rather than intended:
 
 * **Progress guarantee.** Every recovery step consumes at least one token or
-  stops. A recovery that loops is a hang, and a hang on user input is a bug.
-* **Sync points.** `;`, `}`, `)`, `]`, and item-starting words. On an unexpected
-  token, the parser reports once, then skips to the next sync point.
+  stops. `parsing_never_hangs_and_always_produces_a_tree` runs a list of
+  pathological inputs through the parser.
 * **Never synthesise.** A missing token is reported as missing; the parser does
-  not insert one silently, because a silent insertion makes the tree disagree
-  with the file.
-* **One diagnostic per mistake.** A bad expression reports at its start, not once
-  per token it skipped.
-* **Bounded output.** A file of garbage produces a bounded number of diagnostics,
-  not one per token.
+  not insert one. The tree therefore always agrees with the file.
+* **Bounded output.** At most [`MAX_ERRORS`] syntax diagnostics per file
+  (24), and at most one diagnostic per position.
+
+Two rules came out of testing, and both fix a failure mode that is worse than a
+crash:
+
+* **Report before you skip.** An early version skipped unplaceable tokens
+  silently, which made `nudo check` exit **0** on a file it had not understood —
+  see `examples/05-agent` before M2. Every recovery that follows a token a loop
+  could not start now reports once, then skips.
+* **One position, one diagnostic.** If the lexer already rejected a byte, the
+  parser does not also report the construct that byte made unreadable. Without
+  this, `let x = @;` produced two errors for one character, and an agent
+  repairing the file would fix the same byte twice.
 
 ## Diagnostics
 
-`NDO1001 UNEXPECTED_TOKEN` is already reserved in
-[`../../spec/errors.md`](../../spec/errors.md). The parser emits it with:
+`NDO1001 UNEXPECTED_TOKEN` is emitted with the span of the offending token, the
+token in the message and the expected set as a note:
 
-* the span of the offending token;
-* a `label` naming what was found;
-* the expected set, as a note;
-* no help text unless there is a specific, valid suggestion.
+```text
+error[NDO1001]: unexpected `}`
+  --> main.nudo:3:1
+  |
+3 | }
+  | ^
+  = note: expected `;`
+```
 
-Rendering stays in `nudo-diagnostics`. The parser constructs
-[`nudo-diagnostics`](../../compiler/nudo-diagnostics) values and prints nothing.
+A contextual word with the wrong shape after it says what it needs rather than
+leaving an unexplained identifier: `` = note: `role` needs a text literal, as in
+`role: "…"` ``. Rendering stays in `nudo-diagnostics`; the parser prints nothing.
+
+There is also `MAX_DEPTH` (96 nested blocks or expressions). The parser is
+recursive, so without a limit a file of open parentheses would exhaust the stack
+instead of producing a diagnostic.
+
+## Known limitations
+
+Recorded here rather than discovered by whoever writes the formatter.
+
+* **`verify (expr) with V` is rejected.** `verify` is a contextual word, so the
+  parser decides from one token whether `verify` is being used as a name or is
+  starting a verification. It reads a verification when the next token starts an
+  operand and is not `(`, `.` or `[`. `verify draft with V` works,
+  `verify(draft)` is a call, and `verify (draft) with V` is a syntax error. The
+  limitation disappears when NEP-0002 decides whether `verify` is a keyword, a
+  function or a protocol.
+* **Declaration-site generic parameters are not in the grammar**, so
+  `enum Outcome<T, E>` is rejected. That is NEP-0006's deliberately narrow
+  scope, not an oversight; see its unresolved questions.
+* **The grammar's `path` uses `::`, but the examples write `web.search`,** and a
+  list inside a declaration is comma-separated while the examples write one per
+  line. The parser follows the grammar; the examples are marked as previews and
+  say which syntax stops them. Whether the spelling should change is a NEP.
+* **Error nodes are not typed.** `nudo-ast` returns `None` for anything it cannot
+  cast, which is deliberate: a consumer that needs to be sure has to be able to
+  tell "this is a function" from "this looked like one until the eighth token".
 
 ## Testing
 
-| Level | What it covers |
-| ----- | -------------- |
-| Fixtures | One rule per file, expectations declared in the file (`fixtures/README.md`) |
-| Conformance | Language-visible behaviour, implementation-neutral, in `tests/conformance/parser/` |
-| Property: losslessness | Token texts re-concatenate to the original file, for every input |
-| Property: robustness | Random and malformed input never panics, always terminates, and always produces a tree |
-| Property: recovery | A file with N independent mistakes produces about N diagnostics, not N² |
-| Round trip | `parse → print` is the identity, byte for byte (the M10 formatter's own test, prepared now) |
+| Level | What it covers | Where |
+| ----- | -------------- | ----- |
+| Fixtures | One rule per file, expectations declared in the file | `compiler/nudo-parser/tests/fixtures.rs` |
+| Conformance | Language-visible behaviour, implementation-neutral | `tests/conformance/parser/` (13 cases) |
+| Property: losslessness | Token texts re-concatenate to the original file | every fixture and every conformance case |
+| Property: recovery | Malformed input never panics, always terminates, always produces a tree | `compiler/nudo-parser/src/lib.rs` unit tests |
+| Property: bounded diagnostics | A file of nonsense produces a bounded number | same |
+| Examples | A preview is rejected; a readable example is accepted | `compiler/nudo-parser/tests/examples.rs` |
 
-The property tests follow the pattern already used for the lexer
-(`compiler/nudo-lexer/tests/robustness.rs`): a fixed-seed generator, printed on
-failure, no third-party harness.
-
-**Every parser bug becomes a permanent conformance case.** A bug that was found
-once and not added to the corpus will be found again.
+**Every parser bug becomes a permanent conformance case.** The bugs found while
+building M2 are in the corpus: `0008-comparison-does-not-chain`,
+`0009-missing-semicolon`, `0010-recovery`, `0012-contextual-words`,
+`0013-error-node`.
 
 ## Decisions required before implementation
 
-These block a *correct* parser, not a compiling one. Each is a NEP:
+The four decisions this document listed as gates, and where they stand:
 
-| # | Decision | Why it blocks |
-| - | -------- | ------------- |
-| 1 | Keyword policy ([NEP-0005](../../neps/0005-keyword-policy.md)) | `true` and `false` currently lex as identifiers, so `literal` and `path-expression` overlap. Item dispatch needs to know which words are reserved. |
-| 2 | Generic syntax | Whether `Foo<A>` exists decides whether the type parser needs the one-token lookahead above, or a different syntax entirely. |
-| 3 | `verify` form ([NEP-0002](../../neps/0002-generated-verified.md)) | Whether `verify` is a keyword, a function or a protocol changes a primary production. |
-| 4 | Mutability | Whether `let` is the only binding form, and therefore whether an `assignment` level exists. |
+| # | Decision | State |
+| - | -------- | ----- |
+| 1 | Keyword policy ([NEP-0005](../../neps/0005-keyword-policy.md)) | **Accepted and implemented.** A ten-word reserved core, everything else contextual. |
+| 2 | Generic syntax | **Accepted and implemented** ([NEP-0006](../../neps/0006-generic-syntax.md)): angle brackets, invariant arguments, no bounds, no declaration-site parameters. |
+| 3 | `verify` form ([NEP-0002](../../neps/0002-generated-verified.md)) | **Still open.** The parser implements the grammar as frozen and records the one-token limitation above. If NEP-0002 makes `verify` a keyword, the limitation disappears. |
+| 4 | Mutability | **Still open.** There is no assignment level in the grammar, so there is nothing for the parser to do; when mutability is decided it adds a level above `logical-or`. |
 
-Decisions 1 and 2 are cheap and are recommended first.
+Decisions 3 and 4 do not block a correct parser for the frozen grammar: the
+parser implements what the grammar says today, and a NEP that changes the grammar
+changes the parser in the same pull request.
 
 ## Non-goals for M2
 
-* **Incremental reparse.** An editor wants it; M2 does not need it. The tree API
-  is designed so a rowan-backed implementation could satisfy it later without
+* **Incremental reparse.** An editor wants it; M2 does not need it, and the tree
+  API is designed so a rowan-backed implementation could satisfy it later without
   changing consumers.
-* **Formatting.** M10 owns the formatter. M2 only guarantees that the tree makes
-  it possible.
+* **Formatting.** M10 owns the formatter. M2 guarantees the tree makes it
+  possible — and proves it, by reprinting every fixture and conformance case.
 * **Semantic analysis.** Names, types and effects are M3 and later. The parser
-  does not resolve anything.
+  resolves nothing: a `Path` is a list of names, not a reference.
 * **Error-tolerant AST for every consumer.** `nudo-ast` exposes what is
-  unambiguously well-formed; the syntax tree exposes everything, including
-  errors.
+  unambiguously well-formed; the syntax tree exposes everything, including errors.
 
 ## First block of work
+
+Done, in this order:
 
 1. `nudo-syntax`: `SyntaxKind`, the arena, the losslessness property test.
 2. `nudo-parser`: item dispatch, `fn`, `let`, blocks, statements.
 3. The expression chain, one level per function, in the declared order.
 4. Recovery, with the progress guarantee test.
 5. `nudo-ast` wrappers for functions, bindings and expressions.
-6. `nudo check` runs the parser and reports `NDO1xxx`; `--dump-tree` (provisional
-   name) prints the tree in a stable format, as `--dump-tokens` does today.
+6. `nudo check` runs the parser and reports `NDO1xxx`; `--dump-tree` prints the
+   tree in a stable format, as `--dump-tokens` does today.
 7. Conformance cases and fixtures for all of the above.
-
-Steps 1–3 are a vertical slice that can be reviewed on its own, and step 6 is the
-point at which `nudo check` stops meaning "lexically correct".

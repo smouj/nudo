@@ -2,6 +2,9 @@
 //
 // PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
 //
+// Why not: `approve` is not in the grammar. The approval expression is one of
+// the syntaxes NEP-0002 and the policy chapters still have to settle.
+//
 // A capability says what may happen. A policy says under which conditions it
 // may happen automatically. An approval is a point where a person decides.
 //

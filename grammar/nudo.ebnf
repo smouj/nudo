@@ -3,12 +3,17 @@
 (* STATUS: PRE-ALPHA. Two layers, with different standing:                 *)
 (*                                                                        *)
 (*   LEXICAL GRAMMAR    IMPLEMENTED   milestone M1, compiler/nudo-lexer    *)
-(*   SYNTACTIC GRAMMAR  SPECIFIED     milestone M2, not implemented        *)
+(*   SYNTACTIC GRAMMAR  IMPLEMENTED   milestone M2, compiler/nudo-parser   *)
 (*                                                                        *)
-(* "Specified" means the shape is decided and a parser for it is the next   *)
-(* milestone. Nothing in the syntactic grammar is accepted by any command   *)
-(* today, and `nudo check` reports unknown characters rather than pretending *)
-(* to parse.                                                               *)
+(* "Implemented" means the reference parser accepts exactly these           *)
+(* productions and rejects the rest with NDO1001. It does not mean the      *)
+(* language is finished: the productions marked provisional can still       *)
+(* change, and each change needs a NEP. Nothing is type-checked (M3) and    *)
+(* nothing runs (M4).                                                      *)
+(*                                                                        *)
+(* Where this file and an example disagree, this file wins: the examples    *)
+(* are illustrations and say which of them the toolchain can read. The      *)
+(* known disagreements are listed in spec/grammar.md.                      *)
 (*                                                                        *)
 (* The normative narrative is spec/grammar.md and the chapters it links.    *)
 (* If this file and the specification disagree, the specification wins.     *)
@@ -69,9 +74,14 @@ text-character      = ? any character except a quote, a backslash,
                         or a line terminator ? ;
 escape-sequence     = "\", ( "n" | "r" | "t" | "\" | '"' | "0" ) ;
 
-(* Only these two words are reserved. See NEP-0005 for the policy that
-   decides how the words below, and future ones, become reserved. *)
-keyword             = "fn" | "let" ;
+(* The reserved core, decided by NEP-0005. Every other word the grammar uses  *)
+(* (`agent`, `task`, `tool`, `model`, `role`, `tools`, `allow`, `budget`,      *)
+(* `with`, `verify`, `ask`, `delegate`) is contextual: it introduces its       *)
+(* construct in position and stays an identifier elsewhere, so a program may   *)
+(* still have a binding named `agent`. The parser, not the lexer, recognises   *)
+(* those. See neps/0005-keyword-policy.md and spec/lexical-structure.md.      *)
+keyword             = "fn" | "let" | "struct" | "enum" | "if" | "else"
+                    | "match" | "const" | "true" | "false" ;
 
 (* Punctuation of the pre-alpha token set. *)
 punctuation         = "(" | ")" | "{" | "}" | "[" | "]" | ":" | "," | "::"

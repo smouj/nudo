@@ -2,6 +2,10 @@
 //
 // PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
 //
+// Why not: the tool names are dotted and the `tools:` list is newline-separated
+// where the grammar requires commas and `::`; and `delegate … { topic: topic }`
+// uses named fields, while the grammar's `block` is a statement list.
+//
 // The rule: delegation may narrow authority, and may never widen it.
 //
 // Without that rule, every capability boundary can be walked around in one
