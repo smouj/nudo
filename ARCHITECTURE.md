@@ -86,7 +86,7 @@ change when work starts.
 | `nudo-parser` | Recursive-descent parser producing the syntax tree. | **Implemented (M2)** |
 | `nudo-ast` | Typed AST and visitors. | **Implemented (M2)** |
 | `nudo-hir` | Name resolution and desugaring into a resolved IR. | **Implemented (M3.1)** |
-| `nudo-typeck` | Type checking, including `Generated<T>`, `Verified<T>`, agent and task types. | Planned (M3) |
+| `nudo-typeck` | **Implemented (M3.2, first slice)** | Planned (M3) |
 | `nudo-effects` | Effect and capability inference and checking. | Planned (M5) |
 | `nudo-mir` | Mid-level IR: control flow made explicit, backends consume this. | Planned (M4) |
 | `nudo-codegen` | Backend-agnostic lowering from MIR. | Planned (M4) |

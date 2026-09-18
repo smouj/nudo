@@ -160,6 +160,7 @@ Syntax tree      compiler/nudo-syntax       ← implemented (M2)
 AST              compiler/nudo-ast          ← implemented (M2)
   ↓
 HIR              compiler/nudo-hir          ← implemented (M3)
+Typeck           compiler/nudo-typeck       ← implemented (M3.2, first slice; not wired into `check` yet)
   ↓
 Type checking    compiler/nudo-typeck       ← planned (M3)
   ↓

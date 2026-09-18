@@ -1,0 +1,2 @@
+# nudo-typeck v1
+def 0009 binding `count` 1:5: Int

@@ -84,6 +84,7 @@ nudo-syntax = { path = "compiler/nudo-syntax", version = "0.0.1" }
 nudo-parser = { path = "compiler/nudo-parser", version = "0.0.1" }
 nudo-ast = { path = "compiler/nudo-ast", version = "0.0.1" }
 nudo-hir = { path = "compiler/nudo-hir", version = "0.0.1" }
+nudo-typeck = { path = "compiler/nudo-typeck", version = "0.0.1" }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

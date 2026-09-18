@@ -21,6 +21,7 @@ competing layout later:
 | `conformance/lexer/`       | **present** | M1 |
 | `conformance/parser/`      | **present** | M2 |
 | `conformance/resolve/`     | **present** | M3 |
+| `conformance/typeck/`      | **present** | M3 |
 | `conformance/typecheck/`   | planned     | M3 |
 | `conformance/effects/`     | planned     | M5 |
 | `conformance/runtime/`     | planned     | M4 |

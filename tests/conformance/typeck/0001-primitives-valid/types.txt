@@ -1,0 +1,9 @@
+# nudo-typeck v1
+def 0009 function `answer` 1:4: Fn() -> Int
+def 0010 function `nothing` 5:4: Fn() -> Unit
+def 0011 binding `count` 9:5: Int
+def 0012 binding `ratio` 10:5: Float
+def 0013 binding `ready` 11:5: Bool
+def 0014 binding `label` 12:5: Text
+def 0015 binding `copied` 13:5: Int
+def 0016 binding `ignored` 6:9: Int

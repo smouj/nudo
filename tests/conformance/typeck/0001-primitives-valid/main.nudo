@@ -1,0 +1,13 @@
+fn answer() -> Int {
+    42
+}
+
+fn nothing() {
+    let ignored = 1;
+}
+
+let count: Int = 1;
+let ratio: Float = 1.5;
+let ready: Bool = true;
+let label: Text = "nudo";
+let copied = count;
