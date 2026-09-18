@@ -50,6 +50,13 @@ has run. The scope is pinned by
 needs a git work tree: outside one it stops and says so rather than scanning
 something wider.
 
+The console-output check,
+[`scripts/check-console.py`](../scripts/check-console.py), reads the same file
+set for the other half of its rule: every documented fragment must appear in a
+Markdown file, and a file git ignores is not one, so a scratch note quoting an
+old message cannot stand in for a page that has fallen behind. Its scope is
+pinned by [`scripts/test-check-console.py`](../scripts/test-check-console.py).
+
 ## A warning about completeness
 
 NUDO is pre-alpha. Most of the language documented here does not run yet, and
