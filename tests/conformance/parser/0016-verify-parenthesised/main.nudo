@@ -1,0 +1,1 @@
+let checked = verify (draft) with ArticleVerifier;

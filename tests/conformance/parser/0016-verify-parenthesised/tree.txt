@@ -1,0 +1,28 @@
+# nudo-tree v1
+SourceFile 0..51
+  Binding 0..50
+    KeywordLet "let" 0..3
+    Whitespace " " 3..4
+    Ident "checked" 4..11
+    Whitespace " " 11..12
+    Equals "=" 12..13
+    Whitespace " " 13..14
+    CallExpression 14..28
+      PathExpression 14..20
+        Path 14..20
+          Ident "verify" 14..20
+      Whitespace " " 20..21
+      ArgumentList 21..28
+        LParen "(" 21..22
+        PathExpression 22..27
+          Path 22..27
+            Ident "draft" 22..27
+        RParen ")" 27..28
+    Whitespace " " 28..29
+    Error 29..49
+      Ident "with" 29..33
+      Whitespace " " 33..34
+      Ident "ArticleVerifier" 34..49
+    Semi ";" 49..50
+  Whitespace "\n" 50..51
+  Eof "" 51..51

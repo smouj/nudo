@@ -144,11 +144,12 @@ The parser exists, and it agrees with this grammar:
 * A production the parser accepts but the grammar does not is a silent language
   extension, which is exactly what [`../AGENTS.md`](../AGENTS.md) forbids.
 * A production the grammar describes but the parser rejects is a silent
-  restriction, and is reported the same way. One is open right now, and it is
-  deliberate: the grammar gained `generic-parameter-list` and the restricted
-  `verify-expression` operand with NEP-0010 and NEP-0002, and `nudo-parser`
-  accepts both in **M3.1**, not in M2. Until then `nudo check` rejects
-  `enum Outcome<T, E>`, and the roadmap says so.
+  restriction, and is reported the same way. There is none open right now: the
+  two the grammar gained with [NEP-0010](../neps/0010-declaration-site-generics.md)
+  (`generic-parameter-list`) and [NEP-0002](../neps/0002-generated-verified.md)
+  (the restricted `verify-expression` operand) are implemented, and
+  `tests/conformance/parser/0014-declaration-generics` and `0016-verify-parenthesised`
+  pin them.
 * Every accepted production has a case under
   [`../tests/conformance/parser`](../tests/conformance/parser), and every
   rejected one a diagnostic case with its `NDO` code.

@@ -2,10 +2,10 @@
 //
 // PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
 //
-// Why not: `enum Outcome<T, E>` declares generic parameters, and the frozen
-// grammar has no place for them yet — NEP-0006 settles how type *arguments*
-// are written, not how parameters are declared. `return` is not in the grammar
-// either. See the open questions in spec/generics.md.
+// Why not: `return` is not in the grammar. The EBNF has no `return-statement`,
+// although spec/declarations.md describes one, so adding it is a language change
+// and needs a NEP. The declaration-site generics this file writes are accepted
+// since M3.1 (NEP-0010).
 //
 // NUDO has no exceptions. A failure is a value the caller must handle, and
 // `match` must be exhaustive (spec/expressions.md).

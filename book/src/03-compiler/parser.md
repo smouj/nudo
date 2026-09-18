@@ -56,11 +56,10 @@ about it.
 
 ## What is deliberately missing
 
-* Declaration-site generic parameters (`enum Outcome<T, E>`) are not in the frozen
-  grammar and are rejected; NEP-0006 records why.
-* `verify (expr) with V` is rejected, because `verify` is a contextual word and the
-  parser has one token of lookahead. The limitation is pinned by a test and
-  disappears when NEP-0002 decides what `verify` is.
+* Nothing, right now: declaration-site generic parameters (`enum Outcome<T, E>`)
+  and `verify`'s named operand both parse since M3.1, and each has a conformance
+  case that pins it. What is still missing from the language is `return`, which
+  the EBNF never had.
 * The grammar's paths use `::` and its lists are comma-separated, while several
   examples in the manual and in `examples/` write `web.search` one per line. The
   parser follows the grammar; the examples say they are previews, and which

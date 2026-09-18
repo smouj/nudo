@@ -17,6 +17,16 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **M3.1, the syntax half.** `generic-parameter-list` on `fn`, `struct`, `enum`,
+  `task` and `tool` ([NEP-0010](neps/0010-declaration-site-generics.md)), so a
+  program can declare a parameterised type of its own; and `verify`'s operand
+  restricted to a named value ([NEP-0002](neps/0002-generated-verified.md)),
+  which removes the one-token limitation M2 documented. Each has a conformance
+  case: `0014-declaration-generics`, `0015-verify-named-operand` and
+  `0016-verify-parenthesised`.
+* `NDO2001`, `NDO2002` and `NDO2003` in the registry, for the name resolution
+  that lands with the rest of M3.1.
+
 * **M3.0 — the semantic gates.** Six NEPs decide the semantics the type checker
   will be written against, each with the alternatives it rejected:
   [NEP-0007](neps/0007-integer-semantics.md) (`Int` is signed 64-bit, arithmetic
@@ -99,6 +109,16 @@ would be a promise the project cannot keep.
   Fixed, and documented for the tree corpus too.
 
 ### Fixed
+
+* **One position, one parser diagnostic.** Two constructs meeting at the same
+  token reported the same mistake twice. The parser now records what it has
+  already reported and stays quiet the second time.
+* **A missing `;` does not poison the next statement.** A statement whose
+  terminator is missing recovers to the next `;` or `}`, instead of leaving its
+  junk for whatever construct comes next to report again.
+* **No empty error nodes.** A recovery with nothing to skip was creating an
+  `Error` node with no children — a tree that claims the parser could not place
+  something it had placed.
 
 * **Recovery no longer skips silently.** An intermediate parser accepted
   `examples/05-agent` — exit code 0 — by discarding the tokens it could not

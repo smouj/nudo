@@ -1,0 +1,82 @@
+# nudo-tree v1
+SourceFile 0..159
+  Binding 0..56
+    KeywordLet "let" 0..3
+    Whitespace " " 3..4
+    Ident "draft" 4..9
+    Colon ":" 9..10
+    Whitespace " " 10..11
+    GenericType 11..29
+      Path 11..20
+        Ident "Generated" 11..20
+      Lt "<" 20..21
+      PathType 21..28
+        Path 21..28
+          Ident "Article" 21..28
+      Gt ">" 28..29
+    Whitespace " " 29..30
+    Equals "=" 30..31
+    Whitespace " " 31..32
+    AskExpression 32..55
+      Ident "ask" 32..35
+      Whitespace " " 35..36
+      Path 36..42
+        Ident "Writer" 36..42
+      Whitespace " " 42..43
+      Block 43..55
+        LBrace "{" 43..44
+        Whitespace " " 44..45
+        LiteralExpression 45..53
+          TextLiteral "\"create\"" 45..53
+        Whitespace " " 53..54
+        RBrace "}" 54..55
+    Semi ";" 55..56
+  Whitespace "\n" 56..57
+  Binding 57..105
+    KeywordLet "let" 57..60
+    Whitespace " " 60..61
+    Ident "checked" 61..68
+    Whitespace " " 68..69
+    Equals "=" 69..70
+    Whitespace " " 70..71
+    VerifyExpression 71..104
+      Ident "verify" 71..77
+      Whitespace " " 77..78
+      PathExpression 78..83
+        Path 78..83
+          Ident "draft" 78..83
+      Whitespace " " 83..84
+      Ident "with" 84..88
+      Whitespace " " 88..89
+      Path 89..104
+        Ident "ArticleVerifier" 89..104
+    Semi ";" 104..105
+  Whitespace "\n" 105..106
+  Binding 106..158
+    KeywordLet "let" 106..109
+    Whitespace " " 109..110
+    Ident "parsed" 110..116
+    Whitespace " " 116..117
+    Equals "=" 117..118
+    Whitespace " " 118..119
+    VerifyExpression 119..157
+      Ident "verify" 119..125
+      Whitespace " " 125..126
+      CallExpression 126..137
+        PathExpression 126..131
+          Path 126..131
+            Ident "parse" 126..131
+        ArgumentList 131..137
+          LParen "(" 131..132
+          PathExpression 132..136
+            Path 132..136
+              Ident "text" 132..136
+          RParen ")" 136..137
+      Whitespace " " 137..138
+      Ident "with" 138..142
+      Whitespace " " 142..143
+      Path 143..157
+        Ident "SourceVerifier" 143..157
+    Semi ";" 157..158
+  Whitespace "\n" 158..159
+  Eof "" 159..159

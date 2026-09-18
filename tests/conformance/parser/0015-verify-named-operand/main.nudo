@@ -1,0 +1,3 @@
+let draft: Generated<Article> = ask Writer { "create" };
+let checked = verify draft with ArticleVerifier;
+let parsed = verify parse(text) with SourceVerifier;

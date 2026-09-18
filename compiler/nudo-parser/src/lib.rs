@@ -216,6 +216,9 @@ struct Parser<'a> {
     /// Byte offsets the lexer already rejected, so that the parser does not
     /// report the same position a second time.
     already_reported: Vec<u32>,
+    /// Byte offsets the parser has already reported, so that one mistake is one
+    /// diagnostic even when two constructs meet at it.
+    reported_starts: Vec<u32>,
 }
 
 impl<'a> Parser<'a> {
@@ -235,6 +238,7 @@ impl<'a> Parser<'a> {
             errors: 0,
             depth: 0,
             already_reported,
+            reported_starts: Vec::new(),
         }
     }
 
@@ -383,10 +387,11 @@ impl<'a> Parser<'a> {
         // in the gap before this token, the parser has nothing to add: the
         // reader would see a cascade of two messages for one mistake, and an
         // agent repairing the file would fix the same byte twice.
-        if self.suppressed(span) {
+        if self.suppressed(span) || self.reported_starts.contains(&span.start().get()) {
             return;
         }
         self.errors += 1;
+        self.reported_starts.push(span.start().get());
         let mut diagnostic = Diagnostic::error(code, message).with_location(self.source, span);
         if let Some(note) = note {
             diagnostic = diagnostic.with_note(note);
@@ -667,7 +672,7 @@ impl<'a> Parser<'a> {
         } else {
             self.unexpected("`=` and a value");
         }
-        self.expect(SyntaxKind::Semi, "`;`");
+        self.expect_statement_end();
         self.builder.finish_node();
     }
 
@@ -687,8 +692,23 @@ impl<'a> Parser<'a> {
             // tokens away, and a third for the token the item loop then finds.
             self.recover_in_node(&[SyntaxKind::Semi, SyntaxKind::RBrace]);
         }
-        self.expect(SyntaxKind::Semi, "`;`");
+        self.expect_statement_end();
         self.builder.finish_node();
+    }
+
+    /// Consumes the `;` that ends a statement, or reports it once and skips
+    /// what could not be placed.
+    ///
+    /// Skipping to the next `;` or `}` is what keeps a stray token from being
+    /// reported twice: once as the missing `;`, and again by whatever construct
+    /// meets the junk the statement left behind.
+    fn expect_statement_end(&mut self) {
+        if self.eat(SyntaxKind::Semi) {
+            return;
+        }
+        self.unexpected("`;`");
+        self.recover_in_node(&[SyntaxKind::Semi, SyntaxKind::RBrace]);
+        self.eat(SyntaxKind::Semi);
     }
 
     fn parse_agent_decl(&mut self) {
@@ -1364,27 +1384,6 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Whether a token can start an operand.
-    ///
-    /// `(` is excluded on purpose: after `verify`, a `(` is read as a call on
-    /// something named `verify`. That is the one place where a contextual word
-    /// is followed by something that could also continue a path, and the
-    /// limitation is recorded in the parser design document.
-    fn starts_operand(&self, kind: SyntaxKind) -> bool {
-        matches!(
-            kind,
-            SyntaxKind::Ident
-                | SyntaxKind::IntLiteral
-                | SyntaxKind::FloatLiteral
-                | SyntaxKind::TextLiteral
-                | SyntaxKind::KeywordTrue
-                | SyntaxKind::KeywordFalse
-                | SyntaxKind::KeywordIf
-                | SyntaxKind::KeywordMatch
-                | SyntaxKind::LBrace
-        )
-    }
-
     fn parse_if_expression(&mut self) {
         self.start_node(SyntaxKind::IfExpression);
         self.bump(); // `if`
@@ -1538,6 +1537,11 @@ impl<'a> Parser<'a> {
     /// The token that stops the skip is left alone, so the construct that
     /// expects it can report the mistake once.
     fn recover_in_node(&mut self, sync: &[SyntaxKind]) {
+        if self.at_eof() || sync.iter().any(|kind| self.at(*kind)) {
+            // Nothing to skip: an empty error node would say the parser could
+            // not place something, when in fact it placed everything it saw.
+            return;
+        }
         self.start_node(SyntaxKind::Error);
         while !self.at_eof() && !sync.iter().any(|kind| self.at(*kind)) {
             self.skip_token();
@@ -1634,6 +1638,48 @@ mod tests {
         assert!(dump.contains("ParameterList"), "{dump}");
         assert!(dump.contains("BinaryExpression"), "{dump}");
         assert!(!dump.contains("Error"), "{dump}");
+    }
+
+    #[test]
+    fn declaration_site_generic_parameters_parse() {
+        for source in [
+            "fn identity<T>(value: T) -> T {\n    value\n}\n",
+            "struct Pair<A, B> {\n    first: A\n    second: B\n}\n",
+            "enum Outcome<T, E> {\n    Ok(value: T)\n    Err(error: E)\n}\n",
+            "task Research<T>(topic: T) -> Text {\n    agent: Researcher\n    verify: Sources\n}\n",
+            "tool web::search<T>(query: T) -> Text {\n}\n",
+        ] {
+            assert_eq!(error_codes(source), Vec::<String>::new(), "{source}");
+        }
+        let (dump, _, _) = parse_text("struct Pair<A, B> {\n    first: A\n}\n");
+        assert!(dump.contains("GenericParameterList"), "{dump}");
+    }
+
+    #[test]
+    fn verify_takes_a_named_value() {
+        for source in [
+            "let checked = verify draft with ArticleVerifier;",
+            "let parsed = verify parse(text) with SourceVerifier;",
+        ] {
+            assert_eq!(error_codes(source), Vec::<String>::new(), "{source}");
+        }
+        // A parenthesised operand is not a named value. What follows is a call
+        // on a name called `verify`, followed by a `with` that can be placed
+        // nowhere - and one mistake is one diagnostic, not two.
+        let codes = error_codes("let checked = verify (draft) with V;");
+        assert_eq!(codes.len(), 1, "{codes:?}");
+    }
+
+    #[test]
+    fn one_mistake_is_reported_once_even_when_two_constructs_meet_at_it() {
+        for source in [
+            "let checked = verify (draft) with V;",
+            "fn f() { let x = 1 with y; }",
+            "let x = ) with y;",
+        ] {
+            let codes = error_codes(source);
+            assert_eq!(codes.len(), 1, "`{source}` reported {codes:?}");
+        }
     }
 
     #[test]
