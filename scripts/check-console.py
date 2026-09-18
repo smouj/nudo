@@ -51,6 +51,11 @@ CASES = [
         "stdout",
         ["# nudo-tokens v1"],
     ),
+    (
+        ["check", "--dump-tree", "examples/03-types/main.nudo"],
+        "stdout",
+        ["# nudo-tree v1"],
+    ),
 ]
 
 SKIP_DIRECTORIES = {".git", "target", "dist", "node_modules"}

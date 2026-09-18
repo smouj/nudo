@@ -9,6 +9,16 @@
 //!
 //! A preview that stops declaring itself a preview is worse than a broken
 //! example: it turns an intention into an apparent feature.
+//!
+//! The lexer can only answer the lexical half of the first promise. The half
+//! that matters after M2 — a preview is not silently *accepted* — needs a
+//! parser, and lives in `compiler/nudo-parser/tests/examples.rs`.
+//!
+//! M2 extended the token set to the one the grammar declares
+//! ([`grammar/nudo.ebnf`](../../../grammar/nudo.ebnf)), so a preview no longer
+//! has to contain an unknown character to be unimplemented. Most of them now
+//! lex cleanly and are rejected by the parser instead, which is a stronger
+//! statement than the one this file used to make.
 
 use std::fs;
 use std::path::PathBuf;
@@ -17,11 +27,10 @@ use nudo_lexer::tokenize;
 use nudo_source::SourceMap;
 
 /// Examples the toolchain can read: they must lex cleanly.
-const READABLE: &[&str] = &["00-hello-world", "01-variables", "02-functions"];
+const READABLE: &[&str] = &["00-hello-world", "01-variables", "02-functions", "03-types"];
 
 /// Examples that illustrate proposed syntax: they must say so.
 const PREVIEWS: &[&str] = &[
-    "03-types",
     "04-results",
     "05-agent",
     "06-tools",
@@ -97,17 +106,22 @@ fn previews_declare_themselves_as_previews() {
 }
 
 #[test]
-fn previews_are_not_silently_accepted() {
-    // A preview is syntax the toolchain does not implement. If one ever lexes
-    // cleanly, either the preview is out of date or the token set grew without
-    // its specification chapter — both need a human to look.
-    for name in PREVIEWS {
-        let text = example_source(name);
-        let lexed = lex(name, text);
-        assert!(
-            lexed.diagnostics().has_errors(),
-            "examples/{name}/main.nudo is marked as a preview but lexes cleanly; \
-             update the example and examples/README.md, or explain the change in a NEP"
-        );
-    }
+fn example_corpus_is_classified_completely() {
+    let mut on_disk: Vec<String> = fs::read_dir(examples_dir())
+        .expect("examples/ is readable")
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().is_dir())
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .collect();
+    on_disk.sort();
+    let mut classified: Vec<String> = READABLE
+        .iter()
+        .chain(PREVIEWS)
+        .map(|name| (*name).to_string())
+        .collect();
+    classified.sort();
+    assert_eq!(
+        on_disk, classified,
+        "every example directory must be classified as readable or as a preview"
+    );
 }

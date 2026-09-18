@@ -45,7 +45,7 @@ not reserved; Unicode identifiers are an open question
 ([`DESIGN.md`](DESIGN.md#open-questions)); a literal's *value* is not computed
 until the parser needs it.
 
-## M2 — Parser and syntax tree — **next**
+## M2 — Parser and syntax tree — **done**
 
 ### M2.0 — Grammar freeze — **done**
 
@@ -63,29 +63,60 @@ load-bearing rules are enforced mechanically rather than by reviewer attention:
 * [x] The M2 design is written down before the code:
       [`docs/internals/parser-design.md`](docs/internals/parser-design.md).
 
-**Gate.** Four decisions block a *correct* parser, not a compiling one. Two are
-cheap and should be taken first: the keyword policy
-([NEP-0005](neps/0005-keyword-policy.md), which also resolves a real parse
-conflict between `true`/`false` and identifiers) and whether generics use angle
-brackets.
+**Gate.** Four decisions blocked a *correct* parser, not a compiling one. Two were
+taken as part of M2.1 and are implemented: the keyword policy
+([NEP-0005](neps/0005-keyword-policy.md), which also resolved the real parse
+conflict between `true`/`false` and identifiers) and generic syntax
+([NEP-0006](neps/0006-generic-syntax.md)). The other two — the `verify` form and
+mutability — remain open, and their absence is recorded in
+[`docs/internals/parser-design.md`](docs/internals/parser-design.md) rather than
+hidden.
 
-### M2.1 — Parser and syntax tree
+### M2.1 — Parser and syntax tree — **done**
 
-* [ ] `nudo-syntax`: lossless tree, `SyntaxKind`, error nodes, and the property
+* [x] `nudo-syntax`: lossless tree, `SyntaxKind`, error nodes, and the property
       test that the tree's token texts re-concatenate to the original file
-* [ ] `nudo-parser`: recursive descent with precedence climbing on the declared
+* [x] `nudo-parser`: recursive descent with precedence climbing on the declared
       chain, and recovery with a progress guarantee (no hangs, no cascades)
-* [ ] `nudo-ast`: typed wrappers for consumers that want structure, not text
-* [ ] `NDO1001` and the rest of the `1xxx` family in use, with expected/found
-* [ ] `nudo check` parses, so a clean run stops meaning "lexically correct"
-* [ ] A tree dump in a stable format, matching what `--dump-tokens` gives tokens
-* [ ] Conformance cases under `tests/conformance/parser/`
+* [x] `nudo-ast`: typed wrappers for consumers that want structure, not text
+* [x] `NDO1001` and the rest of the `1xxx` family in use, with expected/found
+* [x] `nudo check` parses, so a clean run stops meaning "lexically correct"
+* [x] A tree dump in a stable format, matching what `--dump-tokens` gives tokens
+* [x] Conformance cases under `tests/conformance/parser/` (13 cases)
 
-**Exit criteria:** every `fixtures/valid` program parses to a tree with no error
-nodes, every `fixtures/invalid` one is rejected with the declared diagnostics, the
-losslessness property holds across the corpus, and the tree can reprint its source
-byte for byte. The formatter itself is M10; M2 owes the tree that makes it
-possible.
+**Exit criteria:** met. Every `fixtures/valid` program parses to a tree with no
+error nodes, every `fixtures/invalid` one is rejected with the declared
+diagnostics, the losslessness property holds across the corpus, and the tree
+reprints its source byte for byte (`SyntaxTree::reprint`, checked by every
+conformance case).
+
+**The gate was taken first.** The two cheap decisions that blocked a correct
+parser were settled in this milestone:
+
+* [NEP-0005](neps/0005-keyword-policy.md) — keyword policy: a ten-word reserved
+  core, everything else contextual. Implemented in `nudo-lexer` and
+  `nudo-parser`.
+* [NEP-0006](neps/0006-generic-syntax.md) — generic syntax: angle brackets,
+  invariant type arguments, no bounds, no declaration-site parameters.
+
+The other two decisions the design document listed are still open, and do not
+block a parser for the frozen grammar: the `verify` form
+([NEP-0002](neps/0002-generated-verified.md)) and mutability. Both are recorded
+in [`docs/internals/parser-design.md`](docs/internals/parser-design.md), with the
+one visible consequence of the first: `verify (expr) with V` is rejected.
+
+**Known gaps, deliberately accepted:**
+
+* declaration-site generic parameters (`enum Outcome<T, E>`) are not in the
+  grammar, so they are rejected — NEP-0006 says why;
+* the grammar's paths use `::` and its lists are comma-separated, while several
+  examples write `web.search` one per line. The parser follows the grammar, the
+  examples say they are previews, and the spelling needs a NEP to change;
+* `nudo-ast` exposes items and expressions, not every possible shape; it grows
+  when a consumer needs it.
+
+**The formatter is still M10.** M2 owes it a tree it can reprint, and pays that
+debt: `reprint` is the identity for every fixture and every conformance case.
 
 ## M3 — Type system — **planned**
 

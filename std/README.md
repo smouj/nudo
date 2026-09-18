@@ -3,8 +3,8 @@
 **PLANNED. Empty on purpose.**
 
 The standard library cannot be written before the language can run a program.
-Today the toolchain lexes and nothing else (milestone M1), so there is no code
-to call and no way to test what a standard library does.
+Today the toolchain lexes and parses and nothing else (milestones M1–M2), so
+there is no code to call and no way to test what a standard library does.
 
 This directory holds a README instead of thirteen empty directories, because an
 empty directory is a promise the repository cannot keep.

@@ -1,7 +1,8 @@
 # Installing the toolchain
 
 NUDO is pre-alpha. What you install today is a compiler front end that reads
-`.nudo` files and reports lexical diagnostics. Nothing else works yet — see
+`.nudo` files, lexes them, parses them and reports lexical and syntax
+diagnostics. Nothing else works yet — see
 [`../../ROADMAP.md`](../../ROADMAP.md).
 
 ## Requirements

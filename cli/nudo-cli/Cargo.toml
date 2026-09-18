@@ -17,8 +17,10 @@ path = "src/main.rs"
 nudo-common.workspace = true
 nudo-diagnostics.workspace = true
 nudo-lexer.workspace = true
+nudo-parser.workspace = true
 nudo-source.workspace = true
 nudo-span.workspace = true
+nudo-syntax.workspace = true
 
 [lints]
 workspace = true

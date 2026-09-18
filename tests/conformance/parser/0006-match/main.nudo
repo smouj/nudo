@@ -1,0 +1,7 @@
+fn describe(status: Status) -> Text {
+    match status {
+        Pending => "not started"
+        Complete => "finished"
+        Failed(reason) => reason
+    }
+}

@@ -4,6 +4,11 @@
 //! The declaration format is documented in `fixtures/README.md`. This test is
 //! deliberately strict in both directions: an undeclared diagnostic fails, and
 //! a declared diagnostic that never appears also fails.
+//!
+//! Since M2 a fixture may also fail the *parser*, and a declared `NDO1001` is
+//! not the lexer's business. This test therefore speaks only about the codes
+//! the lexer owns; `compiler/nudo-parser/tests/fixtures.rs` checks the whole
+//! declared set, so nothing declared can hide between the two.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -11,6 +16,10 @@ use std::path::{Path, PathBuf};
 use nudo_lexer::tokenize;
 use nudo_source::SourceMap;
 use nudo_span::LineCol;
+
+/// The `NDO` codes the lexer can emit. Anything else declared by a fixture is
+/// another stage's business.
+const LEXICAL_CODES: &[&str] = &["NDO1002", "NDO1003", "NDO1004", "NDO1005", "NDO1006"];
 
 fn fixture_dir(kind: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -126,6 +135,13 @@ fn invalid_fixtures_report_exactly_what_they_declare() {
             "{} is in invalid/ but declares no expectations",
             path.display()
         );
+        let declared: Vec<Expectation> = declared
+            .into_iter()
+            .filter(|item| LEXICAL_CODES.contains(&item.code.as_str()))
+            .collect();
+        if declared.is_empty() {
+            continue;
+        }
 
         let (sources, lexed) = lex_file(&path);
         let diagnostics = lexed.diagnostics();

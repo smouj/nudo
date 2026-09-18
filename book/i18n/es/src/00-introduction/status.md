@@ -6,9 +6,10 @@
 ## Base implementada
 
 La ruta que funciona está centrada actualmente en la carga del código fuente, los
-spans, el análisis léxico, los tokens, los diagnósticos y el comportamiento léxico
-de `nudo check`. El proyecto cuenta además con infraestructura de repositorio, CI,
-seguridad, gobernanza, conformidad y documentación.
+spans, el análisis léxico, los tokens, los diagnósticos, el árbol sintáctico sin
+pérdidas, el parser, el AST tipado y `nudo check` sobre todo ello. El proyecto cuenta
+además con infraestructura de repositorio, CI, seguridad, gobernanza, conformidad y
+documentación.
 
 ## Ruta planificada del compilador
 
@@ -17,9 +18,9 @@ Source
   ↓
 Lexer             implemented
   ↓
-Lossless syntax   planned
+Lossless syntax   implemented
   ↓
-Parser / AST      planned
+Parser / AST      implemented
   ↓
 HIR / typecheck   planned
   ↓
@@ -29,6 +30,10 @@ MIR
   ↓
 Interpreter / WASM
 ```
+
+«Implementado» significa que una fase tiene comportamiento y pruebas hoy. Una
+ejecución limpia de `nudo check` significa que el archivo pasa el análisis léxico y el
+sintáctico; no significa que el programa sea correcto, y no se ejecuta.
 
 ## Por qué importan las etiquetas de estado
 

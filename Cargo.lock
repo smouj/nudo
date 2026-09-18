@@ -9,6 +9,12 @@ version = "0.0.1"
 [[package]]
 name = "nudo-ast"
 version = "0.0.1"
+dependencies = [
+ "nudo-parser",
+ "nudo-source",
+ "nudo-span",
+ "nudo-syntax",
+]
 
 [[package]]
 name = "nudo-backend-interpreter"
@@ -37,8 +43,10 @@ dependencies = [
  "nudo-common",
  "nudo-diagnostics",
  "nudo-lexer",
+ "nudo-parser",
  "nudo-source",
  "nudo-span",
+ "nudo-syntax",
 ]
 
 [[package]]
@@ -105,6 +113,13 @@ version = "0.0.1"
 [[package]]
 name = "nudo-parser"
 version = "0.0.1"
+dependencies = [
+ "nudo-diagnostics",
+ "nudo-lexer",
+ "nudo-source",
+ "nudo-span",
+ "nudo-syntax",
+]
 
 [[package]]
 name = "nudo-policy"
@@ -145,6 +160,9 @@ version = "0.0.1"
 [[package]]
 name = "nudo-syntax"
 version = "0.0.1"
+dependencies = [
+ "nudo-span",
+]
 
 [[package]]
 name = "nudo-task"

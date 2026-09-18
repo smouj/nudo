@@ -2,10 +2,11 @@
 
 A readable companion to [`nudo.ebnf`](nudo.ebnf).
 
-**Everything in this file except the "Lexical structure" section is
-PRE-ALPHA and provisional.** The lexer (milestone M1) accepts the lexical
-structure; nothing accepts the rest yet. See
-[`../spec/grammar.md`](../spec/grammar.md).
+**The lexical and syntactic structure below is what the toolchain accepts.**
+The lexer (milestone M1) and the parser (milestone M2) implement it, and
+`tests/conformance/lexer` and `tests/conformance/parser` pin it. What is still
+PRE-ALPHA is the *meaning*: several items are marked provisional because a NEP
+can still change their shape. See [`../spec/grammar.md`](../spec/grammar.md).
 
 ## Lexical structure — implemented
 
@@ -29,13 +30,14 @@ let message = "escapes: \n \r \t \\ \" \0";
 | Integer | `42`, `1_000_000` |
 | Float | `3.5`, `1_0.2_5` — a `.` followed by a digit |
 | Text | `"…"`, closed on the same line |
-| Reserved words | `fn`, `let` — and nothing else, yet |
-| Punctuation | `( ) { } : , -> = + - * / ;` |
+| Reserved words | `fn`, `let`, `struct`, `enum`, `if`, `else`, `match`, `const`, `true`, `false` |
+| Contextual words | `agent`, `task`, `tool`, `model`, `role`, `tools`, `allow`, `budget`, `with`, `verify`, `ask`, `delegate` — keywords in position, ordinary names elsewhere |
+| Punctuation | `( ) { } [ ] : :: , . ? -> => = == != < > <= >= && \|\| ! + - * / ;` |
 
 Details, including what is rejected and why, are in
 [`../spec/lexical-structure.md`](../spec/lexical-structure.md).
 
-## Items — provisional
+## Items — syntax implemented
 
 ### Functions
 
@@ -84,8 +86,7 @@ agent Researcher {
         "Research reliable information."
 
     tools:
-        web.search
-        web.open
+        web::search, web::open
 
     allow:
         Network
@@ -94,6 +95,11 @@ agent Researcher {
         Budget(tokens: 20_000, tool_calls: 30)
 }
 ```
+
+A list inside a declaration is comma-separated, and a tool's name is a `path`:
+its segments are separated by `::`, so the tool is `web::search`. Writing one
+name per line, or separating segments with `.`, is a syntax error — see the
+recorded disagreements in [`../spec/grammar.md`](../spec/grammar.md).
 
 An agent declaration is a capability statement. Read it as: this agent may call
 these tools, may hold these capabilities, and may spend this much. See
@@ -120,7 +126,7 @@ See [`../spec/agents/task.md`](../spec/agents/task.md).
 ### Tools and models
 
 ```nudo
-tool web.search(query: Text) -> [Result] with Network, Budget {
+tool web::search(query: Text) -> [Result] with Network, Budget {
     // implementation
 }
 

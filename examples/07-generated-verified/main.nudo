@@ -2,6 +2,10 @@
 //
 // PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
 //
+// Why not: the two top-level `let`s below are not terminated by `;`, and the
+// grammar requires it (`binding = "let", identifier, [":", type], "=",
+// expression, ";"`).
+//
 // The central idea of the language: what a model produced and what has been
 // checked are different types, and the conversion between them is an explicit,
 // fallible, recorded step.

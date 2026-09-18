@@ -7,7 +7,7 @@
 | ----- | ----- |
 | Idioma | Español (`es`) |
 | Directorio | `book/i18n/es/src` |
-| Edición inglesa de origen | revisión `66774d2` de `book/src`, más la reescritura todavía sin commitear de `02-language-design/expressions.md` (estado cambiado a `Specified`) |
+| Edición inglesa de origen | revisión actual de `book/src` tras el hito M2 (parser y árbol sintáctico sin pérdidas), registrada capítulo a capítulo en `translation.json` |
 | Alcance | 33 archivos: `index.md`, `SUMMARY.md` y los 31 capítulos |
 | Manifiesto de hashes | `book/i18n/es/translation.json` |
 
@@ -71,9 +71,10 @@ tabla de correspondencia es fija:
 Los valores compuestos y cualificados del original se traducen conservando el mismo
 rango en cada parte (por ejemplo `Specified / Planned` → `Especificado /
 Planificado`, `Implemented foundation` → `Base implementada`, `Proposed syntax` →
-`Sintaxis propuesta`). El valor `Open` de
-`02-language-design/expressions.md` no pertenece al vocabulario de cuatro etiquetas
-del repositorio y se traduce literalmente como «Abierto», sin interpretarlo.
+`Sintaxis propuesta`). El valor `Open` que
+`02-language-design/expressions.md` llevaba antes de congelarse la gramática de
+expresiones ya no aparece en el original: el capítulo carga ahora `Implemented`, y
+esta edición lo traduce como `Implementado (IMPLEMENTED)`.
 
 ## Lo que no está traducido
 

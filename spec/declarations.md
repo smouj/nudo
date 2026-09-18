@@ -1,9 +1,11 @@
 # Declarations
 
-**State: proposed.** Nothing below is implemented. `fn` and `let` are the two
-reserved words today ([`lexical-structure.md`](lexical-structure.md)), and even
-they are only lexed. Every other keyword here is provisional and must pass a
-[NEP](../neps/README.md) before it is reserved.
+**State: the syntax is implemented; the meaning is proposed.** The parser accepts
+every declaration form below (`compiler/nudo-parser`, pinned by
+`tests/conformance/parser`). Nothing resolves a name or checks a type yet: that
+is M3. The reserved words are the core [lexical-structure.md](lexical-structure.md)
+fixes; the words that introduce the declarations — `agent`, `task`, `tool`,
+`model` — are contextual, so they remain usable as names elsewhere.
 
 ## Functions
 
@@ -55,8 +57,7 @@ agent Researcher {
         "Research reliable information."
 
     tools:
-        web.search
-        web.open
+        web::search, web::open
 
     allow:
         Network

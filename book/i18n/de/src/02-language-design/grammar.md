@@ -1,7 +1,7 @@
 # 02.1 — Grammatik und Syntaxdisziplin
 
-> **Status:** Vorgeschlagen  
-> **Summary:** Die Grammatik ist ein Vertrag zwischen Quelltext und Parser; vorläufige Agenten-Syntax muss sichtbar vorläufig bleiben, bis sie akzeptiert ist.
+> **Status:** Implementiert / Vorgeschlagen (IMPLEMENTED / PROPOSED)  
+> **Summary:** Die Grammatik ist ein Vertrag zwischen Quelltext und Parser, vom Parser implementiert und von einem Checker durchgesetzt; vorläufige Agenten-Syntax bleibt sichtbar vorläufig, bis sie akzeptiert ist.
 
 ## Kleine Syntax, starke Semantik
 

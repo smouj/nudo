@@ -154,9 +154,10 @@ Lexer            compiler/nudo-lexer        ← implemented (M1)
   ↓
 Tokens
   ↓
-Parser           compiler/nudo-parser       ← planned (M2)
+Parser           compiler/nudo-parser       ← implemented (M2)
   ↓
-Syntax tree → AST
+Syntax tree      compiler/nudo-syntax       ← implemented (M2)
+AST              compiler/nudo-ast          ← implemented (M2)
   ↓
 HIR
   ↓
@@ -180,9 +181,10 @@ the dependency rules between them.
 | ---- | ----- |
 | Language specification | Written, pre-alpha, expected to change |
 | Lexer | Implemented and tested (milestone M1) |
-| `nudo check` | Implemented: reads `.nudo` files, reports lexical diagnostics |
+| Parser, lossless syntax tree, AST | Implemented and tested (milestone M2) |
+| `nudo check` | Implemented: reads `.nudo` files, reports lexical and syntax diagnostics |
 | `nudo --version`, `nudo --help` | Implemented |
-| Parser, AST, types, effects | Planned |
+| Types, effects | Planned |
 | Interpreter, WASM backend | Planned |
 | Agents, tools, models, policies | Designed only |
 
@@ -191,8 +193,9 @@ $ nudo check examples/00-hello-world/main.nudo
 checked 1 file: 0 errors and 0 warnings
 ```
 
-`nudo check` runs lexical analysis only. A clean run means "no lexical
-diagnostics", not "this program is correct".
+`nudo check` lexes and parses. A clean run means "no lexical or syntax
+diagnostics", not "this program is correct": nothing is type-checked, and
+nothing runs.
 
 ## Roadmap
 

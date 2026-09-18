@@ -6,7 +6,8 @@
 ## 已实现的基础
 
 当前可用的路径集中在源加载、跨度（span）、词法分析（lexing）、记号（token）、
-诊断（diagnostic）以及词法层面的 `nudo check` 行为。项目还具备仓库、CI、安全、治理、
+诊断（diagnostic）、无损语法树（lossless syntax tree）、解析器（parser）、带类型的 AST，
+以及覆盖这一切的 `nudo check`。项目还具备仓库、CI、安全、治理、
 一致性（conformance）和文档基础设施。
 
 ## 计划中的编译器路径
@@ -16,9 +17,9 @@ Source
   ↓
 Lexer             implemented
   ↓
-Lossless syntax   planned
+Lossless syntax   implemented
   ↓
-Parser / AST      planned
+Parser / AST      implemented
   ↓
 HIR / typecheck   planned
   ↓
@@ -28,6 +29,9 @@ MIR
   ↓
 Interpreter / WASM
 ```
+
+“Implemented”（已实现）意味着某个阶段今天已经具备行为和测试。一次干净的 `nudo check`
+运行意味着文件通过了词法分析和语法分析；它并不意味着程序是正确的，也不意味着它能运行。
 
 ## 状态标签为什么重要
 

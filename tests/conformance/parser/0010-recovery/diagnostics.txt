@@ -1,0 +1,2 @@
+# nudo-diagnostics v1
+error NDO1001 2:17

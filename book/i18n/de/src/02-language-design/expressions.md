@@ -1,10 +1,12 @@
 # 02.2 — Ausdrücke und Präzedenz
 
-> **Status:** Spezifiziert (SPECIFIED)  
-> **Summary:** Präzedenz, Assoziativität und das Verbot von Linksrekursion sind entschieden und mechanisch geprüft. Der Parser, der sie umsetzt, ist M2.
+> **Status:** Implementiert (IMPLEMENTED)  
+> **Summary:** Präzedenz, Assoziativität und das Verbot von Linksrekursion sind entschieden, durchgesetzt und vom Parser implementiert.
 
 Präzedenz ist keine Formatierungsfrage. `a + b * c` muss in jeder konformen
-Implementierung genau eine Bedeutung haben.
+Implementierung genau eine Bedeutung haben, und der Parser erzeugt genau diese
+Form: der Baum für `1 + 2 * 3` hat die Multiplikation als inneren Knoten und die
+Addition darüber.
 
 Diese Fragen sind nicht mehr offen. Sie stehen genau einmal als Kette von
 Grammatik-Ebenen in

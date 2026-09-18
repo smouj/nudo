@@ -15,5 +15,6 @@ Important properties include:
 - stable diagnostic codes;
 - conformance cases that another implementation can reproduce.
 
-The current `nudo check` success path is lexical only. A clean result does not yet
-mean that a program is syntactically or semantically valid.
+The `nudo check` success path now runs the whole front end: a clean result means
+the file lexes and parses. It still does not mean the program is semantically
+valid — nothing is type-checked (M3) and nothing runs (M4).

@@ -1,9 +1,13 @@
 # 03.4 — Diagnostics as product design
 
-> **Status:** Specified / Planned  
-> **Summary:** Compiler errors should explain the rule, the source location and the chain that introduced the requirement.
+> **Status:** Implemented / Planned  
+> **Summary:** Compiler errors explain the rule, the source location and the chain that introduced the requirement.
 
-Diagnostics are part of the language experience, not a debug dump.
+Diagnostics are part of the language experience, not a debug dump. The lexical
+and syntax families (`NDO1xxx`) are implemented: a file is rejected with a stable
+code, an exact span and an expected/found pair. The type, effect and capability
+families are planned, and the chain they will have to show is specified in
+`spec/errors.md`.
 
 A high-quality capability error should identify both the call site and the reason:
 

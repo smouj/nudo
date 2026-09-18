@@ -35,10 +35,9 @@ Source text
     ↓
 nudo-lexer          tokens + lexical diagnostics      implemented (M1)
     ↓
-nudo-parser         syntax tree                       planned (M2)
-    ↓
-nudo-syntax         lossless syntax tree             planned (M2)
-nudo-ast            abstract syntax tree             planned (M2)
+nudo-syntax         lossless syntax tree              implemented (M2)
+nudo-parser         syntax tree                       implemented (M2)
+nudo-ast            abstract syntax tree             implemented (M2)
     ↓
 nudo-hir            name resolution, desugaring      planned (M3)
     ↓
@@ -83,9 +82,9 @@ change when work starts.
 | ----- | -------------- | ------ |
 | `nudo-lexer` | Source text → tokens, with lexical diagnostics and error recovery. | **Implemented (M1)** |
 | `nudo-diagnostics` | Diagnostic model, `NDO` code registry, source-snippet renderer. | **Implemented (M1)** |
-| `nudo-syntax` | Lossless syntax tree, preserved trivia, used by parser, formatter and LSP. | Planned (M2) |
-| `nudo-parser` | Recursive-descent parser producing the syntax tree. | Planned (M2) |
-| `nudo-ast` | Typed AST and visitors. | Planned (M2) |
+| `nudo-syntax` | Lossless syntax tree, preserved trivia, used by parser, formatter and LSP. | **Implemented (M2)** |
+| `nudo-parser` | Recursive-descent parser producing the syntax tree. | **Implemented (M2)** |
+| `nudo-ast` | Typed AST and visitors. | **Implemented (M2)** |
 | `nudo-hir` | Name resolution and desugaring into a resolved IR. | Planned (M3) |
 | `nudo-typeck` | Type checking, including `Generated<T>`, `Verified<T>`, agent and task types. | Planned (M3) |
 | `nudo-effects` | Effect and capability inference and checking. | Planned (M5) |
@@ -112,7 +111,7 @@ change when work starts.
 
 | Crate | Responsibility | Status |
 | ----- | -------------- | ------ |
-| `nudo-cli` (binary `nudo`) | Argument handling, command dispatch, exit codes. | **Implemented (M1)** |
+| `nudo-cli` (binary `nudo`) | Argument handling, command dispatch, exit codes. | **Implemented (M1–M2)** |
 | `nudo-fmt` | Canonical formatter. | Planned (M10) |
 | `nudo-lsp` | Language server. | Planned (M10) |
 | `nudo-doc` | Documentation generator. | Planned (M10) |

@@ -9,5 +9,13 @@ repository.workspace = true
 authors.workspace = true
 publish.workspace = true
 
+[dependencies]
+nudo-span.workspace = true
+nudo-syntax.workspace = true
+
+[dev-dependencies]
+nudo-parser.workspace = true
+nudo-source.workspace = true
+
 [lints]
 workspace = true

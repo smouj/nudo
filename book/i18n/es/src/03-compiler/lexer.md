@@ -16,5 +16,7 @@ Entre sus propiedades importantes están:
 - códigos de diagnóstico estables;
 - casos de conformidad que otra implementación pueda reproducir.
 
-La ruta de éxito actual de `nudo check` es solo léxica. Un resultado limpio todavía
-no significa que un programa sea sintáctica o semánticamente válido.
+La ruta de éxito de `nudo check` ahora recorre todo el front end: un resultado limpio
+significa que el archivo pasa el análisis léxico y el sintáctico. Todavía no significa
+que el programa sea semánticamente válido: nada se comprueba de tipos (M3) y nada se
+ejecuta (M4).

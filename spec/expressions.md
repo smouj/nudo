@@ -1,6 +1,10 @@
 # Expressions and statements
 
-**State: proposed.** Nothing here is implemented beyond the tokens involved.
+**State: the expression grammar is implemented** (M2). Precedence,
+associativity and the shape of a block are what the parser accepts and what
+`tests/conformance/parser` pins. The agentic expressions at the end of this
+chapter are still provisional: their productions are implemented as written, but
+their form can change through the NEPs named there.
 
 ## Shape
 
@@ -117,6 +121,8 @@ stuck with.
 
 These are the expressions this language exists for. All are **provisional**, and
 each needs a NEP that settles whether it is a keyword, a function or a protocol.
+Their productions are implemented — the parser accepts the forms below — but a
+NEP that changes the shape changes the parser with it.
 
 ### `ask` — produce a `Generated<T>`
 
@@ -137,6 +143,23 @@ let article: Verified<Article> = verify draft with ArticleVerifier
 `verify` runs a verifier against a value and either produces `Verified<T>` with
 provenance attached, or fails. It is not a cast: a verifier can reject, and a
 rejected verification is a normal, checkable outcome.
+
+**Known limitation, and the reason it exists.** `verify` is a contextual word
+([NEP-0005](../neps/0005-keyword-policy.md)), so the parser has to decide from
+one token whether a name called `verify` is being used or a verification is being
+written. It reads `verify` as a verification when the next token starts an
+operand and is not `(`, `.` or `[`. The consequence:
+
+```nudo
+let a = verify draft with Verifier;   // a verification
+let b = verify(draft);                // a call on something named `verify`
+let c = verify (draft) with Verifier; // rejected: reads as a call
+```
+
+The third form is the one to know about. It is rejected rather than
+misinterpreted, and the limitation disappears the moment NEP-0002 decides whether
+`verify` is a keyword, a function or a protocol — which is exactly the decision
+this chapter is waiting on.
 
 ### Tool calls
 

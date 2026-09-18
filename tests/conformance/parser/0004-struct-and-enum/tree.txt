@@ -1,0 +1,52 @@
+# nudo-tree v1
+SourceFile 0..98
+  StructDecl 0..43
+    KeywordStruct "struct" 0..6
+    Whitespace " " 6..7
+    Ident "User" 7..11
+    Whitespace " " 11..12
+    LBrace "{" 12..13
+    Whitespace "\n    " 13..18
+    Field 18..28
+      Ident "name" 18..22
+      Colon ":" 22..23
+      Whitespace " " 23..24
+      PathType 24..28
+        Path 24..28
+          Ident "Text" 24..28
+    Whitespace "\n    " 28..33
+    Field 33..41
+      Ident "age" 33..36
+      Colon ":" 36..37
+      Whitespace " " 37..38
+      PathType 38..41
+        Path 38..41
+          Ident "Int" 38..41
+    Whitespace "\n" 41..42
+    RBrace "}" 42..43
+  Whitespace "\n\n" 43..45
+  EnumDecl 45..97
+    KeywordEnum "enum" 45..49
+    Whitespace " " 49..50
+    Ident "Status" 50..56
+    Whitespace " " 56..57
+    LBrace "{" 57..58
+    Whitespace "\n    " 58..63
+    Variant 63..70
+      Ident "Pending" 63..70
+    Whitespace "\n    " 70..75
+    Variant 75..95
+      Ident "Failed" 75..81
+      LParen "(" 81..82
+      Field 82..94
+        Ident "reason" 82..88
+        Colon ":" 88..89
+        Whitespace " " 89..90
+        PathType 90..94
+          Path 90..94
+            Ident "Text" 90..94
+      RParen ")" 94..95
+    Whitespace "\n" 95..96
+    RBrace "}" 96..97
+  Whitespace "\n" 97..98
+  Eof "" 98..98

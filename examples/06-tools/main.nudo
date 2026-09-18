@@ -2,6 +2,10 @@
 //
 // PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
 //
+// Why not: the tool names are dotted (`web.search`) where the grammar's path
+// uses `::`, and `Filesystem(path)` passes an argument to a capability, which
+// the grammar's `capability = identifier` does not allow.
+//
 // Every effect a program can have goes through a tool, so there is one place
 // where a request can be checked and recorded. A tool that needs the network
 // says so; a caller that cannot grant it does not get to call it.

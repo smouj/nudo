@@ -1,11 +1,13 @@
 // NUDO example 03 — types.
 //
-// PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
+// READ BY THE TOOLCHAIN TODAY:
 //
-// This file illustrates proposed syntax (spec/types.md, spec/declarations.md).
-// The parser that would accept it is milestone M2 and does not exist, so
-// `nudo check` reports unknown characters for `=>`, `match` is not reserved,
-// and nothing here is a contract.
+//     nudo check examples/03-types/main.nudo
+//
+// This file uses only syntax the frozen grammar accepts: declarations,
+// variants with fields, and a `match` with patterns (spec/types.md,
+// spec/declarations.md). It does not run, and nothing here is type-checked:
+// the type checker is milestone M3 and the interpreter is M4.
 
 struct User {
     name: Text

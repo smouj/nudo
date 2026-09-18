@@ -2,6 +2,12 @@
 //
 // PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
 //
+// Why not: the `tools:` list is written one name per line, and the frozen
+// grammar requires commas (`tools-clause = "tools", ":", tool-name,
+// { ",", tool-name }`); the tool names are also dotted, while a path uses
+// `::`. Both are recorded as grammar-versus-example conflicts in the M2 pull
+// request and need a NEP to settle.
+//
 // Read this declaration as a capability statement, not as a prompt:
 //
 //   * `tools` is exhaustive. A call to anything else is a compile error.

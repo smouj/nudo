@@ -1,16 +1,17 @@
 # Grammar
 
-**State: the lexical layer is implemented; the syntactic layer is specified and
-is the next milestone.**
+**State: the lexical and syntactic layers are both implemented.**
 
 | Layer | State | Checked by |
 | ----- | ----- | ---------- |
 | Lexical grammar | **IMPLEMENTED** (M1) | `compiler/nudo-lexer`, `tests/conformance/lexer` |
-| Syntactic grammar | **SPECIFIED** (M2) | nothing yet — it is what M2 builds |
+| Syntactic grammar | **IMPLEMENTED** (M2) | `compiler/nudo-parser`, `tests/conformance/parser` |
 
-"Specified" is a claim about a decision, not about behaviour. Nothing in the
-syntactic grammar is accepted by any command today: `nudo check` lexes and
-reports lexical diagnostics, and it says so in its own help text.
+"Implemented" means the reference parser accepts exactly the productions below
+and rejects the rest, with `NDO1001` and the expected/found pair. It does not
+mean the language is finished: the productions marked provisional can still
+change, and each change needs a NEP. Nothing is type-checked (M3) and nothing
+runs (M4).
 
 ## Where the grammar lives
 
@@ -126,12 +127,24 @@ its syntax is frozen:
 
 ## Relationship to the parser
 
-When the parser exists, it must agree with this grammar:
+The parser exists, and it agrees with this grammar:
 
 * **Disagreement is a bug in the parser**, never in the grammar, unless a NEP
   changed the grammar in the same pull request.
 * A production the parser accepts but the grammar does not is a silent language
   extension, which is exactly what [`../AGENTS.md`](../AGENTS.md) forbids.
-* Every accepted production needs a conformance case under
-  [`../tests/conformance/parser`](../tests/conformance/README.md), and every
-  rejected one needs a diagnostic case with its `NDO` code.
+* A production the grammar describes but the parser rejects is a silent
+  restriction, and is reported the same way. One is recorded: see the known
+  limitations in
+  [`../docs/internals/parser-design.md`](../docs/internals/parser-design.md).
+* Every accepted production has a case under
+  [`../tests/conformance/parser`](../tests/conformance/parser), and every
+  rejected one a diagnostic case with its `NDO` code.
+
+Two places where the parser follows the grammar against the run-able examples are
+worth knowing about, because the examples are the thing a reader tries first:
+`tool-name` is a path, so a tool is named `web::search` and not `web.search`; and
+a list inside a declaration is comma-separated, so `tools: a::b, c::d` and not one
+name per line. The examples in [`../examples`](../examples) use the dotted,
+one-per-line spelling and are marked as previews for that reason. Whether the
+spelling should change is a NEP, not a parser bug.

@@ -13,10 +13,26 @@
 //! conformance suite. Everything after it — parser, AST, types, effects — is
 //! **PLANNED** and does not exist yet.
 //!
-//! Only `fn` and `let` are reserved words today. Every other word that the
-//! language may reserve later (such as `agent`, `task` or `verify`) lexes as
-//! an identifier, so that the pre-alpha toolchain never claims to understand
-//! syntax it does not implement.
+//! The reserved words are the ones NEP-0005 decided: a small core reserved
+//! everywhere (`fn`, `let`, `struct`, `enum`, `if`, `else`, `match`, `const`,
+//! `true`, `false`). Every other word the grammar mentions (`agent`, `task`,
+//! `tool`, `model`, `role`, `tools`, `allow`, `budget`, `with`, `verify`,
+//! `ask`, `delegate`) is recognised in context by the parser and stays
+//! usable as an identifier, so the pre-alpha toolchain never claims to
+//! understand syntax it does not implement.
+//!
+//! # Losslessness
+//!
+//! [`tokenize`] skips trivia, because nothing after the lexer needs it.
+//! The parser does: the tree it builds must be able to reprint the file byte
+//! for byte, so [`tokenize_with_trivia`] returns the same tokens with
+//! whitespace and comments kept as [`TokenKind::Whitespace`] and
+//! [`TokenKind::Comment`].
+//!
+//! A character that starts no token is reported as `NDO1002` and still produces
+//! one [`TokenKind::Unknown`] token covering it. Reporting it is not enough:
+//! a byte that belongs to no token is a byte the tree cannot account for, and
+//! "every byte of the file is reachable from the tree" would stop being true.
 //!
 //! # Recovery
 //!
@@ -44,10 +60,30 @@ pub enum TokenKind {
     FloatLiteral,
     /// A text literal, including its quotes: `"hello"`.
     TextLiteral,
+    /// A character that starts no token. Always accompanied by an `NDO1002`
+    /// diagnostic, and always produces a token anyway, so that no byte of the
+    /// source is unaccounted for.
+    Unknown,
     /// The reserved word `fn`.
     KeywordFn,
     /// The reserved word `let`.
     KeywordLet,
+    /// The reserved word `struct`.
+    KeywordStruct,
+    /// The reserved word `enum`.
+    KeywordEnum,
+    /// The reserved word `if`.
+    KeywordIf,
+    /// The reserved word `else`.
+    KeywordElse,
+    /// The reserved word `match`.
+    KeywordMatch,
+    /// The reserved word `const`.
+    KeywordConst,
+    /// The reserved word `true`.
+    KeywordTrue,
+    /// The reserved word `false`.
+    KeywordFalse,
     /// `(`
     LParen,
     /// `)`
@@ -56,14 +92,44 @@ pub enum TokenKind {
     LBrace,
     /// `}`
     RBrace,
+    /// `[`
+    LBracket,
+    /// `]`
+    RBracket,
     /// `:`
     Colon,
+    /// `::`
+    ColonColon,
     /// `,`
     Comma,
+    /// `.`
+    Dot,
+    /// `?`
+    Question,
     /// `->`
     Arrow,
+    /// `=>`
+    FatArrow,
     /// `=`
     Equals,
+    /// `==`
+    EqEq,
+    /// `!=`
+    BangEq,
+    /// `<`
+    Lt,
+    /// `>`
+    Gt,
+    /// `<=`
+    LtEq,
+    /// `>=`
+    GtEq,
+    /// `&&`
+    AmpAmp,
+    /// `||`
+    PipePipe,
+    /// `!`
+    Bang,
     /// `+`
     Plus,
     /// `-`
@@ -74,6 +140,10 @@ pub enum TokenKind {
     Slash,
     /// `;`
     Semi,
+    /// Whitespace, produced only by [`tokenize_with_trivia`].
+    Whitespace,
+    /// A line or block comment, produced only by [`tokenize_with_trivia`].
+    Comment,
     /// The end of the token stream. Always present, always last.
     Eof,
 }
@@ -87,21 +157,47 @@ impl TokenKind {
             TokenKind::IntLiteral => "IntLiteral",
             TokenKind::FloatLiteral => "FloatLiteral",
             TokenKind::TextLiteral => "TextLiteral",
+            TokenKind::Unknown => "Unknown",
             TokenKind::KeywordFn => "KeywordFn",
             TokenKind::KeywordLet => "KeywordLet",
+            TokenKind::KeywordStruct => "KeywordStruct",
+            TokenKind::KeywordEnum => "KeywordEnum",
+            TokenKind::KeywordIf => "KeywordIf",
+            TokenKind::KeywordElse => "KeywordElse",
+            TokenKind::KeywordMatch => "KeywordMatch",
+            TokenKind::KeywordConst => "KeywordConst",
+            TokenKind::KeywordTrue => "KeywordTrue",
+            TokenKind::KeywordFalse => "KeywordFalse",
             TokenKind::LParen => "LParen",
             TokenKind::RParen => "RParen",
             TokenKind::LBrace => "LBrace",
             TokenKind::RBrace => "RBrace",
+            TokenKind::LBracket => "LBracket",
+            TokenKind::RBracket => "RBracket",
             TokenKind::Colon => "Colon",
+            TokenKind::ColonColon => "ColonColon",
             TokenKind::Comma => "Comma",
+            TokenKind::Dot => "Dot",
+            TokenKind::Question => "Question",
             TokenKind::Arrow => "Arrow",
+            TokenKind::FatArrow => "FatArrow",
             TokenKind::Equals => "Equals",
+            TokenKind::EqEq => "EqEq",
+            TokenKind::BangEq => "BangEq",
+            TokenKind::Lt => "Lt",
+            TokenKind::Gt => "Gt",
+            TokenKind::LtEq => "LtEq",
+            TokenKind::GtEq => "GtEq",
+            TokenKind::AmpAmp => "AmpAmp",
+            TokenKind::PipePipe => "PipePipe",
+            TokenKind::Bang => "Bang",
             TokenKind::Plus => "Plus",
             TokenKind::Minus => "Minus",
             TokenKind::Star => "Star",
             TokenKind::Slash => "Slash",
             TokenKind::Semi => "Semi",
+            TokenKind::Whitespace => "Whitespace",
+            TokenKind::Comment => "Comment",
             TokenKind::Eof => "Eof",
         }
     }
@@ -109,7 +205,28 @@ impl TokenKind {
     /// Whether this kind is a reserved word.
     #[must_use]
     pub const fn is_keyword(self) -> bool {
-        matches!(self, TokenKind::KeywordFn | TokenKind::KeywordLet)
+        matches!(
+            self,
+            TokenKind::KeywordFn
+                | TokenKind::KeywordLet
+                | TokenKind::KeywordStruct
+                | TokenKind::KeywordEnum
+                | TokenKind::KeywordIf
+                | TokenKind::KeywordElse
+                | TokenKind::KeywordMatch
+                | TokenKind::KeywordConst
+                | TokenKind::KeywordTrue
+                | TokenKind::KeywordFalse
+        )
+    }
+
+    /// Whether this kind is trivia: whitespace or a comment.
+    ///
+    /// Trivia is produced only when the lexer is asked to preserve it, and it
+    /// carries no meaning.
+    #[must_use]
+    pub const fn is_trivia(self) -> bool {
+        matches!(self, TokenKind::Whitespace | TokenKind::Comment)
     }
 
     /// Whether this kind is a literal.
@@ -124,10 +241,27 @@ impl TokenKind {
 
 /// The words the pre-alpha toolchain reserves.
 ///
-/// Adding a reserved word is a language change and needs a NEP; the list is
-/// deliberately short. See `spec/lexical-structure.md`.
-pub const KEYWORDS: &[(&str, TokenKind)] =
-    &[("fn", TokenKind::KeywordFn), ("let", TokenKind::KeywordLet)];
+/// This is the reserved core [NEP-0005] decided: words that introduce a
+/// construct no program can spell another way. Adding a word here is a
+/// language change and needs a NEP; the words that stay contextual
+/// (`agent`, `task`, `tool`, `model`, `role`, `tools`, `allow`, `budget`,
+/// `with`, `verify`, `ask`, `delegate`) are deliberately *not* in this list,
+/// because a program may still use them as names. See
+/// `spec/lexical-structure.md`.
+///
+/// [NEP-0005]: https://github.com/smouj/nudo/blob/main/neps/0005-keyword-policy.md
+pub const KEYWORDS: &[(&str, TokenKind)] = &[
+    ("fn", TokenKind::KeywordFn),
+    ("let", TokenKind::KeywordLet),
+    ("struct", TokenKind::KeywordStruct),
+    ("enum", TokenKind::KeywordEnum),
+    ("if", TokenKind::KeywordIf),
+    ("else", TokenKind::KeywordElse),
+    ("match", TokenKind::KeywordMatch),
+    ("const", TokenKind::KeywordConst),
+    ("true", TokenKind::KeywordTrue),
+    ("false", TokenKind::KeywordFalse),
+];
 
 /// Looks up a reserved word.
 #[must_use]
@@ -183,7 +317,6 @@ pub struct Lexed {
     tokens: Vec<Token>,
     diagnostics: Diagnostics,
 }
-
 impl Lexed {
     /// The tokens, ending with [`TokenKind::Eof`].
     #[must_use]
@@ -212,11 +345,23 @@ impl Lexed {
 
 /// Lexes `source`.
 ///
-/// This is the whole entry point of the crate: the lexer is stateless from the
-/// caller's point of view.
+/// This is the whole entry point of the crate for consumers that do not need
+/// trivia: the lexer is stateless from the caller's point of view.
 #[must_use]
 pub fn tokenize(source: &SourceFile) -> Lexed {
     Lexer::new(source).run()
+}
+
+/// Lexes `source`, keeping whitespace and comments.
+///
+/// Every byte of the file belongs to exactly one token of the result, which is
+/// what lets `nudo-syntax` build a tree that can reprint the file. Trivia is
+/// otherwise identical to what [`tokenize`] returns, token for token.
+#[must_use]
+pub fn tokenize_with_trivia(source: &SourceFile) -> Lexed {
+    Lexer::with_source(source.text(), source.id())
+        .preserving_trivia(true)
+        .run()
 }
 
 /// The lexer: a cursor over one source file's bytes.
@@ -225,6 +370,7 @@ pub struct Lexer<'a> {
     text: &'a str,
     source: SourceId,
     offset: usize,
+    trivia: bool,
     diagnostics: Diagnostics,
 }
 
@@ -236,6 +382,7 @@ impl<'a> Lexer<'a> {
             text: source.text(),
             source: source.id(),
             offset: 0,
+            trivia: false,
             diagnostics: Diagnostics::new(),
         }
     }
@@ -250,8 +397,17 @@ impl<'a> Lexer<'a> {
             text,
             source,
             offset: 0,
+            trivia: false,
             diagnostics: Diagnostics::new(),
         }
+    }
+
+    /// Chooses whether whitespace and comments are skipped (the default) or
+    /// returned as tokens.
+    #[must_use]
+    pub const fn preserving_trivia(mut self, trivia: bool) -> Self {
+        self.trivia = trivia;
+        self
     }
 
     /// Lexes the whole input.
@@ -259,7 +415,14 @@ impl<'a> Lexer<'a> {
     pub fn run(mut self) -> Lexed {
         let mut tokens = Vec::new();
         loop {
-            self.skip_trivia();
+            if self.trivia {
+                if let Some(token) = self.next_trivia() {
+                    tokens.push(token);
+                    continue;
+                }
+            } else {
+                self.skip_trivia();
+            }
             if self.offset >= self.text.len() {
                 let end = BytePos::new(self.text.len() as u32);
                 tokens.push(Token::new(TokenKind::Eof, Span::new(end, end)));
@@ -306,15 +469,83 @@ impl<'a> Lexer<'a> {
                 }
                 ':' => {
                     self.bump();
-                    Some(TokenKind::Colon)
+                    if self.current() == Some(':') {
+                        self.bump();
+                        Some(TokenKind::ColonColon)
+                    } else {
+                        Some(TokenKind::Colon)
+                    }
                 }
                 ',' => {
                     self.bump();
                     Some(TokenKind::Comma)
                 }
+                '.' => {
+                    self.bump();
+                    Some(TokenKind::Dot)
+                }
+                '?' => {
+                    self.bump();
+                    Some(TokenKind::Question)
+                }
+                '[' => {
+                    self.bump();
+                    Some(TokenKind::LBracket)
+                }
+                ']' => {
+                    self.bump();
+                    Some(TokenKind::RBracket)
+                }
                 '=' => {
                     self.bump();
-                    Some(TokenKind::Equals)
+                    match self.current() {
+                        Some('=') => {
+                            self.bump();
+                            Some(TokenKind::EqEq)
+                        }
+                        Some('>') => {
+                            self.bump();
+                            Some(TokenKind::FatArrow)
+                        }
+                        _ => Some(TokenKind::Equals),
+                    }
+                }
+                '!' => {
+                    self.bump();
+                    if self.current() == Some('=') {
+                        self.bump();
+                        Some(TokenKind::BangEq)
+                    } else {
+                        Some(TokenKind::Bang)
+                    }
+                }
+                '<' => {
+                    self.bump();
+                    if self.current() == Some('=') {
+                        self.bump();
+                        Some(TokenKind::LtEq)
+                    } else {
+                        Some(TokenKind::Lt)
+                    }
+                }
+                '>' => {
+                    self.bump();
+                    if self.current() == Some('=') {
+                        self.bump();
+                        Some(TokenKind::GtEq)
+                    } else {
+                        Some(TokenKind::Gt)
+                    }
+                }
+                '&' if self.peek() == Some('&') => {
+                    self.bump();
+                    self.bump();
+                    Some(TokenKind::AmpAmp)
+                }
+                '|' if self.peek() == Some('|') => {
+                    self.bump();
+                    self.bump();
+                    Some(TokenKind::PipePipe)
                 }
                 '+' => {
                     self.bump();
@@ -350,9 +581,12 @@ impl<'a> Lexer<'a> {
                         codes::UNKNOWN_CHARACTER,
                         message,
                         span,
-                        Some("the pre-alpha lexer recognises only the minimal token set; see `spec/lexical-structure.md`"),
+                        Some("the pre-alpha lexer recognises only the token set of `spec/lexical-structure.md`"),
                     );
-                    None
+                    // The character is reported and still produces a token: a
+                    // byte that belongs to no token is a byte the syntax tree
+                    // could not account for.
+                    Some(TokenKind::Unknown)
                 }
             }
         };
@@ -485,15 +719,57 @@ impl<'a> Lexer<'a> {
                         self.bump();
                     }
                 }
-                Some('/') if self.peek() == Some('*') => self.skip_block_comment(),
+                Some('/') if self.peek() == Some('*') => self.scan_block_comment(),
                 _ => return,
             }
         }
     }
 
-    /// Skips a block comment. Nested block comments are supported, so a
-    /// commented-out region containing a comment stays commented out.
-    fn skip_block_comment(&mut self) {
+    /// Returns the trivia token at the cursor, if there is one.
+    ///
+    /// This is the preserving counterpart of [`Lexer::skip_trivia`]: the same
+    /// bytes, returned as [`TokenKind::Whitespace`] or [`TokenKind::Comment`]
+    /// instead of being dropped.
+    fn next_trivia(&mut self) -> Option<Token> {
+        let start = self.offset;
+        let current = self.current()?;
+        let kind = match current {
+            '\u{feff}' if self.offset == 0 => {
+                self.bump();
+                TokenKind::Whitespace
+            }
+            c if c.is_whitespace() => {
+                while self.current().is_some_and(char::is_whitespace) {
+                    self.bump();
+                }
+                TokenKind::Whitespace
+            }
+            '/' if self.peek() == Some('/') => {
+                while let Some(c) = self.current() {
+                    if c == '\n' {
+                        break;
+                    }
+                    self.bump();
+                }
+                TokenKind::Comment
+            }
+            '/' if self.peek() == Some('*') => {
+                self.scan_block_comment();
+                TokenKind::Comment
+            }
+            _ => return None,
+        };
+        Some(Token::new(
+            kind,
+            Span::new(BytePos::new(start as u32), BytePos::new(self.offset as u32)),
+        ))
+    }
+
+    /// Scans a block comment from the cursor, reporting it if it never closes.
+    ///
+    /// Nested block comments are supported, so a commented-out region
+    /// containing a comment stays commented out.
+    fn scan_block_comment(&mut self) {
         let start = self.offset;
         self.bump();
         self.bump();
@@ -740,7 +1016,9 @@ mod tests {
             kinds,
             vec![
                 TokenKind::KeywordLet,
+                // `café` is `caf` followed by a character that starts no token.
                 TokenKind::Ident,
+                TokenKind::Unknown,
                 TokenKind::Equals,
                 TokenKind::IntLiteral,
                 TokenKind::Eof,
@@ -794,9 +1072,133 @@ mod tests {
         assert_eq!(keyword_kind("fn"), Some(TokenKind::KeywordFn));
         assert_eq!(keyword_kind("let"), Some(TokenKind::KeywordLet));
         assert_eq!(keyword_kind("Fn"), None);
-        // Provisional language words are not reserved yet.
-        assert_eq!(keyword_kind("agent"), None);
-        assert_eq!(keyword_kind("verify"), None);
+        // NEP-0005: the reserved core.
+        for (word, kind) in KEYWORDS {
+            assert_eq!(keyword_kind(word), Some(*kind), "{word} must be reserved");
+        }
+        // Contextual words stay identifiers so that a program may name a
+        // binding `agent` or `verify`. The parser recognises them in position.
+        for word in [
+            "agent", "task", "tool", "model", "role", "tools", "allow", "budget", "with", "verify",
+            "ask", "delegate",
+        ] {
+            assert_eq!(keyword_kind(word), None, "{word} must stay contextual");
+        }
+    }
+
+    #[test]
+    fn lexes_the_extended_punctuation() {
+        assert_eq!(
+            kinds("[ ] :: . ? => != < > <= >= && || !"),
+            vec![
+                TokenKind::LBracket,
+                TokenKind::RBracket,
+                TokenKind::ColonColon,
+                TokenKind::Dot,
+                TokenKind::Question,
+                TokenKind::FatArrow,
+                TokenKind::BangEq,
+                TokenKind::Lt,
+                TokenKind::Gt,
+                TokenKind::LtEq,
+                TokenKind::GtEq,
+                TokenKind::AmpAmp,
+                TokenKind::PipePipe,
+                TokenKind::Bang,
+                TokenKind::Eof,
+            ]
+        );
+    }
+
+    #[test]
+    fn prefers_the_longest_operator() {
+        assert_eq!(
+            kinds("a == b = c; x <= y < z; p >= q > r; m != n ! o;"),
+            vec![
+                TokenKind::Ident,
+                TokenKind::EqEq,
+                TokenKind::Ident,
+                TokenKind::Equals,
+                TokenKind::Ident,
+                TokenKind::Semi,
+                TokenKind::Ident,
+                TokenKind::LtEq,
+                TokenKind::Ident,
+                TokenKind::Lt,
+                TokenKind::Ident,
+                TokenKind::Semi,
+                TokenKind::Ident,
+                TokenKind::GtEq,
+                TokenKind::Ident,
+                TokenKind::Gt,
+                TokenKind::Ident,
+                TokenKind::Semi,
+                TokenKind::Ident,
+                TokenKind::BangEq,
+                TokenKind::Ident,
+                TokenKind::Bang,
+                TokenKind::Ident,
+                TokenKind::Semi,
+                TokenKind::Eof,
+            ]
+        );
+    }
+
+    #[test]
+    fn a_single_ampersand_or_pipe_is_not_a_token() {
+        // `&&` and `||` are tokens; `&` and `|` are not, and are reported
+        // rather than guessed at. There is no bitwise operator in NUDO.
+        let (kinds, diagnostics) = lex("a & b | c");
+        assert_eq!(diagnostics.error_count(), 2);
+        assert_eq!(
+            kinds,
+            vec![
+                TokenKind::Ident,
+                TokenKind::Unknown,
+                TokenKind::Ident,
+                TokenKind::Unknown,
+                TokenKind::Ident,
+                TokenKind::Eof,
+            ]
+        );
+    }
+
+    #[test]
+    fn closing_angle_brackets_are_two_tokens() {
+        // There is no shift operator, so `Result<Result<Int, Text>, Text>`
+        // closes with two `Gt` tokens rather than one `>>`.
+        assert_eq!(
+            kinds("Result<Result<Int, Text>, Text>>"),
+            vec![
+                TokenKind::Ident,
+                TokenKind::Lt,
+                TokenKind::Ident,
+                TokenKind::Lt,
+                TokenKind::Ident,
+                TokenKind::Comma,
+                TokenKind::Ident,
+                TokenKind::Gt,
+                TokenKind::Comma,
+                TokenKind::Ident,
+                TokenKind::Gt,
+                TokenKind::Gt,
+                TokenKind::Eof,
+            ]
+        );
+    }
+
+    #[test]
+    fn boolean_literals_are_reserved_words() {
+        assert_eq!(
+            kinds("true false"),
+            vec![
+                TokenKind::KeywordTrue,
+                TokenKind::KeywordFalse,
+                TokenKind::Eof,
+            ]
+        );
+        assert!(TokenKind::KeywordTrue.is_keyword());
+        assert!(!TokenKind::KeywordTrue.is_literal());
     }
 
     #[test]
@@ -858,13 +1260,16 @@ mod tests {
     #[test]
     fn recovers_after_unknown_characters() {
         let (kinds, diagnostics) = lex("let @ = #1;");
-        // Two characters start no token (`@` and `#`); everything else recovers.
+        // Two characters start no token (`@` and `#`); everything else
+        // recovers, and both characters keep a token of their own.
         assert_eq!(diagnostics.error_count(), 2);
         assert_eq!(
             kinds,
             vec![
                 TokenKind::KeywordLet,
+                TokenKind::Unknown,
                 TokenKind::Equals,
+                TokenKind::Unknown,
                 TokenKind::IntLiteral,
                 TokenKind::Semi,
                 TokenKind::Eof,
@@ -901,8 +1306,47 @@ mod tests {
         let lexed = tokenize(file);
         assert!(lexed.has_errors());
         let (tokens, diagnostics) = lexed.into_parts();
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
+        assert_eq!(tokens[0].kind(), TokenKind::Unknown);
+        assert_eq!(tokens[0].text("@"), Some("@"));
         assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn preserving_trivia_accounts_for_every_byte() {
+        let mut sources = SourceMap::new();
+        let source = "// c\nfn main() {\n    let x = 1;\n}\n";
+        let id = sources.add("test.nudo", source);
+        let file = sources.get(id).expect("file");
+        let with_trivia = tokenize_with_trivia(file);
+        let joined: String = with_trivia
+            .tokens()
+            .iter()
+            .map(|token| token.text(source).unwrap_or(""))
+            .collect();
+        assert_eq!(joined, source);
+        assert!(
+            with_trivia
+                .tokens()
+                .iter()
+                .any(|token| token.kind() == TokenKind::Comment)
+        );
+        assert!(
+            with_trivia
+                .tokens()
+                .iter()
+                .any(|token| token.kind() == TokenKind::Whitespace)
+        );
+        // Skipping trivia and preserving it agree on every non-trivia token.
+        let skipped = tokenize(file);
+        let kept: Vec<TokenKind> = with_trivia
+            .tokens()
+            .iter()
+            .map(|token| token.kind())
+            .filter(|kind| !kind.is_trivia())
+            .collect();
+        let expected: Vec<TokenKind> = skipped.tokens().iter().map(|token| token.kind()).collect();
+        assert_eq!(kept, expected);
     }
 
     #[test]

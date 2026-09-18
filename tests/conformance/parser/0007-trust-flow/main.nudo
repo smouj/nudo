@@ -1,0 +1,3 @@
+let draft: Generated<Article> = ask Writer { "create" };
+let article: Verified<Article> = verify draft with ArticleVerifier;
+let work = delegate Researcher { "topic" } with budget: Budget(tokens: 4_000);

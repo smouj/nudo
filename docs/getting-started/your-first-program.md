@@ -27,11 +27,11 @@ $ nudo check hello.nudo
 checked 1 file: 0 errors and 0 warnings
 ```
 
-**What that actually means.** `nudo check` reads the file, lexes it, and reports
-lexical diagnostics. A clean run means "no lexical diagnostics" — not "this
-program is correct", and not "this program runs". There is no parser, no type
-checker and no interpreter yet
-([`../../ROADMAP.md`](../../ROADMAP.md), M2–M4).
+**What that actually means.** `nudo check` reads the file, lexes it, parses it,
+and reports lexical and syntax diagnostics. A clean run means "no lexical or
+syntax diagnostics" — not "this program is correct", and not "this program
+runs". There is no type checker and no interpreter yet
+([`../../ROADMAP.md`](../../ROADMAP.md), M3–M4).
 
 ## See what the compiler sees
 

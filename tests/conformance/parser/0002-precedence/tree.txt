@@ -1,0 +1,59 @@
+# nudo-tree v1
+SourceFile 0..50
+  Binding 0..20
+    KeywordLet "let" 0..3
+    Whitespace " " 3..4
+    Ident "sum" 4..7
+    Whitespace " " 7..8
+    Equals "=" 8..9
+    Whitespace " " 9..10
+    BinaryExpression 10..19
+      LiteralExpression 10..11
+        IntLiteral "1" 10..11
+      Whitespace " " 11..12
+      Plus "+" 12..13
+      Whitespace " " 13..14
+      BinaryExpression 14..19
+        LiteralExpression 14..15
+          IntLiteral "2" 14..15
+        Whitespace " " 15..16
+        Star "*" 16..17
+        Whitespace " " 17..18
+        LiteralExpression 18..19
+          IntLiteral "3" 18..19
+    Semi ";" 19..20
+  Whitespace "\n" 20..21
+  Binding 21..49
+    KeywordLet "let" 21..24
+    Whitespace " " 24..25
+    Ident "same" 25..29
+    Whitespace " " 29..30
+    Equals "=" 30..31
+    Whitespace " " 31..32
+    BinaryExpression 32..48
+      BinaryExpression 32..38
+        PathExpression 32..33
+          Path 32..33
+            Ident "a" 32..33
+        Whitespace " " 33..34
+        EqEq "==" 34..36
+        Whitespace " " 36..37
+        PathExpression 37..38
+          Path 37..38
+            Ident "b" 37..38
+      Whitespace " " 38..39
+      AmpAmp "&&" 39..41
+      Whitespace " " 41..42
+      BinaryExpression 42..48
+        PathExpression 42..43
+          Path 42..43
+            Ident "c" 42..43
+        Whitespace " " 43..44
+        BangEq "!=" 44..46
+        Whitespace " " 46..47
+        PathExpression 47..48
+          Path 47..48
+            Ident "d" 47..48
+    Semi ";" 48..49
+  Whitespace "\n" 49..50
+  Eof "" 50..50

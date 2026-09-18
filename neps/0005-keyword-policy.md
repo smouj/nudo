@@ -2,8 +2,9 @@
 
 | Field | Value |
 | ----- | ----- |
-| Status | Draft |
+| Status | Accepted |
 | Created | 2026-09-17 |
+| Accepted | 2026-09-18; implemented in M2 |
 | Supersedes | — |
 | Superseded by | — |
 | Specification chapters | [`spec/lexical-structure.md`](../spec/lexical-structure.md), [`spec/grammar.md`](../spec/grammar.md) |
@@ -27,10 +28,12 @@ Two concrete problems, both already visible:
 
 **A parse conflict.** The grammar has `literal = … | "true" | "false"` and
 `path-expression = path`, where a path is an identifier. Because `true` and
-`false` are not reserved, an input beginning with `true` can start either a
-literal or a path, and the parser cannot choose with one token of lookahead. This
-is not a hypothetical: it is visible in the current grammar and it was found by
-`scripts/check-grammar.py`.
+`false` were not reserved, an input beginning with `true` could start either a
+literal or a path, and the parser could not choose with one token of lookahead.
+This was not hypothetical: it is visible in the grammar, and
+`scripts/check-grammar.py` reported it before any parser existed. Reserving the two
+words in M2 settled it, and the checker's motivating example became a case that
+passes.
 
 **A compatibility debt.** Every word reserved later breaks every program that
 used it as a name. The longer the provisional period, the more example code,
@@ -117,30 +120,46 @@ still have a variable named `agent` — while `fn` can never be a variable name.
 
 ## Compatibility
 
-* Reserving `true` and `false` breaks any program using those names. Nothing is
-  implemented beyond the lexer, so the cost is zero today and grows every day it
-  is deferred. This is the argument for accepting this NEP early.
+* Reserving `true` and `false` breaks any program using those names. Nothing was
+  implemented beyond the lexer when this NEP was accepted, so the cost was zero
+then and grows every day it is deferred. That is the argument for taking it
+  early, and it is why M2 adopted it as one of its two gates.
 * Reserving the rest of the core breaks example code in `examples/`, which uses
   them only as keywords.
 * After 1.0, adding a reserved word would require an edition.
 
 ## Unresolved questions
 
-* Whether `with`, `verify` and `delegate` stay contextual once NEP-0002 and
-  NEP-0004 settle whether they are keywords, functions or protocols. A function
-  named `verify` needs no reservation at all.
-* Whether the reserved set should be grouped by purpose in the lexer, or kept as
-  a flat list.
+Settled when this NEP was accepted:
+
+* **`with`, `verify` and `delegate` stay contextual.** Whether NEP-0002 and
+  NEP-0004 make them keywords, functions or protocols is still open, and until
+  then the parser recognises them in position. If `verify` becomes a keyword, the
+  one-token rule that reads it today (see [`spec/expressions.md`](../spec/expressions.md))
+  collapses into a reserved word and stops being a limitation.
+* **The reserved set is a flat list**, ordered as the table above is. Grouping it
+  by purpose would be documentation, not a lexical distinction, and a list that
+  cannot disagree with its own structure cannot drift.
+* **A contextual word in the wrong position is told what it needs.** `role` with
+  no `:` produces `unexpected \`}\`` with the note “`role` needs a text literal,
+  as in `role: "…"`” — an explanation, not an unexplained identifier.
+
+Still open:
+
 * Whether a future edition mechanism can *unreserve* a word. It probably cannot,
   which raises the cost of reserving too much today.
 * How a diagnostic should describe a contextual keyword used in the wrong
-  position, in a way a reader finds helpful rather than pedantic.
+  position once there is more than one such position.
 
 ## Implementation status
 
-**Not implemented.** The lexer reserves `fn` and `let` and nothing else. The
-grammar marks the words above as provisional,
-[`docs/internals/parser-design.md`](../docs/internals/parser-design.md) lists
-this NEP as decision 1 of 4 blocking M2, and
-`scripts/check-grammar.py` currently reports the `true`/`false` overlap as a
-motivating example.
+**Implemented** in M2. `compiler/nudo-lexer` reserves exactly the ten words this
+NEP lists, and `spec/lexical-structure.md` states them as normative.
+`compiler/nudo-parser` recognises the contextual set in position: `agent`, `task`,
+`tool`, `model` at item position; `role`, `tools`, `allow`, `budget`, `agent`,
+`verify` as clause heads; `ask`, `verify`, `delegate` as primaries; `with` where
+an effect, verification or budget clause is expected.
+
+`tests/conformance/parser/0012-contextual-words` pins the part that is easy to get
+wrong: `agent`, `verify` and `delegate` remain usable as names inside a function
+body.
