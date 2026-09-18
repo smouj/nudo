@@ -18,6 +18,19 @@ Fragments are deliberately the stable parts: version strings, summary lines and
 diagnostic headers. Timings, absolute paths and caret rows are not checked,
 because they legitimately vary between machines.
 
+The second direction is only meaningful against the *repository's* documents.
+The corpus is therefore the repository's content — `git ls-files --cached
+--others --exclude-standard` — and not the working tree, because content git
+ignores is not part of the repository: a scratch note quoting the old text would
+satisfy the check and hide a document that has fallen behind, which is the very
+drift this checker exists to catch. It used to walk the whole directory tree and
+skip a hand-written list of names (`.git target dist node_modules`), which is
+always one `.gitignore` line behind.
+
+The file set is pinned by `scripts/test-check-console.py`. The rule needs a git
+work tree: outside one the checker says so and exits 1, and it never falls back
+to a wider scan.
+
 Run by `scripts/check.sh` and by the `Docs` workflow, after a build of the CLI.
 """
 
@@ -29,6 +42,10 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BINARY = os.path.join(ROOT, "target", "debug", "nudo")
+
+# The checker is excluded from the corpus because it necessarily contains the
+# very fragments it looks for.
+SELF = os.path.relpath(os.path.abspath(__file__), ROOT).replace(os.sep, "/")
 
 # (arguments, stream, fragments that must appear in the output and in the docs)
 CASES = [
@@ -63,18 +80,61 @@ CASES = [
     ),
 ]
 
-SKIP_DIRECTORIES = {".git", "target", "dist", "node_modules"}
+# The file set the corpus is built from, which is git's own answer to "what is
+# in the repository": `--cached` is every tracked file, `--others
+# --exclude-standard` adds every untracked file git does not ignore, so a new
+# page is read before it is staged as well as after. See the module docstring
+# for why this is not a list of directory names.
+REPOSITORY = (
+    "git",
+    "ls-files",
+    "--cached",
+    "--others",
+    "--exclude-standard",
+    "-z",
+)
+
+
+def repository_files():
+    """Every file the repository contains, relative to ROOT, in git's order.
+
+    One definition of the file set, taken from git, instead of a hand-written
+    list of directory names to skip.
+    """
+    try:
+        result = subprocess.run(
+            REPOSITORY, cwd=ROOT, capture_output=True, check=False
+        )
+    except OSError as error:
+        print(f"cannot run git to list the repository's files: {error}", file=sys.stderr)
+        raise SystemExit(1) from error
+    if result.returncode != 0:
+        detail = result.stderr.decode("utf-8", "surrogateescape").strip()
+        print("cannot list the repository's files with git:", file=sys.stderr)
+        if detail:
+            print(f"  {detail}", file=sys.stderr)
+        print(
+            "this checker reads the repository's content, so it must run inside "
+            "a git work tree",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+    names = result.stdout.decode("utf-8", "surrogateescape").split("\0")
+    return [
+        name
+        for name in names
+        if name and name != SELF and os.path.isfile(os.path.join(ROOT, name))
+    ]
 
 
 def markdown_corpus() -> str:
-    """Everything the documentation says, as one string."""
+    """Everything the repository's documentation says, as one string."""
     chunks = []
-    for directory, subdirectories, filenames in os.walk(ROOT):
-        subdirectories[:] = sorted(n for n in subdirectories if n not in SKIP_DIRECTORIES)
-        for filename in sorted(filenames):
-            if filename.endswith(".md"):
-                with open(os.path.join(directory, filename), encoding="utf-8") as handle:
-                    chunks.append(handle.read())
+    for relative in repository_files():
+        if not relative.endswith(".md"):
+            continue
+        with open(os.path.join(ROOT, relative), encoding="utf-8") as handle:
+            chunks.append(handle.read())
     return "\n".join(chunks)
 
 
