@@ -173,6 +173,14 @@ rules of their own.
       `Unit` — typed in the first slice; `Int`'s arithmetic rules arrive with
       expression typing
 * [x] Arity checking: a call passes exactly what the signature takes
+* [x] Nominal structure and field access: HIR records a `struct`'s fields and an
+      `enum`'s variants, and `article.title` is typed, with `NDO2007` when the
+      field does not exist
+* [ ] **Construction of a nominal value.** Nothing in the grammar builds one:
+      there is no `struct-expression`, no `enum-literal` and no field initialiser,
+      so a program can hold a nominal value (a parameter, a return) but cannot
+      make one. It needs a NEP - the syntax is a language decision, not a parser
+      gap - and it is recorded here rather than invented in the checker.
 * [ ] Structs, enums, generics and instantiation
 * [ ] `Result<T, E>` as an intrinsic type, and exhaustiveness of `match` on it
 * [ ] Function types and calls; no implicit numeric conversion
