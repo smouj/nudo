@@ -9,11 +9,15 @@ let draft: Generated<Article> =
         "Create an article from the supplied research."
     }
 
-let article: Verified<Article> =
+let checked: Result<Verified<Article>, VerificationError> =
     verify draft with ArticleVerifier
 
-publish(article)
+match checked {
+    Ok(article) => publish(article)
+    Err(reason) => report(reason)
+}
 ```
 
 重要的性质不是确切的表层语法。不变量在于：当 `publish` 的签名要求
-`Verified<Article>` 时，它不可能意外收到一个未验证的生成值。
+`Verified<Article>` 时，它不可能意外收到一个未验证的生成值——而且这种拒绝是调用方
+处理的一个值，而不是一次 panic。

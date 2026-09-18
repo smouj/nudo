@@ -1,8 +1,11 @@
 # A tour of NUDO
 
 **Most of this page is a design description, not a working language.** Read the
-milestone next to each feature before assuming it runs. Today only the lexical
-layer exists (M1); the toolchain's full state is in
+milestone next to each feature before assuming it runs. Today the toolchain
+lexes, parses and resolves names: the lexer (M1), the parser and lossless syntax
+tree (M2) and name resolution in `nudo-hir` (M3.1) are implemented, and
+`nudo check` runs all three. Type checking is not implemented yet, and neither is
+anything after it. The toolchain's full state is in
 [`../../ROADMAP.md`](../../ROADMAP.md).
 
 ## The shape of a program

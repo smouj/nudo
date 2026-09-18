@@ -9,12 +9,16 @@ let draft: Generated<Article> =
         "Create an article from the supplied research."
     }
 
-let article: Verified<Article> =
+let checked: Result<Verified<Article>, VerificationError> =
     verify draft with ArticleVerifier
 
-publish(article)
+match checked {
+    Ok(article) => publish(article)
+    Err(reason) => report(reason)
+}
 ```
 
 La propiedad importante no es la sintaxis superficial exacta. El invariante es que
 `publish` no puede recibir por accidente un valor generado sin verificar cuando su
-firma exige `Verified<Article>`.
+firma exige `Verified<Article>` — y que el rechazo es un valor que maneja quien
+llama, no un pánico.
