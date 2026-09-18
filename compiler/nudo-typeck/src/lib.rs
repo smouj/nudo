@@ -156,6 +156,15 @@ pub fn dump_types(result: &TypeckResult, hir: &Hir, source: &nudo_source::Source
     out
 }
 
+/// A span for the cases where there is nothing in the source to point at.
+///
+/// It exists so that a fallback is explicit rather than a panic: a diagnostic
+/// with a zero span is still a diagnostic, and the alternative — unwrapping —
+/// would make a reporting path able to crash the compiler.
+fn zero_span() -> Span {
+    Span::new(nudo_span::BytePos::new(0), nudo_span::BytePos::new(0))
+}
+
 struct Checker<'a> {
     hir: &'a Hir,
     source: SourceId,
@@ -306,11 +315,11 @@ impl Checker<'_> {
                     None => Type::Unit,
                 }
             }
+            ExprKind::Call { callee, arguments } => self.type_of_call(callee, &arguments),
             // Deferred, and silent about it: these produce `Error`, which is
             // compatible with everything, so nothing is reported about work this
             // slice does not do yet.
-            ExprKind::Call { .. }
-            | ExprKind::Field { .. }
+            ExprKind::Field { .. }
             | ExprKind::Index { .. }
             | ExprKind::Unary { .. }
             | ExprKind::Binary { .. }
@@ -324,6 +333,110 @@ impl Checker<'_> {
             *slot = Some(typed.clone());
         }
         typed
+    }
+
+    /// Types a call: the callee's signature decides everything.
+    ///
+    /// Three things can go wrong, and each one says which it is: the callee is
+    /// not a function (`NDO2006`), the count is wrong (`NDO2005`), or an argument
+    /// is the wrong type (`NDO2004`, reported at the argument, because that is
+    /// the thing to change).
+    ///
+    /// A signature mentioning a type parameter is **not checked**: instantiation
+    /// is the next slice (NEP-0013), and comparing an argument against `T` would
+    /// invent an error about a rule that does not exist yet. The call is typed as
+    /// unknown instead, which reports nothing.
+    fn type_of_call(&mut self, callee: ExprId, arguments: &[ExprId]) -> Type {
+        let callee_type = self.type_of_expression(callee);
+        let Type::Function { parameters, result } = callee_type.clone() else {
+            if !callee_type.is_error() {
+                let span = self.hir.expr(callee).map_or_else(zero_span, |it| it.span);
+                self.diagnostics.push(
+                    Diagnostic::error(codes::NOT_CALLABLE, "this value is not a function")
+                        .with_location(self.source, span)
+                        .with_note(format!("found: `{callee_type}`"))
+                        .with_help("only a function type can be called"),
+                );
+            }
+            return Type::Error;
+        };
+
+        if parameters
+            .iter()
+            .any(|parameter| self.mentions_type_parameter(parameter))
+            || self.mentions_type_parameter(&result)
+        {
+            return Type::Error;
+        }
+
+        if arguments.len() != parameters.len() {
+            let expected = if parameters.len() == 1 {
+                "argument"
+            } else {
+                "arguments"
+            };
+            let span = self.hir.expr(callee).map_or_else(zero_span, |it| it.span);
+            self.diagnostics.push(
+                Diagnostic::error(
+                    codes::WRONG_ARGUMENT_COUNT,
+                    format!(
+                        "this call passes {} and the function takes {} {expected}",
+                        arguments.len(),
+                        parameters.len()
+                    ),
+                )
+                .with_location(self.source, span)
+                .with_note(format!("expected: {}", parameters.len()))
+                .with_note(format!("found: {}", arguments.len()))
+                .with_help("every call passes exactly what the signature takes"),
+            );
+            return *result;
+        }
+
+        for (index, argument) in arguments.iter().enumerate() {
+            let actual = self.type_of_expression(*argument);
+            let expected = parameters[index].clone();
+            let span = self
+                .hir
+                .expr(*argument)
+                .map_or_else(zero_span, |it| it.span);
+            self.expect(&expected, &actual, span);
+        }
+        *result
+    }
+
+    /// Whether a type mentions a type parameter of the declaration it came from.
+    ///
+    /// This is what tells the checker that a signature is not instantiable yet,
+    /// and therefore that comparing against it would be inventing a rule.
+    fn mentions_type_parameter(&self, ty: &Type) -> bool {
+        match ty {
+            Type::Named {
+                definition,
+                arguments,
+                ..
+            } => {
+                if let Some(id) = definition.resolved() {
+                    if self
+                        .hir
+                        .def(id)
+                        .is_some_and(|definition| definition.kind == DefKind::TypeParameter)
+                    {
+                        return true;
+                    }
+                }
+                arguments
+                    .iter()
+                    .any(|argument| self.mentions_type_parameter(argument))
+            }
+            Type::Function { parameters, result } => {
+                parameters
+                    .iter()
+                    .any(|parameter| self.mentions_type_parameter(parameter))
+                    || self.mentions_type_parameter(result)
+            }
+            _ => false,
+        }
     }
 
     /// Reports a mismatch, with the two types as structure rather than prose.
@@ -504,6 +617,51 @@ mod tests {
             "a later slice's work must not produce a diagnostic now: {:?}",
             result.diagnostics
         );
+    }
+
+    #[test]
+    fn a_call_is_checked_against_the_signature() {
+        let program = "fn add(a: Int, b: Int) -> Int {\n    a\n}\n\nfn main() {\n    let one = add(1, 2);\n}\n";
+        assert_eq!(codes_for(program), Vec::<String>::new());
+
+        let wrong_type = "fn add(a: Int, b: Int) -> Int {\n    a\n}\n\nfn main() {\n    let one = add(1, true);\n}\n";
+        assert_eq!(codes_for(wrong_type), vec!["NDO2004".to_string()]);
+
+        let wrong_count =
+            "fn add(a: Int, b: Int) -> Int {\n    a\n}\n\nfn main() {\n    let one = add(1);\n}\n";
+        assert_eq!(codes_for(wrong_count), vec!["NDO2005".to_string()]);
+    }
+
+    #[test]
+    fn a_call_produces_a_type_and_not_only_a_complaint() {
+        // The result type travels: it is what makes the checker useful to the
+        // next stage rather than only to a reader.
+        let consistent = "fn add(a: Int, b: Int) -> Int {\n    a\n}\n\nfn main() {\n    let total: Int = add(1, 2);\n}\n";
+        assert_eq!(codes_for(consistent), Vec::<String>::new());
+
+        let inconsistent = "fn add(a: Int, b: Int) -> Int {\n    a\n}\n\nfn main() {\n    let total: Bool = add(1, 2);\n}\n";
+        assert_eq!(codes_for(inconsistent), vec!["NDO2004".to_string()]);
+    }
+
+    #[test]
+    fn calling_something_that_is_not_a_function_is_reported() {
+        let program = "let number = 1;\n\nfn main() {\n    number();\n}\n";
+        assert_eq!(codes_for(program), vec!["NDO2006".to_string()]);
+    }
+
+    #[test]
+    fn a_call_to_a_generic_function_is_not_checked_yet() {
+        // Instantiation is the next slice (NEP-0013). Comparing an argument
+        // against `T` would invent an error about a rule that does not exist, so
+        // the call is typed as unknown and says nothing.
+        let program = "fn identity<T>(value: T) -> T {\n    value\n}\n\nfn main() {\n    let one = identity(1);\n}\n";
+        assert_eq!(codes_for(program), Vec::<String>::new());
+    }
+
+    #[test]
+    fn a_call_to_a_function_declared_later_works() {
+        let program = "fn main() {\n    later();\n}\n\nfn later() {\n}\n";
+        assert_eq!(codes_for(program), Vec::<String>::new());
     }
 
     #[test]
