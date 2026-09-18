@@ -7,7 +7,7 @@ Diagnostik ist Teil der Spracherfahrung, kein Debug-Dump. Die lexikalischen und
 syntaktischen Familien (`NDO1xxx`) sind implementiert: eine Datei wird mit einem
 stabilen Code, einem exakten Span und einem Erwartet/Gefunden-Paar zurückgewiesen.
 Die Typ-, Effekt- und Capability-Familien sind geplant, und die Kette, die sie
-zeigen müssen, ist in [`spec/errors.md`](../../spec/errors.md) spezifiziert.
+zeigen müssen, ist in `spec/errors.md` spezifiziert.
 
 Ein hochwertiger Capability-Fehler sollte sowohl die Aufrufstelle als auch den Grund
 benennen:

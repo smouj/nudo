@@ -8,7 +8,7 @@ depuración. Las familias léxica y sintáctica (`NDO1xxx`) están implementadas
 archivo se rechaza con un código estable, un span exacto y un par esperado/encontrado.
 Las familias de tipos, efectos y capacidades están planificadas, y la cadena que
 tendrán que mostrar está especificada en
-[`spec/errors.md`](../../spec/errors.md).
+`spec/errors.md`.
 
 Un error de capacidades de alta calidad debería identificar tanto el punto de la
 llamada como el motivo:
