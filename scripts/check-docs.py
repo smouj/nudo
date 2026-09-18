@@ -8,6 +8,18 @@ questions with no third-party dependency:
 2. Does any file still mention a name or artefact this project abandoned?
 3. Do the machine-readable files (TOML, JSON, YAML) parse?
 
+All three read the same file set, and that set is the *repository's content*:
+`git ls-files --cached --others --exclude-standard`. Content git ignores is not
+part of the repository, so scanning it makes this checker report on something
+the repository does not contain, and pass or fail depending on what unrelated
+tooling happens to have left on disk. It used to walk the whole directory tree
+and skip a hand-written list of names (`.git target dist node_modules`), which
+is always one `.gitignore` line behind: a scratch note under the ignored
+`.openclaw/` directory was enough to fail the documentation gate.
+
+The rule needs a git work tree. Outside one, the checker says so and exits 1;
+it never falls back to a wider scan.
+
 Exit code is 0 when nothing is wrong, 1 when at least one check failed.
 """
 
@@ -16,13 +28,14 @@ from __future__ import annotations
 import json
 import os
 import re
+import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # The checker is excluded from the text scan because it necessarily contains
 # the very strings it looks for.
-SELF = os.path.relpath(os.path.abspath(__file__), ROOT)
+SELF = os.path.relpath(os.path.abspath(__file__), ROOT).replace(os.sep, "/")
 
 TEXT_EXTENSIONS = (
     ".md",
@@ -40,7 +53,19 @@ TEXT_EXTENSIONS = (
     ".svg",
 )
 
-SKIP_DIRECTORIES = {".git", "target", "dist", "node_modules"}
+# The file set every check below reads, which is git's own answer to "what is in
+# the repository". `--cached` is every tracked file; `--others
+# --exclude-standard` adds every untracked file that is not ignored, so a new
+# page is checked before it is staged as well as after. See the module docstring
+# for why this is not a list of directory names.
+REPOSITORY = (
+    "git",
+    "ls-files",
+    "--cached",
+    "--others",
+    "--exclude-standard",
+    "-z",
+)
 
 # Translation trees are checked by their own tools, not by this one.
 #
@@ -82,16 +107,36 @@ def is_translation_source(relative: str) -> bool:
     return relative.startswith(TRANSLATION_SOURCE) and "/src/" in relative
 
 
-def iter_files():
-    for directory, subdirectories, filenames in os.walk(ROOT):
-        subdirectories[:] = sorted(
-            name for name in subdirectories if name not in SKIP_DIRECTORIES
+def repository_files():
+    """Every file the repository contains, relative to ROOT, in git's order.
+
+    One definition of the file set, for every check here, instead of each check
+    guessing with its own list of directory names.
+    """
+    try:
+        result = subprocess.run(
+            REPOSITORY, cwd=ROOT, capture_output=True, check=False
         )
-        for filename in sorted(filenames):
-            relative = os.path.relpath(os.path.join(directory, filename), ROOT)
-            if relative == SELF:
-                continue
-            yield relative
+    except OSError as error:
+        print(f"cannot run git to list the repository's files: {error}", file=sys.stderr)
+        raise SystemExit(1) from error
+    if result.returncode != 0:
+        detail = result.stderr.decode("utf-8", "surrogateescape").strip()
+        print("cannot list the repository's files with git:", file=sys.stderr)
+        if detail:
+            print(f"  {detail}", file=sys.stderr)
+        print(
+            "this checker scans the repository's content, so it must run inside "
+            "a git work tree",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+    names = result.stdout.decode("utf-8", "surrogateescape").split("\0")
+    return [
+        name
+        for name in names
+        if name and name != SELF and os.path.isfile(os.path.join(ROOT, name))
+    ]
 
 
 LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
@@ -99,7 +144,7 @@ LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 
 def check_links(errors):
     checked = 0
-    for relative in iter_files():
+    for relative in repository_files():
         if not relative.endswith(".md") or is_translation_source(relative):
             continue
         absolute = os.path.join(ROOT, relative)
@@ -122,7 +167,7 @@ def check_links(errors):
 def check_residue(errors):
     informational = 0
     scanned = 0
-    for relative in iter_files():
+    for relative in repository_files():
         if not relative.endswith(TEXT_EXTENSIONS):
             continue
         scanned += 1
@@ -148,7 +193,7 @@ def check_residue(errors):
 
 def check_machine_readable(errors):
     toml_count = json_count = yaml_count = 0
-    for relative in iter_files():
+    for relative in repository_files():
         path = os.path.join(ROOT, relative)
         if relative.endswith(".json"):
             json_count += 1

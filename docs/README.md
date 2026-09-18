@@ -31,6 +31,32 @@ Documentation also exists for contributors:
 | [`interoperability/`](interoperability/README.md) | MCP, A2A and WASM |
 | [`internals/`](internals/README.md) | Notes for people working on the compiler |
 
+## How this tree is checked
+
+[`scripts/check-docs.py`](../scripts/check-docs.py) resolves every relative link
+in every Markdown file, looks for names this project abandoned, and parses the
+machine-readable files. It runs in [`scripts/check.sh`](../scripts/check.sh) and
+in CI, and the files it reads are the repository's content — git's
+`ls-files --cached --others --exclude-standard`, nothing else.
+
+That boundary is deliberate. A file git ignores is not part of the repository,
+so the checker may not report on it: build output under `book/output/`, assets a
+build copies into place, and local scratch are none of its business, and a
+scratch note with an invented link must not fail a gate on a path a reader of
+the repository cannot open. Link *targets* are still resolved against the
+working tree, so a page may point at a file a build generates before that build
+has run. The scope is pinned by
+[`scripts/test-check-docs.py`](../scripts/test-check-docs.py), and the checker
+needs a git work tree: outside one it stops and says so rather than scanning
+something wider.
+
+The console-output check,
+[`scripts/check-console.py`](../scripts/check-console.py), reads the same file
+set for the other half of its rule: every documented fragment must appear in a
+Markdown file, and a file git ignores is not one, so a scratch note quoting an
+old message cannot stand in for a page that has fallen behind. Its scope is
+pinned by [`scripts/test-check-console.py`](../scripts/test-check-console.py).
+
 ## A warning about completeness
 
 NUDO is pre-alpha. Most of the language documented here does not run yet, and
