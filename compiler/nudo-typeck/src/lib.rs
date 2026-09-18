@@ -316,11 +316,11 @@ impl Checker<'_> {
                 }
             }
             ExprKind::Call { callee, arguments } => self.type_of_call(callee, &arguments),
+            ExprKind::Field { receiver, name } => self.type_of_field(receiver, &name),
             // Deferred, and silent about it: these produce `Error`, which is
             // compatible with everything, so nothing is reported about work this
             // slice does not do yet.
-            ExprKind::Field { .. }
-            | ExprKind::Index { .. }
+            ExprKind::Index { .. }
             | ExprKind::Unary { .. }
             | ExprKind::Binary { .. }
             | ExprKind::If { .. }
@@ -403,6 +403,89 @@ impl Checker<'_> {
             self.expect(&expected, &actual, span);
         }
         *result
+    }
+
+    /// Types a field access: `article.title`.
+    ///
+    /// A field is reached through a value, so the receiver's type decides
+    /// everything. A struct that has the field gives back the field's type; a
+    /// struct that does not is `NDO2007`, naming the field and listing what the
+    /// type does have; a value of any other type is the same code with a
+    /// different sentence, because "`Int` has no fields" is the honest answer.
+    ///
+    /// Two receivers stay silent. An unknown one (`Error`) has nothing to say. An
+    /// `enum` one is read through a `match`, and typing a `match` is the next
+    /// slice: saying nothing beats inventing a rule for reaching into a variant.
+    fn type_of_field(&mut self, receiver: ExprId, name: &str) -> Type {
+        let receiver_type = self.type_of_expression(receiver);
+        if receiver_type.is_error() {
+            return Type::Error;
+        }
+        let span = self.hir.expr(receiver).map_or_else(zero_span, |it| it.span);
+
+        let Type::Named { definition, .. } = &receiver_type else {
+            self.report_unknown_field(name, &receiver_type, span, &[]);
+            return Type::Error;
+        };
+        let Some(id) = definition.resolved() else {
+            return Type::Error;
+        };
+
+        // Everything read out of the definition is copied first: reporting a
+        // diagnostic needs `&mut self`, and a borrow of the HIR would outlive it.
+        let (is_struct, found, available) = {
+            let Some(definition) = self.hir.def(id) else {
+                return Type::Error;
+            };
+            match definition.kind {
+                DefKind::Struct => (
+                    true,
+                    definition
+                        .fields
+                        .iter()
+                        .find(|field| field.name == name)
+                        .and_then(|field| field.ty.clone()),
+                    definition
+                        .fields
+                        .iter()
+                        .map(|field| field.name.clone())
+                        .collect::<Vec<String>>(),
+                ),
+                _ => (false, None, Vec::new()),
+            }
+        };
+
+        if !is_struct {
+            return Type::Error;
+        }
+        if let Some(annotation) = found {
+            return self.type_of_annotation(&annotation);
+        }
+        self.report_unknown_field(name, &receiver_type, span, &available);
+        Type::Error
+    }
+
+    /// Reports a field a value does not have.
+    fn report_unknown_field(
+        &mut self,
+        name: &str,
+        receiver: &Type,
+        span: Span,
+        available: &[String],
+    ) {
+        let mut diagnostic = Diagnostic::error(
+            codes::UNKNOWN_FIELD,
+            format!("`{receiver}` has no field `{name}`"),
+        )
+        .with_location(self.source, span)
+        .with_note(format!("found: `{receiver}`"));
+        if !available.is_empty() {
+            diagnostic = diagnostic.with_note(format!("fields: {}", available.join(", ")));
+        }
+        self.diagnostics.push(
+            diagnostic
+                .with_help("a field is read through a value, so the value's type has to have it"),
+        );
     }
 
     /// Whether a type mentions a type parameter of the declaration it came from.
@@ -661,6 +744,55 @@ mod tests {
     #[test]
     fn a_call_to_a_function_declared_later_works() {
         let program = "fn main() {\n    later();\n}\n\nfn later() {\n}\n";
+        assert_eq!(codes_for(program), Vec::<String>::new());
+    }
+
+    #[test]
+    fn a_field_access_takes_the_field_type() {
+        let program = "struct Article {\n    title: Text\n}\n\nfn headline(article: Article) -> Text {\n    article.title\n}\n";
+        assert_eq!(codes_for(program), Vec::<String>::new());
+        assert!(
+            named_types(&checked(program).2).contains(&"Fn(Article) -> Text".to_string()),
+            "{:?}",
+            named_types(&checked(program).2)
+        );
+    }
+
+    #[test]
+    fn a_field_that_does_not_exist_is_ndo2007() {
+        let program = "struct Article {\n    title: Text\n}\n\nfn headline(article: Article) -> Text {\n    article.titel\n}\n";
+        assert_eq!(codes_for(program), vec!["NDO2007".to_string()]);
+    }
+
+    #[test]
+    fn the_field_diagnostic_names_the_field_and_what_the_type_has() {
+        let program = "struct Article {\n    title: Text\n    body: Text\n}\n\nfn headline(article: Article) -> Text {\n    article.titel\n}\n";
+        let (_, _, result) = checked(program);
+        let notes = result.diagnostics.as_slice()[0].notes().join(" | ");
+        assert!(
+            notes.contains("no field `titel`") || notes.contains("found: `Article`"),
+            "{notes}"
+        );
+        assert!(notes.contains("fields: title, body"), "{notes}");
+    }
+
+    #[test]
+    fn reading_a_field_of_something_that_has_none_is_reported() {
+        let program = "let number = 1;\n\nfn main() -> Int {\n    number.foo\n}\n";
+        assert_eq!(codes_for(program), vec!["NDO2007".to_string()]);
+    }
+
+    #[test]
+    fn a_field_access_chains_through_struct_fields() {
+        let program = "struct Author {\n    name: Text\n}\n\nstruct Article {\n    author: Author\n}\n\nfn author_name(article: Article) -> Text {\n    article.author.name\n}\n";
+        assert_eq!(codes_for(program), Vec::<String>::new());
+    }
+
+    #[test]
+    fn a_field_access_on_an_unknown_value_says_nothing() {
+        // The receiver's type is unknown (a call to a generic function), so the
+        // access is unknown too: silence, not a guess.
+        let program = "fn identity<T>(value: T) -> T {\n    value\n}\n\nfn main() {\n    let anything = identity(1);\n    let field = anything.name;\n}\n";
         assert_eq!(codes_for(program), Vec::<String>::new());
     }
 

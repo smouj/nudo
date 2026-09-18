@@ -169,6 +169,9 @@ pub mod codes {
     /// A call on something whose type is not a function.
     pub const NOT_CALLABLE: DiagnosticCode = DiagnosticCode::new("NDO2006", "NOT_CALLABLE");
 
+    /// A field that the value being read has no such field on.
+    pub const UNKNOWN_FIELD: DiagnosticCode = DiagnosticCode::new("NDO2007", "UNKNOWN_FIELD");
+
     // ---------------------------------------------------------------- 8xxx --
     /// The file being compiled does not use the `.nudo` extension.
     pub const UNEXPECTED_FILE_EXTENSION: DiagnosticCode =
@@ -189,6 +192,7 @@ pub mod codes {
         TYPE_MISMATCH,
         WRONG_ARGUMENT_COUNT,
         NOT_CALLABLE,
+        UNKNOWN_FIELD,
         UNEXPECTED_FILE_EXTENSION,
     ];
 
