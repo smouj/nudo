@@ -31,7 +31,8 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 | [0002](0002-generated-verified.md) | `Generated<T>` and `Verified<T>` | Discussion |
 | [0003](0003-capability-system.md) | Capability system | Draft |
 | [0004](0004-effects.md) | Effect system | Draft |
-| [0005](0005-keyword-policy.md) | Keyword policy | Draft |
+| [0005](0005-keyword-policy.md) | Keyword policy | Accepted |
+| [0006](0006-generic-syntax.md) | Generic syntax | Accepted |
 
 ## States
 
