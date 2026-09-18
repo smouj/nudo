@@ -126,8 +126,6 @@ pub mod codes {
 
     // ---------------------------------------------------------------- 1xxx --
     /// A token appeared in a position the grammar does not allow.
-    ///
-    /// Reserved: the parser that emits it lands in milestone M2.
     pub const UNEXPECTED_TOKEN: DiagnosticCode = DiagnosticCode::new("NDO1001", "UNEXPECTED_TOKEN");
 
     /// The lexer met a character that starts no token.
@@ -173,6 +171,7 @@ pub mod codes {
     /// planned; the toolchain never claims to detect a class of error it
     /// cannot detect.
     pub const IMPLEMENTED: &[DiagnosticCode] = &[
+        UNEXPECTED_TOKEN,
         UNKNOWN_CHARACTER,
         UNTERMINATED_STRING,
         UNTERMINATED_BLOCK_COMMENT,

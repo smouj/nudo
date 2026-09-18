@@ -3,9 +3,9 @@
 //! # What this binary does today
 //!
 //! Exactly one command is implemented: `nudo check`, which reads `.nudo`
-//! sources and reports **lexical** diagnostics. That is milestone M1 of the
-//! roadmap. Every other command in the toolchain is listed by `nudo --help`
-//! and exits with code [`EXIT_USAGE`] after saying so plainly.
+//! sources, lexes them, parses them and reports diagnostics. That is milestones
+//! M1 and M2 of the roadmap. Every other command in the toolchain is listed by
+//! `nudo --help` and exits with code [`EXIT_USAGE`] after saying so plainly.
 //!
 //! Nothing here pretends to work: a command that is not implemented never
 //! exits successfully.
@@ -101,8 +101,8 @@ USAGE:
     {TOOLCHAIN_NAME} --help
 
 IMPLEMENTED
-    check      Read .nudo sources and report lexical diagnostics
-               (milestone M1: lexing only; there is no parser yet)
+    check      Read .nudo sources and report lexical and syntax diagnostics
+               (milestones M1 and M2: lexing and parsing; nothing is executed)
 
 PLANNED (declared, not implemented)
 {planned}
@@ -111,6 +111,7 @@ OPTIONS
     -V, --version     Print version information
     --color <WHEN>    Colour diagnostics: auto (default), always, never
     --dump-tokens     With `check`: print the token stream instead of nothing
+    --dump-tree       With `check`: print the syntax tree instead of nothing
 
 EXIT CODES
     0    success, no error diagnostics
@@ -120,6 +121,7 @@ EXIT CODES
 EXAMPLES
     {TOOLCHAIN_NAME} check examples/00-hello-world/main.nudo
     {TOOLCHAIN_NAME} check --dump-tokens examples/00-hello-world/main.nudo
+    {TOOLCHAIN_NAME} check --dump-tree examples/00-hello-world/main.nudo
 
 STATUS
     Pre-alpha. The language is not stable, the toolchain is incomplete and
@@ -130,21 +132,22 @@ STATUS
 fn print_check_help() {
     println!(
         "\
-{TOOLCHAIN_NAME} check — read .nudo sources and report lexical diagnostics
+{TOOLCHAIN_NAME} check — read .nudo sources and report diagnostics
 
 USAGE:
     {TOOLCHAIN_NAME} check [OPTIONS] <FILE>...
 
 OPTIONS:
     --dump-tokens     Print the token stream in the stable `nudo-tokens v1` format
+    --dump-tree       Print the syntax tree in the stable `nudo-tree v1` format
     --color <WHEN>    Colour diagnostics: auto (default), always, never
     -h, --help        Print this help
 
 SCOPE:
-    Milestone M1. `check` reads each file, lexes it and reports lexical
-    diagnostics. Parsing, type checking and execution are planned and are not
-    implemented, so a clean run means \"no lexical diagnostics\", not
-    \"this program is correct\"."
+    Milestones M1 and M2. `check` reads each file, lexes it, parses it and
+    reports lexical and syntax diagnostics. Type checking, effect checking and
+    execution are planned and are not implemented, so a clean run means
+    \"no lexical or syntax diagnostics\", not \"this program is correct\"."
     );
 }
 
@@ -152,6 +155,7 @@ fn cmd_check(args: &[String]) -> u8 {
     let mut files: Vec<PathBuf> = Vec::new();
     let mut color = ColorChoice::Auto;
     let mut dump_tokens = false;
+    let mut dump_tree = false;
 
     let mut index = 0;
     while index < args.len() {
@@ -162,6 +166,7 @@ fn cmd_check(args: &[String]) -> u8 {
                 return EXIT_OK;
             }
             "--dump-tokens" => dump_tokens = true,
+            "--dump-tree" => dump_tree = true,
             "--color" => {
                 index += 1;
                 let Some(value) = args.get(index) else {
@@ -244,13 +249,20 @@ fn cmd_check(args: &[String]) -> u8 {
             );
         }
         let lexed = nudo_lexer::tokenize(file);
-        diagnostics.extend_from(lexed.diagnostics().clone());
         if dump_tokens {
+            // The token dump is the lexer's, so that its format stays exactly
+            // what the conformance corpus pins: no trivia, indices over the
+            // token stream, `nudo-tokens v1`.
             dump.push_str(&nudo_lexer::dump_tokens(file, lexed.tokens()));
+        }
+        let parsed = nudo_parser::parse(file);
+        diagnostics.extend_from(parsed.diagnostics().clone());
+        if dump_tree {
+            dump.push_str(&nudo_syntax::dump_tree(parsed.tree()));
         }
     }
 
-    if dump_tokens && !dump.is_empty() {
+    if (dump_tokens || dump_tree) && !dump.is_empty() {
         print!("{dump}");
         let _ = std::io::stdout().flush();
     }

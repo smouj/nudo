@@ -107,6 +107,63 @@ fn check_dumps_tokens_on_stdout() {
 }
 
 #[test]
+fn check_dumps_the_syntax_tree_on_stdout() {
+    let path = repo_path("fixtures/valid/hello.nudo");
+    let output = nudo(&["check", "--dump-tree", path.to_str().expect("utf-8 path")]);
+    assert_eq!(output.status.code(), Some(0));
+    let text = stdout(&output);
+    assert!(text.starts_with("# nudo-tree v1\n"));
+    assert!(text.contains("SourceFile"));
+    assert!(text.contains("FunctionDecl"));
+    assert!(text.contains("checked 1 file"));
+}
+
+#[test]
+fn check_reports_syntax_errors_that_lex_cleanly() {
+    // A file can use only known tokens and still not be a program. Before M2
+    // this exited 0, which is exactly the false confidence the roadmap set out
+    // to remove.
+    let path = repo_path("fixtures/invalid/syntax.nudo");
+    let output = nudo(&["check", path.to_str().expect("utf-8 path")]);
+    assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+    assert!(stderr(&output).contains("NDO1001"));
+}
+
+#[test]
+fn check_reports_every_preview_example_as_not_accepted() {
+    for name in [
+        "04-results",
+        "05-agent",
+        "06-tools",
+        "07-generated-verified",
+        "08-policy",
+        "09-multi-agent",
+    ] {
+        let path = repo_path(&format!("examples/{name}/main.nudo"));
+        let output = nudo(&["check", path.to_str().expect("utf-8 path")]);
+        assert_eq!(
+            output.status.code(),
+            Some(1),
+            "examples/{name} is a preview and must not be accepted"
+        );
+    }
+}
+
+#[test]
+fn check_accepts_the_examples_the_readme_calls_readable() {
+    for name in ["00-hello-world", "01-variables", "02-functions", "03-types"] {
+        let path = repo_path(&format!("examples/{name}/main.nudo"));
+        let output = nudo(&["check", path.to_str().expect("utf-8 path")]);
+        assert_eq!(
+            output.status.code(),
+            Some(0),
+            "examples/{name} is documented as readable:\n{}",
+            stderr(&output)
+        );
+    }
+}
+
+#[test]
 fn check_warns_about_the_wrong_extension() {
     let path = repo_path("fixtures/valid/not-a-nudo-file.txt");
     let output = nudo(&["check", path.to_str().expect("utf-8 path")]);
@@ -152,5 +209,7 @@ fn check_reports_unreadable_files() {
 fn check_help_documents_the_scope() {
     let output = nudo(&["check", "--help"]);
     assert!(output.status.success());
-    assert!(stdout(&output).contains("Milestone M1"));
+    let text = stdout(&output);
+    assert!(text.contains("Milestones M1 and M2"));
+    assert!(text.contains("--dump-tree"));
 }
