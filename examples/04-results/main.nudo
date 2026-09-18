@@ -1,38 +1,38 @@
 // NUDO example 04 — errors are values.
 //
-// PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
+// READ BY THE TOOLCHAIN TODAY:
 //
-// Why not: `return` is not in the grammar. The EBNF has no `return-statement`,
-// although spec/declarations.md describes one, so adding it is a language change
-// and needs a NEP. The declaration-site generics this file writes are accepted
-// since M3.1 (NEP-0010).
+//     nudo check examples/04-results/main.nudo
 //
-// NUDO has no exceptions. A failure is a value the caller must handle, and
-// `match` must be exhaustive (spec/expressions.md).
+// The file uses only syntax and names the pre-alpha toolchain accepts. It does
+// not run, and nothing here is type-checked: the type checker is milestone M3
+// and the interpreter is M4.
 //
-// Note that the helpers below are declared in this file on purpose: the
-// standard library does not exist yet (std/README.md), so an example cannot
-// honestly call `print`.
+// NUDO has no exceptions, and no `return` either (NEP-0012). A failure is a
+// value the caller must handle, and `match` must be exhaustive; a function's
+// result is the value of its body, and `match` is an expression, so `report`
+// returns its `match` directly (spec/expressions.md).
+//
+// One half of the story is a comment rather than an invented API: *building* a
+// failure — using an enum variant as a value, `Outcome::Err("...")`, or the
+// intrinsic `Result::Err` — is not resolved by name resolution yet (M3.2).
+// Handling a failure is, and that is what this example shows.
 
 enum Outcome<T, E> {
     Ok(value: T)
     Err(error: E)
 }
 
-fn divide(a: Int, b: Int) -> Outcome<Int, Text> {
-    if b == 0 {
-        return Outcome.Err("division by zero")
+fn report(outcome: Outcome<Int, Text>) -> Text {
+    match outcome {
+        Ok(value) => "division succeeded"
+        Err(reason) => reason
     }
-    Outcome.Ok(a / b)
 }
 
-fn log(message: Text) {
-    // No output capability exists yet; this is a placeholder for std/io.
-}
-
-fn main() {
-    match divide(10, 2) {
-        Ok(value) => log("division succeeded")
-        Err(reason) => log(reason)
+fn value_or(outcome: Outcome<Int, Text>, fallback: Int) -> Int {
+    match outcome {
+        Ok(value) => value
+        Err(reason) => fallback
     }
 }

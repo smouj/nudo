@@ -12,15 +12,16 @@ test in `compiler/nudo-parser/tests/examples.rs` checks it.
 | [`01-variables/`](01-variables/main.nudo) | Literals, `_` separators, nesting, escapes | **Clean** |
 | [`02-functions/`](02-functions/main.nudo) | Declarations, parameters, return types | **Clean** |
 | [`03-types/`](03-types/main.nudo) | Structs, enums, variants with fields, `match` | **Clean** |
+| [`04-results/`](04-results/main.nudo) | Errors as values: an `Outcome` and exhaustive `match` | **Clean** |
 
 ```console
 $ nudo check examples/00-hello-world/main.nudo
 checked 1 file: 0 errors and 0 warnings
 ```
 
-"Clean" means no lexical **and no syntax** diagnostics: the file lexes and it
-parses. It does not mean the file is correct or that it runs — there is no type
-checker (M3) and no interpreter (M4).
+"Clean" means no diagnostics from the stages the toolchain has: the file lexes,
+it parses, and since M3.1 it resolves. It does not mean the file is correct or
+that it runs — there is no type checker (M3) and no interpreter (M4).
 
 ## Design previews
 
@@ -31,7 +32,6 @@ read.
 
 | Example | Illustrates | Why it is not accepted yet |
 | ------- | ----------- | -------------------------- |
-| [`04-results/`](04-results/main.nudo) | Errors as values, no exceptions | `return` is not in the grammar |
 | [`05-agent/`](05-agent/main.nudo) | An agent as a bounded executor | Newline-separated, dotted tool names |
 | [`06-tools/`](06-tools/main.nudo) | Tools, scoped capabilities, effects | Dotted tool names; a capability with an argument |
 | [`07-generated-verified/`](07-generated-verified/main.nudo) | `Generated<T>` vs `Verified<T>` | Two `let`s with no `;` |
