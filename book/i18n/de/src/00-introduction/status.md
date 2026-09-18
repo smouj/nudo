@@ -1,14 +1,15 @@
 # 00.3 — Aktueller Projektstatus
 
-> **Status:** Implementiert / Geplant  
+> **Status:** Implementiert / Geplant (IMPLEMENTED / PLANNED)  
 > **Summary:** Das Repository ist bewusst ehrlich über die Lücke zwischen implementierten Compiler-Stufen und entworfenen künftigen Stufen.
 
 ## Implementierte Grundlage
 
 Der funktionierende Pfad konzentriert sich derzeit auf das Laden von Quelltext,
-Spans, Lexing, Tokens, Diagnostik und lexikalisches `nudo check`-Verhalten. Das
-Projekt besitzt außerdem Repository-, CI-, Sicherheits-, Governance-,
-Konformitäts- und Dokumentationsinfrastruktur.
+Spans, Lexing, Tokens, Diagnostik, den verlustfreien Syntaxbaum, den Parser, den
+typisierten AST und `nudo check` über all das. Das Projekt besitzt außerdem
+Repository-, CI-, Sicherheits-, Governance-, Konformitäts- und
+Dokumentationsinfrastruktur.
 
 ## Geplanter Compiler-Pfad
 
@@ -17,9 +18,9 @@ Source
   ↓
 Lexer             implemented
   ↓
-Lossless syntax   planned
+Lossless syntax   implemented
   ↓
-Parser / AST      planned
+Parser / AST      implemented
   ↓
 HIR / typecheck   planned
   ↓
@@ -29,6 +30,10 @@ MIR
   ↓
 Interpreter / WASM
 ```
+
+"Implemented" bedeutet, dass eine Stufe heute Verhalten und Tests hat. Ein sauberer
+Lauf von `nudo check` bedeutet, dass die Datei lexikalisiert und geparst wird; er
+bedeutet nicht, dass das Programm korrekt ist, und es läuft nicht.
 
 ## Warum Statuslabels wichtig sind
 

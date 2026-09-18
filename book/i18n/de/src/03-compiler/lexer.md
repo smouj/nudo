@@ -1,6 +1,6 @@
 # 03.2 — Quellmodell und Lexer
 
-> **Status:** Implementiert  
+> **Status:** Implementiert (IMPLEMENTED)  
 > **Summary:** Der Lexer ist die erste echte Sprachimplementierungsschicht und für deterministische Tokenisierung sowie behebbare lexikalische Diagnostik verantwortlich.
 
 Ein robuster Lexer muss Byte-Positionen, die Zeilen-/Spaltenzuordnung und Quell-IDs
@@ -16,5 +16,7 @@ Wichtige Eigenschaften sind:
 - stabile Diagnosecodes;
 - Konformitätsfälle, die eine andere Implementierung reproduzieren kann.
 
-Der derzeitige Erfolgspfad von `nudo check` ist rein lexikalisch. Ein sauberes
-Ergebnis heißt noch nicht, dass ein Programm syntaktisch oder semantisch gültig ist.
+Der Erfolgspfad von `nudo check` durchläuft jetzt das gesamte Frontend: ein sauberes
+Ergebnis bedeutet, dass die Datei lexikalisiert und geparst wird. Es bedeutet
+weiterhin nicht, dass das Programm semantisch gültig ist — nichts wird typgeprüft
+(M3) und nichts läuft (M4).

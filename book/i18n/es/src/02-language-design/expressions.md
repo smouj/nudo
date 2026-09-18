@@ -1,10 +1,12 @@
 # 02.2 — Expresiones y precedencia
 
-> **Status:** Especificado (SPECIFIED)  
-> **Summary:** La precedencia, la asociatividad y la prohibición de la recursión por la izquierda están decididas y se aplican. El parser que las implementa es M2.
+> **Status:** Implementado (IMPLEMENTED)  
+> **Summary:** La precedencia, la asociatividad y la prohibición de la recursión por la izquierda están decididas, se aplican y las implementa el parser.
 
 La precedencia no es una minucia de formato. `a + b * c` debe tener un único
-significado en toda implementación conforme.
+significado en toda implementación conforme, y el parser produce exactamente esa
+forma: en el árbol de `1 + 2 * 3` la multiplicación es el nodo interno y la suma está
+por encima.
 
 Estas ya no son cuestiones abiertas. Están enunciadas una sola vez, como una cadena
 de niveles gramaticales en
