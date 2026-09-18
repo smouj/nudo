@@ -13,14 +13,22 @@ fixes; the words that introduce the declarations — `agent`, `task`, `tool`,
 fn add(a: Int, b: Int) -> Int {
     a + b
 }
+
+fn identity<T>(value: T) -> T {
+    value
+}
 ```
 
 * Parameters are annotated. The return type is annotated, or omitted for `Unit`.
-* A function body is a block whose last expression is its value; `return` exists
-  for early exit.
+* A function body is a block whose last expression is its value.
+* A function may declare type parameters ([NEP-0010](../neps/0010-declaration-site-generics.md)).
 * A function that performs an effect declares it
   ([`effects.md`](effects.md)).
 * Functions are values: `add` has type `Fn(Int, Int) -> Int`.
+* **`return` is not in the grammar yet.** This chapter has always described it as
+  existing for early exit; the frozen EBNF has no `return-statement`, so
+  `examples/04-results` is rejected for that reason as well as for its generics.
+  Adding it is a language change and needs a NEP.
 
 ## Structs
 
@@ -120,12 +128,15 @@ privilege any provider, and the interface is provider-agnostic by construction
 
 ```nudo
 let answer = 42;              // immutable binding
-const LIMIT: Int = 1_000;     // compile-time constant (provisional)
+const LIMIT: Int = 1_000;     // compile-time constant
 ```
 
-Whether NUDO has mutable bindings at all, and what they are called, is an **open
-question**. The language is designed against immutability by default; a mutable
-binding needs a reason and a spelling, and neither exists yet.
+**Bindings are immutable, and that is a decision, not a postpone
+([NEP-0009](../neps/0009-mutability.md)):** there is no `mut`, no assignment
+operator, and no ownership or borrow checker. Shadowing in a nested scope is
+allowed; a duplicate name in the same scope is `NDO2xxx`. State is expressed by
+structure — a new value computed from an old one — or by a store the runtime owns
+(M7).
 
 ## Visibility and modules
 

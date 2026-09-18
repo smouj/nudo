@@ -111,8 +111,14 @@ item                = function-decl
 
 (* ---------------------------------------------------------------- items *)
 
-function-decl       = "fn", identifier, parameter-list,
+function-decl       = "fn", identifier, [ generic-parameter-list ], parameter-list,
                       [ "->", type ], [ effect-clause ], block ;
+
+generic-parameter-list = "<", identifier, { ",", identifier }, ">" ;
+
+(* A declaration states its parameters: `fn identity<T>(value: T) -> T`,
+   `enum Outcome<T, E> { … }`. One token of lookahead is still enough, because
+   after a declaration's name `<` can start nothing else. See NEP-0010. *)
 
 parameter-list      = "(", [ parameter, { ",", parameter } ], ")" ;
 parameter           = identifier, ":", type ;
@@ -121,10 +127,12 @@ effect-clause       = "with", capability-list ;
 capability-list     = capability, { ",", capability } ;
 capability          = identifier ;
 
-struct-decl         = "struct", identifier, "{", { field }, "}" ;
+struct-decl         = "struct", identifier, [ generic-parameter-list ],
+                      "{", { field }, "}" ;
 field               = identifier, ":", type ;
 
-enum-decl           = "enum", identifier, "{", { variant }, "}" ;
+enum-decl           = "enum", identifier, [ generic-parameter-list ],
+                      "{", { variant }, "}" ;
 variant             = identifier, [ "(", [ field, { ",", field } ], ")" ] ;
 
 const-decl          = "const", identifier, ":", type, "=", expression, ";" ;
@@ -140,7 +148,7 @@ tools-clause        = "tools", ":", tool-name, { ",", tool-name } ;
 allow-clause        = "allow", ":", capability-list ;
 tool-name           = path ;
 
-task-decl           = "task", identifier, parameter-list,
+task-decl           = "task", identifier, [ generic-parameter-list ], parameter-list,
                       "->", type, "{", { task-clause }, "}" ;
 task-clause         = agent-clause
                     | "agent", ":", path
@@ -152,7 +160,7 @@ budget-clause       = "budget", ":", budget-literal ;
 budget-literal      = "Budget", "(", budget-field, { ",", budget-field }, ")" ;
 budget-field        = identifier, ":", expression ;
 
-tool-decl           = "tool", path, parameter-list,
+tool-decl           = "tool", path, [ generic-parameter-list ], parameter-list,
                       [ "->", type ], [ effect-clause ], block ;
 
 model-decl          = "model", identifier, "{", { model-field }, "}" ;
@@ -279,7 +287,13 @@ pattern             = path, [ "(", [ pattern, { ",", pattern } ], ")" ] ;
    `verify draft with V` parseable: no postfix suffix starts with `with`. *)
 ask-expression      = "ask", path, block ;
 
-verify-expression   = "verify", expression, "with", path ;
+(* The operand is a NAMED value: a path, optionally called. That restriction is
+   what lets the parser read `verify` as a verification with one token of
+   lookahead: `verify draft with V` is a verification, and `verify(draft)` is a
+   call on a name called `verify`. A parenthesised or compound operand is not in
+   the grammar. See NEP-0002. *)
+verify-expression   = "verify", verified-operand, "with", path ;
+verified-operand    = path, [ argument-list ] ;
 
 delegate-expression = "delegate", path, block,
                       [ "with", "budget", ":", budget-literal ] ;

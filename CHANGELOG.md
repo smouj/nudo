@@ -17,6 +17,49 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **M3.0 — the semantic gates.** Six NEPs decide the semantics the type checker
+  will be written against, each with the alternatives it rejected:
+  [NEP-0007](neps/0007-integer-semantics.md) (`Int` is signed 64-bit, arithmetic
+  **traps** on overflow and division by zero, a literal out of range is a compile
+  error), [NEP-0008](neps/0008-error-model.md) (`Result<T, E>` is intrinsic,
+  failure is a value, a trap is not, there is no `?`),
+  [NEP-0002](neps/0002-generated-verified.md) (`verify` yields
+  `Result<Verified<T>, VerificationError>` and its operand is a named value),
+  [NEP-0009](neps/0009-mutability.md) (bindings are immutable, and no borrow
+  checker is introduced),
+  [NEP-0010](neps/0010-declaration-site-generics.md) (declarations declare their
+  type parameters; `Result` is intrinsic) and
+  [NEP-0011](neps/0011-path-and-list-spelling.md) (a path uses `::`, a list is
+  comma-separated).
+* `M3.0`, `M3.1`, `M3.2` and `M3.3` in [`ROADMAP.md`](ROADMAP.md), with the
+  closure test M3 is judged by: `publish(draft)` must fail to compile, and the
+  handled `Result` of a verification must be accepted.
+
+### Changed
+
+* **`verify` now yields a `Result`.** It was specified as producing
+  `Verified<T>` directly, which made a rejected verification look like a panic.
+  It yields `Result<Verified<T>, VerificationError>`, so a `Verified<T>` cannot be
+  obtained without handling the failure (`spec/expressions.md`,
+  `spec/trust/verified.md`, the README and the manual).
+* **The parser's one-token limitation on `verify` is gone**, removed by
+  restricting the operand to a named value rather than by reserving the word
+  ([NEP-0002](neps/0002-generated-verified.md)). `verify (expr) with V` is no
+  longer a limitation: it is not in the grammar.
+* **The grammar gained `generic-parameter-list`** and the restricted
+  `verify-expression` operand. `nudo-parser` accepts both in M3.1; until then the
+  restriction is recorded in `spec/grammar.md` and `ROADMAP.md` rather than left
+  to be discovered.
+* `spec/types.md`, `spec/expressions.md`, `spec/declarations.md`,
+  `spec/generics.md`, `spec/grammar.md` and `spec/trust/verified.md` state the
+  decided semantics instead of naming them as open questions.
+
+### Fixed
+
+* `spec/declarations.md` described `return` as if it existed. The EBNF has no
+  `return-statement`, so the chapter now says so, and `examples/04-results` is
+  rejected for that reason as well as for its generics.
+
 * **The parser, the lossless syntax tree and the typed AST.** `nudo-syntax`
   holds a tree in which every byte of the file is reachable — whitespace and
   comments included — so it can reprint its source byte for byte;

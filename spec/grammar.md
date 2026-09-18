@@ -108,11 +108,21 @@ its syntax is frozen:
 | ---------- | ------------- |
 | `agent-decl` | Whether `role:`, `tools:` and `allow:` stay clauses or become fields |
 | `task-decl` | Whether `verify:` is a clause or a value |
-| `ask-expression` | Whether `ask` is a keyword, a function or a protocol |
-| `verify-expression` | The same question, plus whether `with` is the right connective |
-| `generic-type` | Whether NUDO has angle-bracket generics at all |
-| `binding` | Whether mutability exists, and therefore whether assignment exists |
 | `pattern` | Whether patterns grow beyond enum variants and bindings |
+| `return` | Whether early exit exists, and what it is spelled (this chapter's sibling
+[`declarations.md`](declarations.md) describes `return` as if it existed; the
+EBNF has no such production) |
+
+Decided since, each by a NEP:
+
+| Production | Decision |
+| ---------- | -------- |
+| `ask-expression` | A primary expression that yields `Generated<T>`; `ask` stays contextual ([NEP-0002](../neps/0002-generated-verified.md)) |
+| `verify-expression` | Its operand is a **named value** (a path, optionally called), and it yields `Result<Verified<T>, VerificationError>` ([NEP-0002](../neps/0002-generated-verified.md)) |
+| `generic-type` | Angle brackets, invariant arguments ([NEP-0006](../neps/0006-generic-syntax.md)) |
+| `generic-parameter-list` | Declarations declare their parameters ([NEP-0010](../neps/0010-declaration-site-generics.md)) |
+| `binding` | Immutable; no assignment, ever, in this edition ([NEP-0009](../neps/0009-mutability.md)) |
+| Tool names and lists | A path uses `::`; lists are comma-separated ([NEP-0011](../neps/0011-path-and-list-spelling.md)) |
 
 ## What the grammar may not do
 
@@ -134,9 +144,11 @@ The parser exists, and it agrees with this grammar:
 * A production the parser accepts but the grammar does not is a silent language
   extension, which is exactly what [`../AGENTS.md`](../AGENTS.md) forbids.
 * A production the grammar describes but the parser rejects is a silent
-  restriction, and is reported the same way. One is recorded: see the known
-  limitations in
-  [`../docs/internals/parser-design.md`](../docs/internals/parser-design.md).
+  restriction, and is reported the same way. One is open right now, and it is
+  deliberate: the grammar gained `generic-parameter-list` and the restricted
+  `verify-expression` operand with NEP-0010 and NEP-0002, and `nudo-parser`
+  accepts both in **M3.1**, not in M2. Until then `nudo check` rejects
+  `enum Outcome<T, E>`, and the roadmap says so.
 * Every accepted production has a case under
   [`../tests/conformance/parser`](../tests/conformance/parser), and every
   rejected one a diagnostic case with its `NDO` code.

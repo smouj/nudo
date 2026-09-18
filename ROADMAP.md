@@ -118,27 +118,83 @@ one visible consequence of the first: `verify (expr) with V` is rejected.
 **The formatter is still M10.** M2 owes it a tree it can reprint, and pays that
 debt: `reprint` is the identity for every fixture and every conformance case.
 
-## M3 — Type system — **planned**
+## M3 — Type system — **in progress**
 
-**Gates.** These must be decided before type checking is implemented, because
-they change what the checker *does*, not how it is written. Each is a NEP, and
-each needs positive, negative and boundary examples:
+### M3.0 — Semantic gates — **done**
 
-| Decision | Blocks |
-| -------- | ------ |
-| Integer width and overflow semantics | Every arithmetic rule, and `Int` in every signature |
-| The error model: `Result` shape, and whether anything richer exists | Every fallible function |
-| The final form of `verify` ([NEP-0002](neps/0002-generated-verified.md)) | The trust types, which are the reason the language exists |
-| Whether generics use angle brackets | Types, and one token of parser lookahead |
+The semantics are decided before the checker is written, because they change what
+the checker *does*, not how it is written. Six NEPs, all accepted and all
+recorded with the alternatives that lost:
 
-* [ ] Primitive types, structs, enums, generics
-* [ ] `Result` and `Generated<T>` / `Verified<T>` as distinct types
+| Gate | Decision | NEP |
+| ---- | -------- | --- |
+| `Int` | Signed 64-bit, **traps** on overflow and division by zero, truncating division, a literal out of range is a compile error | [NEP-0007](neps/0007-integer-semantics.md) |
+| Error model | `Result<T, E>` is **intrinsic**, failure is a value, a trap is not, and there is **no `?`** | [NEP-0008](neps/0008-error-model.md) |
+| `verify` | Yields `Result<Verified<T>, VerificationError>`; its operand is a *named* value; a verifier is deterministic | [NEP-0002](neps/0002-generated-verified.md) |
+| Mutability | Bindings are immutable, and stay immutable: no `mut`, no assignment, **no borrow checker** | [NEP-0009](neps/0009-mutability.md) |
+| Generics | Declarations declare their parameters; `Result` is intrinsic | [NEP-0010](neps/0010-declaration-site-generics.md) |
+| Spelling | A path uses `::`; a list inside a declaration is comma-separated | [NEP-0011](neps/0011-path-and-list-spelling.md) |
+
+**Exit criteria:** met, in the sense that matters — every question a type checker
+needs answered is answered, in `spec/`, with the reasoning in `neps/`. Nothing is
+implemented yet, and the grammar changes two of these decisions require
+(`generic-parameter-list`, the restricted `verify` operand) are recorded as M3.1
+work rather than left as a surprise.
+
+### M3.1 — HIR and name resolution
+
+* [ ] `nudo-hir`: `DefId`, `ItemId`, `ExprId`, `LocalId`, `ScopeId`, `TypeRefId`,
+      with spans preserved and no dependence on syntactic text
+* [ ] Lowering from AST to HIR
+* [ ] Name resolution: namespaces, shadowing, duplicates, types versus values,
+      paths
+* [ ] `NDO2001` (`unresolved name`) and the rest of the `2xxx` family in use
+* [ ] `nudo-parser`: accept `generic-parameter-list` and the restricted `verify`
+      operand that M3.0's NEPs added to the grammar
+
+### M3.2 — Basic type system
+
+* [ ] Primitive types: `Int` (with NEP-0007's rules), `Float`, `Bool`, `Text`,
+      `Unit`
+* [ ] Structs, enums, generics and instantiation, arity checking
+* [ ] `Result<T, E>` as an intrinsic type, and exhaustiveness of `match` on it
+* [ ] Function types and calls; no implicit numeric conversion
 * [ ] Agent, task and tool type declarations
 * [ ] Type errors with stable `NDO2xxx` codes
-* [ ] Name resolution in HIR
 
-**Exit criteria:** no `Generated<T>` value is usable as a `Verified<T>` without
-an explicit verification step, proven by a conformance case.
+### M3.3 — The trust types
+
+* [ ] `Generated<T>` and `Verified<T>` as distinct types, with no conversion
+      between them
+* [ ] `verify` yielding `Result<Verified<T>, VerificationError>`
+* [ ] Conformance cases: conversion rejection, verification failure, provenance
+
+**Exit criteria for M3:** the program below is *rejected*, and the one after it is
+accepted, both pinned by conformance cases:
+
+```nudo
+fn publish(article: Verified<Article>) { }
+
+let draft: Generated<Article> = ask Writer { "Create an article." };
+publish(draft);                                  // NDO2xxx: Generated is not Verified
+```
+
+```nudo
+let checked: Result<Verified<Article>, VerificationError> =
+    verify draft with ArticleVerifier;
+
+match checked {
+    Ok(article) => publish(article)
+    Err(reason) => report(reason)
+}
+```
+
+That pair is the whole point of the language: it turns "the compiler can tell
+what a model produced from what has been checked" into a property a build can
+demonstrate.
+
+**Not touched in M3:** the interpreter, the effect system, agents, MCP, the
+sandbox, the language server and WebAssembly.
 
 ## M4 — Interpreter, as one vertical slice — **planned**
 

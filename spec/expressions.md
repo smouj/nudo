@@ -137,29 +137,35 @@ plain `T`, because that would be a name for "trust this without checking".
 ### `verify` — produce a `Verified<T>`
 
 ```nudo
-let article: Verified<Article> = verify draft with ArticleVerifier
+let checked: Result<Verified<Article>, VerificationError> =
+    verify draft with ArticleVerifier
 ```
 
-`verify` runs a verifier against a value and either produces `Verified<T>` with
-provenance attached, or fails. It is not a cast: a verifier can reject, and a
-rejected verification is a normal, checkable outcome.
+`verify` runs a verifier against a value and yields
+**`Result<Verified<T>, VerificationError>`**: a rejected verification is a normal
+value the caller handles, not a panic and not a cast
+([NEP-0002](../neps/0002-generated-verified.md)). A `Verified<T>` cannot be
+obtained without handling the failure, which is what makes the verification step
+visible in the source.
 
-**Known limitation, and the reason it exists.** `verify` is a contextual word
-([NEP-0005](../neps/0005-keyword-policy.md)), so the parser has to decide from
-one token whether a name called `verify` is being used or a verification is being
-written. It reads `verify` as a verification when the next token starts an
-operand and is not `(`, `.` or `[`. The consequence:
+**The operand is a named value**: a path, optionally called (`verify draft`,
+`verify parse(text)`). A parenthesised or compound operand is not in the grammar,
+and that is what lets the parser read `verify` as a verification with one token of
+lookahead and no backtracking:
 
 ```nudo
 let a = verify draft with Verifier;   // a verification
 let b = verify(draft);                // a call on something named `verify`
-let c = verify (draft) with Verifier; // rejected: reads as a call
 ```
 
-The third form is the one to know about. It is rejected rather than
-misinterpreted, and the limitation disappears the moment NEP-0002 decides whether
-`verify` is a keyword, a function or a protocol — which is exactly the decision
-this chapter is waiting on.
+`verify` remains a contextual word ([NEP-0005](../neps/0005-keyword-policy.md)),
+and the earlier one-token limitation is gone: it was removed by restricting what
+can be verified, not by reserving the word.
+
+A verifier is a declaration whose body is **deterministic**. Verification by a
+model is deferred to M6, which must say whether the result is
+`Generated<Verified<T>>` and how the loop closes — a model's judgement about its
+own output cannot be the step that promotes it.
 
 ### Tool calls
 

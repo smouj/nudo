@@ -43,13 +43,17 @@ is no truthiness: a condition is a `Bool`.
 The idea the language is built around:
 
 ```nudo
-let draft: Generated<Article> = ask Writer { "Create an article." }
+let draft: Generated<Article> = ask Writer { "Create an article." };
 
-let article: Verified<Article> = verify draft with ArticleVerifier
+let checked: Result<Verified<Article>, VerificationError> =
+    verify draft with ArticleVerifier
 ```
 
 * `Generated<T>` — a model produced it. Readable, storable, not trusted.
 * `Verified<T>` — an explicit verification step passed, and left a record.
+* `verify` yields a `Result`, because a verifier can reject and a rejection is a
+normal outcome, not a panic. A `Verified<T>` cannot be obtained without handling
+it.
 
 There is no implicit conversion between them, or from either to `T`. That is the
 point: the absence of a verification step has to be visible in the source,
