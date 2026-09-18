@@ -189,6 +189,8 @@ pub enum SyntaxKind {
 
     /// `parameter-list`.
     ParameterList,
+    /// `generic-parameter-list`: the `<T, U>` a declaration states after its name.
+    GenericParameterList,
     /// `parameter`.
     Parameter,
     /// `effect-clause`.
@@ -336,6 +338,7 @@ impl SyntaxKind {
             SyntaxKind::ConstDecl => "ConstDecl",
             SyntaxKind::Binding => "Binding",
             SyntaxKind::ParameterList => "ParameterList",
+            SyntaxKind::GenericParameterList => "GenericParameterList",
             SyntaxKind::Parameter => "Parameter",
             SyntaxKind::EffectClause => "EffectClause",
             SyntaxKind::CapabilityList => "CapabilityList",
@@ -403,6 +406,7 @@ impl SyntaxKind {
                 | SyntaxKind::ConstDecl
                 | SyntaxKind::Binding
                 | SyntaxKind::ParameterList
+                | SyntaxKind::GenericParameterList
                 | SyntaxKind::Parameter
                 | SyntaxKind::EffectClause
                 | SyntaxKind::CapabilityList

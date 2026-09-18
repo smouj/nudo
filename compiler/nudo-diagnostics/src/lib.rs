@@ -148,6 +148,17 @@ pub mod codes {
     pub const INVALID_ESCAPE_SEQUENCE: DiagnosticCode =
         DiagnosticCode::new("NDO1006", "INVALID_ESCAPE_SEQUENCE");
 
+    // ---------------------------------------------------------------- 2xxx --
+    /// A name that resolution could not find.
+    pub const UNRESOLVED_NAME: DiagnosticCode = DiagnosticCode::new("NDO2001", "UNRESOLVED_NAME");
+
+    /// Two definitions of the same name in one scope and namespace.
+    pub const DUPLICATE_NAME: DiagnosticCode = DiagnosticCode::new("NDO2002", "DUPLICATE_NAME");
+
+    /// A name used as the wrong kind of thing: a type where a value is
+    /// expected, or the other way round.
+    pub const WRONG_NAMESPACE: DiagnosticCode = DiagnosticCode::new("NDO2003", "WRONG_NAMESPACE");
+
     // ---------------------------------------------------------------- 8xxx --
     /// The file being compiled does not use the `.nudo` extension.
     pub const UNEXPECTED_FILE_EXTENSION: DiagnosticCode =
@@ -162,6 +173,9 @@ pub mod codes {
         UNTERMINATED_BLOCK_COMMENT,
         INVALID_NUMBER_LITERAL,
         INVALID_ESCAPE_SEQUENCE,
+        UNRESOLVED_NAME,
+        DUPLICATE_NAME,
+        WRONG_NAMESPACE,
         UNEXPECTED_FILE_EXTENSION,
     ];
 
@@ -177,6 +191,9 @@ pub mod codes {
         UNTERMINATED_BLOCK_COMMENT,
         INVALID_NUMBER_LITERAL,
         INVALID_ESCAPE_SEQUENCE,
+        UNRESOLVED_NAME,
+        DUPLICATE_NAME,
+        WRONG_NAMESPACE,
         UNEXPECTED_FILE_EXTENSION,
     ];
 

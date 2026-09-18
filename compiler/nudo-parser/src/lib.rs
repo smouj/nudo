@@ -565,6 +565,7 @@ impl<'a> Parser<'a> {
             self.builder.finish_node();
             return;
         }
+        self.parse_generic_parameter_list();
         self.parse_parameter_list();
         if self.eat(SyntaxKind::Arrow) {
             self.parse_type();
@@ -583,6 +584,7 @@ impl<'a> Parser<'a> {
             self.builder.finish_node();
             return;
         }
+        self.parse_generic_parameter_list();
         if !self.expect(SyntaxKind::LBrace, "`{`") {
             self.builder.finish_node();
             return;
@@ -612,6 +614,7 @@ impl<'a> Parser<'a> {
             self.builder.finish_node();
             return;
         }
+        self.parse_generic_parameter_list();
         if !self.expect(SyntaxKind::LBrace, "`{`") {
             self.builder.finish_node();
             return;
@@ -817,6 +820,7 @@ impl<'a> Parser<'a> {
             self.builder.finish_node();
             return;
         }
+        self.parse_generic_parameter_list();
         self.parse_parameter_list();
         if self.eat(SyntaxKind::Arrow) {
             self.parse_type();
@@ -863,6 +867,7 @@ impl<'a> Parser<'a> {
         self.start_node(SyntaxKind::ToolDecl);
         self.bump(); // `tool`
         self.parse_path();
+        self.parse_generic_parameter_list();
         self.parse_parameter_list();
         if self.eat(SyntaxKind::Arrow) {
             self.parse_type();
@@ -904,6 +909,20 @@ impl<'a> Parser<'a> {
     }
 
     // ----------------------------------------------------------- clauses ---
+
+    fn parse_generic_parameter_list(&mut self) {
+        if !self.at(SyntaxKind::Lt) {
+            return;
+        }
+        self.start_node(SyntaxKind::GenericParameterList);
+        self.bump(); // `<`
+        self.expect_ident("a type parameter name");
+        while self.eat(SyntaxKind::Comma) {
+            self.expect_ident("a type parameter name");
+        }
+        self.expect(SyntaxKind::Gt, "`>`");
+        self.builder.finish_node();
+    }
 
     fn parse_parameter_list(&mut self) {
         if !self.at(SyntaxKind::LParen) {
@@ -1332,7 +1351,7 @@ impl<'a> Parser<'a> {
                 self.parse_delegate_expression();
             }
             SyntaxKind::Ident
-                if self.at_word("verify") && self.starts_operand(self.nth_kind(1)) =>
+                if self.at_word("verify") && self.nth_kind(1) == SyntaxKind::Ident =>
             {
                 self.parse_verify_expression();
             }
@@ -1438,18 +1457,32 @@ impl<'a> Parser<'a> {
         self.builder.finish_node();
     }
 
-    /// `verify value with Verifier` — an explicit, fallible step.
+    /// `verify name with Verifier` — an explicit, fallible step.
+    ///
+    /// The operand is a *named* value: a path, optionally called. That is what
+    /// lets the parser decide with one token whether `verify` starts a
+    /// verification or is a name: `verify draft with V` is a verification, and
+    /// `verify(draft)` is a call on something called `verify` (NEP-0002).
     fn parse_verify_expression(&mut self) {
         self.start_node(SyntaxKind::VerifyExpression);
         self.bump(); // `verify`
-        self.parse_expression();
+        let checkpoint = self.checkpoint();
+        self.start_node(SyntaxKind::PathExpression);
+        self.parse_path();
+        self.builder.finish_node();
+        if self.at(SyntaxKind::LParen) {
+            self.builder
+                .start_node_at(checkpoint, SyntaxKind::CallExpression);
+            self.parse_argument_list();
+            self.builder.finish_node();
+        }
         if self.at_word("with") {
             self.bump();
             self.parse_path();
         } else {
             self.error_clause(
                 "verify",
-                "a verification of the form `verify value with Verifier`",
+                "a verification of the form `verify name with Verifier`",
             );
         }
         self.builder.finish_node();
