@@ -151,7 +151,15 @@ work rather than left as a surprise.
 * [x] `nudo-parser`: accept `generic-parameter-list` and the restricted `verify`
       operand that M3.0's NEPs added to the grammar, with a conformance case each
 
-### M3.2 — Basic type system
+### M3.2 — Basic type system — **first slice done**
+
+The first slice is implemented: `nudo-typeck` types primitives and literals,
+compares annotations, types paths from what resolution found, and reports
+`NDO2004` with `expected` and `found` as structure. Calls, generics, structs,
+enums, `Result` exhaustiveness and effects are the following slices; until each
+arrives those expressions type as an error that reports nothing, so the checker
+is never wrong about work it does not do. See
+[`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
 
 Two gates are taken before this one is written, so that the checker is written
 against answers: [NEP-0013](neps/0013-generic-inference.md) bounds inference to
@@ -159,8 +167,9 @@ the arguments and the expected type, and
 [NEP-0014](neps/0014-trust-types-obey-the-rules.md) keeps the trust types free of
 rules of their own.
 
-* [ ] Primitive types: `Int` (with NEP-0007's rules), `Float`, `Bool`, `Text`,
-      `Unit`
+* [x] Primitive types: `Int` (with NEP-0007's rules), `Float`, `Bool`, `Text`,
+      `Unit` — typed in the first slice; `Int`'s arithmetic rules arrive with
+      expression typing
 * [ ] Structs, enums, generics and instantiation, arity checking
 * [ ] `Result<T, E>` as an intrinsic type, and exhaustiveness of `match` on it
 * [ ] Function types and calls; no implicit numeric conversion

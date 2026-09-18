@@ -17,6 +17,16 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **M3.2, first slice: the type checker.** `nudo-typeck` consumes HIR — never a
+  syntax tree, never an AST, never a byte of source — and types primitives and
+  literals, compares annotations, types a path from the definition resolution
+  found, and reports `NDO2004` with `expected` and `found` as structure rather
+  than prose. Calls, generics, structs, enums, exhaustiveness and effects are
+  following slices; until each arrives those expressions type as an error that
+  reports nothing, so the checker is never wrong about work it does not do. Its
+  design is in `docs/internals/typeck-design.md`, and the `typeck` conformance
+  corpus has one valid and one invalid case.
+
 * **The gates M3.2 opens with.**
   [NEP-0013](neps/0013-generic-inference.md) bounds generic inference: from the
   arguments and the expected type, one pass, monomorphic `let`, and a compile

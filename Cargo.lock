@@ -191,3 +191,10 @@ version = "0.0.1"
 [[package]]
 name = "nudo-typeck"
 version = "0.0.1"
+dependencies = [
+ "nudo-diagnostics",
+ "nudo-hir",
+ "nudo-parser",
+ "nudo-source",
+ "nudo-span",
+]

@@ -33,7 +33,8 @@ tests/conformance/
 * The directory name is `<4-digit index>-<kebab-case-slug>`.
 * The input file is always named `main.nudo`, so that expectations never
   encode a machine-specific path.
-* Cases are grouped by pipeline stage. `lexer/`, `parser/` and `resolve/` exist today; see
+* Cases are grouped by pipeline stage. `lexer/`, `parser/`, `resolve/` and `typeck/`
+exist today; see
   [`../README.md`](../README.md) for the planned areas.
 
 ## Format: `tokens.txt`
@@ -133,6 +134,11 @@ and which is not part of the format:
 ```text
 checked 1 file: 0 errors and 0 warnings
 ```
+
+The `typeck` corpus uses `types.txt` for the `nudo-typeck v1` dump. The CLI does
+not expose a type dump yet — the checker is deliberately not wired into `check`
+until calls exist — so those expectations are written by their driver with
+`NUDO_BLESS=1` and reviewed as a diff, exactly like every other expectation here.
 
 For the token corpus, use the same command with `--dump-tokens`, `tokens.txt`
 and the `lexer/` directory. For the resolution corpus, `--dump-resolutions`,
