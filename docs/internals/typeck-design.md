@@ -74,7 +74,8 @@ fill in cases instead of redesigning the centre:
 | Blocks | a block's type is its final expression's, or `Unit` when it has none |
 | Names | a path takes the type of the definition it resolved to |
 | Functions | a body is compared with the written return type; with none written, the body's type *is* the result type |
-| One diagnostic | `NDO2004`, with `expected` and `found` as structure |
+| Calls | arity (`NDO2005`), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`) |
+| One diagnostic shape | `expected` and `found` as structure, never as prose to re-parse |
 
 The diagnostic points at the **value**, not at the name it was bound to: the
 value is what breaks the promise, and therefore the place a reader has to change.
@@ -93,8 +94,7 @@ wrong: those expressions type as `Error`, and `Error` reports nothing.
 
 | Not yet | Arrives with |
 | ------- | ------------ |
-| Calls: arity and argument compatibility | the next slice |
-| Generic instantiation and bounded inference (NEP-0013) | after calls |
+| Generic instantiation and bounded inference (NEP-0013) — a call to a generic function is typed as unknown and says nothing, because comparing an argument against `T` would invent a rule | next slice |
 | Struct and enum structure: fields, variants | after generics |
 | `Result<T, E>` and exhaustiveness of `match` (NEP-0014) | after enums |
 | Effects | M5 |
@@ -111,11 +111,15 @@ gaps:
 
 ## Why the checker is not wired into `nudo check` yet
 
-`check` currently lexes, parses and resolves. Wiring the checker in now would
-report on programs whose calls, structs and enums cannot be typed yet — noise
-dressed as strictness. It is wired when calls make it worth wiring, and the
-CLI's stage list gains a `TYPE` row at that moment; the terminal layer already
-renders stages from work actually done, so nothing pretends.
+`check` currently lexes, parses and resolves, and the checker runs beside it in
+its own tests and corpus but not inside it. Calls are checked now, so the
+question is live; what still argues for waiting is that structs, enums and the
+trust types type as unknown, and the examples in `examples/` are *about* those.
+Wiring it in today would add a `TYPE` stage that reports on primitives and calls
+and stays silent about the interesting half — so a clean run would mean less than
+a reader would assume. It is wired when the structural rules land, and the
+terminal layer gains its `TYPE` row at that moment, rendered from work actually
+done.
 
 Until then the checker is exercised by its own tests and by the `typeck`
 conformance corpus, which is a corpus like any other: reviewed as a diff.

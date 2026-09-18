@@ -162,6 +162,13 @@ pub mod codes {
     /// A value whose type is not the one its annotation promised.
     pub const TYPE_MISMATCH: DiagnosticCode = DiagnosticCode::new("NDO2004", "TYPE_MISMATCH");
 
+    /// A call that passes a different number of arguments than the function takes.
+    pub const WRONG_ARGUMENT_COUNT: DiagnosticCode =
+        DiagnosticCode::new("NDO2005", "WRONG_ARGUMENT_COUNT");
+
+    /// A call on something whose type is not a function.
+    pub const NOT_CALLABLE: DiagnosticCode = DiagnosticCode::new("NDO2006", "NOT_CALLABLE");
+
     // ---------------------------------------------------------------- 8xxx --
     /// The file being compiled does not use the `.nudo` extension.
     pub const UNEXPECTED_FILE_EXTENSION: DiagnosticCode =
@@ -180,6 +187,8 @@ pub mod codes {
         DUPLICATE_NAME,
         WRONG_NAMESPACE,
         TYPE_MISMATCH,
+        WRONG_ARGUMENT_COUNT,
+        NOT_CALLABLE,
         UNEXPECTED_FILE_EXTENSION,
     ];
 

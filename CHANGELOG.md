@@ -17,6 +17,14 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **M3.2: calls are checked.** A call takes the type of its signature's result,
+  checks its arity (`NDO2005`), checks each argument against its parameter
+  (`NDO2004`, reported at the argument because that is what to change), and
+  reports calling something that is not a function (`NDO2006`). A call to a
+  *generic* function is typed as unknown and says nothing: instantiation is the
+  next slice, and comparing an argument against `T` would invent a rule that does
+  not exist.
+
 * **M3.2, first slice: the type checker.** `nudo-typeck` consumes HIR — never a
   syntax tree, never an AST, never a byte of source — and types primitives and
   literals, compares annotations, types a path from the definition resolution
