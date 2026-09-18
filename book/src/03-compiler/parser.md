@@ -58,8 +58,11 @@ about it.
 
 * Nothing, right now: declaration-site generic parameters (`enum Outcome<T, E>`)
   and `verify`'s named operand both parse since M3.1, and each has a conformance
-  case that pins it. What is still missing from the language is `return`, which
-  the EBNF never had.
+  case that pins it. There is no `return` to add either: the EBNF never had one,
+  and [NEP-0012](https://github.com/smouj/nudo/blob/main/neps/0012-early-exit.md)
+  settles that early exit is a block's value rather than a statement. A stray
+  `return` is an unexpected token and an `NDO1001`, pinned by
+  `tests/conformance/parser/0017-no-return`.
 * The grammar's paths use `::` and its lists are comma-separated, while several
   examples in the manual and in `examples/` write `web.search` one per line. The
   parser follows the grammar; the examples say they are previews, and which

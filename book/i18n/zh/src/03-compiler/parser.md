@@ -45,9 +45,11 @@ AST 为下游阶段给出语义形状（`Function`、`Call`、`Type`），
 
 ## 有意缺失的东西
 
-* 声明处的泛型参数（`enum Outcome<T, E>`）不在冻结的文法中，会被拒绝；NEP-0006 记录了原因。
-* `verify (expr) with V` 会被拒绝，因为 `verify` 是一个上下文词，而解析器只有一个记号的
-  前瞻。这一限制由一个测试钉住，并会在 NEP-0002 决定 `verify` 是什么之后消失。
+* 目前没有。声明处的泛型参数（`enum Outcome<T, E>`）和 `verify` 的具名操作数自 M3.1 起
+  都能被解析，并且各自有一个一致性用例钉住。也没有需要补上的 `return`：
+  EBNF 从未有过它，而 [NEP-0012](https://github.com/smouj/nudo/blob/main/neps/0012-early-exit.md)
+  认定提前退出是块的值，而不是一条语句。一个多余的 `return` 是意外的记号，
+  会产生 `NDO1001`，由 `tests/conformance/parser/0017-no-return` 钉住。
 * 文法的路径使用 `::`，其列表以逗号分隔，而手册中和 `examples/` 中的若干示例
   却每行写一个 `web.search`。解析器遵循文法；那些示例声明自己是预览，
   而该语言应采用哪种拼写是一个 NEP，而不是解析器的 bug。
