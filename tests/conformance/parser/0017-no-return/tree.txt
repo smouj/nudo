@@ -1,0 +1,36 @@
+# nudo-tree v1
+SourceFile 0..37
+  FunctionDecl 0..32
+    KeywordFn "fn" 0..2
+    Whitespace " " 2..3
+    Ident "f" 3..4
+    ParameterList 4..12
+      LParen "(" 4..5
+      Parameter 5..11
+        Ident "a" 5..6
+        Colon ":" 6..7
+        Whitespace " " 7..8
+        PathType 8..11
+          Path 8..11
+            Ident "Int" 8..11
+      RParen ")" 11..12
+    Whitespace " " 12..13
+    Arrow "->" 13..15
+    Whitespace " " 15..16
+    PathType 16..19
+      Path 16..19
+        Ident "Int" 16..19
+    Whitespace " " 19..20
+    Block 20..32
+      LBrace "{" 20..21
+      Whitespace "\n    " 21..26
+      PathExpression 26..32
+        Path 26..32
+          Ident "return" 26..32
+  Whitespace " " 32..33
+  Error 33..36
+    Ident "a" 33..34
+    Whitespace "\n" 34..35
+    RBrace "}" 35..36
+  Whitespace "\n" 36..37
+  Eof "" 37..37
