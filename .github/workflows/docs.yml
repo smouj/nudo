@@ -28,6 +28,8 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Relative links, abandoned names and machine-readable files
         run: python3 scripts/check-docs.py
+      - name: The checker reads repository content, and only that
+        run: python3 scripts/test-check-docs.py
       - name: Documented console output is real output
         run: |
           set -euo pipefail

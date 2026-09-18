@@ -82,6 +82,16 @@ would be a promise the project cannot keep.
 
 ### Fixed
 
+* **The documentation gate reads repository content, not the working tree.**
+  `scripts/check-docs.py` walked every directory except a hand-written list of
+  names, so git-ignored scratch and generated output were scanned too, and a
+  scratch note with an invented link failed the gate on a path the repository
+  does not contain. The file set is now git's own answer to "what is in the
+  repository" — every tracked file, plus every untracked file git does not
+  ignore — and [`scripts/test-check-docs.py`](scripts/test-check-docs.py) pins
+  that boundary. Outside a git work tree the checker stops and says so instead
+  of scanning wider.
+
 * **The specification no longer describes a `return` the grammar never had.**
   `spec/declarations.md`, `spec/expressions.md`, `spec/grammar.md`,
   `docs/language/tour.md` and the manual's parser chapter now state the decision
