@@ -35,6 +35,7 @@ Invoke-Step "documentation checks" { python scripts/check-docs.py }
 Invoke-Step "documentation checker tests" { python scripts/test-check-docs.py }
 Invoke-Step "workflow policy" { python scripts/check-workflows.py }
 Invoke-Step "documented console output" { python scripts/check-console.py }
+Invoke-Step "console output checker tests" { python scripts/test-check-console.py }
 Invoke-Step "grammar" { python scripts/check-grammar.py }
 
 Write-Host ""

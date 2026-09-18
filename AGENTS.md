@@ -72,6 +72,7 @@ That is the whole pipeline, and it is the same one CI runs:
 | Documentation checker tests | `python3 scripts/test-check-docs.py` |
 | Workflow policy | `python3 scripts/check-workflows.py` |
 | Documented console output | `python3 scripts/check-console.py` |
+| Console checker tests | `python3 scripts/test-check-console.py` |
 | Grammar | `python3 scripts/check-grammar.py` |
 
 A task is not complete until all of these pass on the commit you are reporting.

@@ -35,6 +35,8 @@ jobs:
           set -euo pipefail
           cargo build --quiet --package nudo-cli
           python3 scripts/check-console.py
+      - name: The console checker reads repository content, and only that
+        run: python3 scripts/test-check-console.py
 
       - name: Every documented `nudo` command exists
         run: |

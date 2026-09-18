@@ -56,6 +56,9 @@ python3 scripts/check-workflows.py
 step "documented console output"
 python3 scripts/check-console.py
 
+step "console output checker tests"
+python3 scripts/test-check-console.py
+
 step "grammar"
 python3 scripts/check-grammar.py
 
