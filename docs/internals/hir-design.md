@@ -56,6 +56,10 @@ Hir
   are records, not definitions: a field is reached through a value
   (`article.title`), never on its own, so it belongs to its owner rather than to
   a scope.
+* **A `match` arm carries its pattern.** The head as written, the definitions
+  the pattern introduces, and its body — because whether that head is a variant of
+  the scrutinee's enum or a new binding is a question only the scrutinee's *type*
+  can answer, and the type checker is the layer that has it.
 * **Names are kept for diagnostics only.** `ExprKind::Path` holds both the name
   as written and its `Resolution`, because an error message needs the text and a
   later stage needs the target. Keeping the text is not a failure to resolve.
@@ -85,8 +89,10 @@ Hir
   => … }` — cannot be resolved without the scrutinee's type: a bare name there is
   either a variant or a new binding, and the spelling does not say which. Guessing
   from capitalisation would be inventing a language rule, so the head is left for
-  M3.2 and sub-patterns become bindings. A case in `tests/conformance/resolve`
-  pins exactly this.
+  M3.2 and sub-patterns become bindings. The head is now *recorded* rather than
+  discarded — as written, with the bindings beside it — so that the checker can
+  decide it with the scrutinee's type in hand. A case in
+  `tests/conformance/resolve` pins the part that is still unresolved.
 * **No modules.** A path written with `::` is reported unresolved with a note,
   because `::` reaches into a module and modules are M10.
 * **No diagnostics beyond `NDO2001`–`NDO2003`.** The `2xxx` family grows with the

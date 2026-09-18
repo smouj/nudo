@@ -17,6 +17,14 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **HIR records what a `match` arm matches.** An arm now carries its pattern's
+  head as written, the definitions the pattern introduces and its body. It is
+  recorded rather than decided on purpose: whether a head is a variant of the
+  scrutinee's enum or a new binding is a question only the scrutinee's *type* can
+  answer, and that type lives in the checker. This is the prerequisite for typing
+  `match`, exhaustiveness and payload binding; guessing from capitalisation in the
+  semantic layer would have invented a language rule in the wrong place.
+
 * **M3.2: nominal structure and field access.** HIR now records what a `struct`
   and an `enum` are made of - fields and variants with their types, lowered in the
   declaration's own scope so a declaration's type parameter is visible inside its

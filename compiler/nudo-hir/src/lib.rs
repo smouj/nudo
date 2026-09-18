@@ -223,6 +223,24 @@ pub struct Field {
     pub span: Span,
 }
 
+/// One arm of a `match`.
+///
+/// The head is recorded as **written**, not as decided. A bare name in a pattern
+/// is either a variant of the scrutinee's enum or a new binding, and which one it
+/// is needs the scrutinee's type — which exists now, one layer up. Guessing from
+/// capitalisation here would invent a language rule in the wrong layer.
+#[derive(Debug, Clone)]
+pub struct Arm {
+    /// The name written at the pattern's head, if the pattern has one.
+    pub head: Option<String>,
+    /// Where the pattern is written.
+    pub span: Span,
+    /// The definitions the pattern introduces, in source order.
+    pub bindings: Vec<DefId>,
+    /// The arm's body.
+    pub body: ExprId,
+}
+
 /// One variant of an enum, with the payload it carries.
 #[derive(Debug, Clone)]
 pub struct Variant {
@@ -400,8 +418,8 @@ pub enum ExprKind {
     Match {
         /// The value being matched.
         scrutinee: ExprId,
-        /// The arms' bodies, in source order.
-        arms: Vec<ExprId>,
+        /// The arms, in source order.
+        arms: Vec<Arm>,
     },
     /// `ask Name { … }`.
     Ask {
@@ -1159,7 +1177,12 @@ impl Lowerer {
                     .into_iter()
                     .find(|child| is_expression(child.kind()))
                     .and_then(|child| self.lower_expression(child))?;
-                let arms = node
+                // An arm whose body did not lower is dropped, and that is safe
+                // for the wrong reason to be careless about: a missing body is a
+                // parse error, and no later stage runs on a file the parser
+                // rejected. The checker's exhaustiveness rule therefore never
+                // sees a silently missing arm.
+                let arms: Vec<Arm> = node
                     .children_of_kind(SyntaxKind::MatchArm)
                     .into_iter()
                     .filter_map(|arm| self.lower_arm(arm))
@@ -1219,23 +1242,46 @@ impl Lowerer {
     /// Only sub-patterns become bindings. A bare head name is a variant or a new
     /// binding, and which one it is needs the scrutinee's type, so the head is
     /// left for M3.2 rather than guessed from its spelling.
-    fn lower_arm(&mut self, node: SyntaxNode<'_>) -> Option<ExprId> {
+    fn lower_arm(&mut self, node: SyntaxNode<'_>) -> Option<Arm> {
         let outer = self.scope;
         self.scope = self.push_scope(outer, "match-arm");
+
+        let mut head = None;
+        let mut span = node
+            .child_tokens()
+            .first()
+            .map_or_else(zero_span, |token| token.span());
+        let mut bindings = Vec::new();
+
         if let Some(pattern) = node.child_of_kind(SyntaxKind::Pattern) {
+            if let Some(token) = item_name_token(pattern) {
+                head = Some(token.text().to_string());
+                span = token.span();
+            }
             for nested in pattern.children_of_kind(SyntaxKind::Pattern) {
                 if let Some(token) = item_name_token(nested) {
-                    self.declare(token.text().to_string(), DefKind::Local, token.span(), None);
+                    bindings.push(self.declare(
+                        token.text().to_string(),
+                        DefKind::Local,
+                        token.span(),
+                        None,
+                    ));
                 }
             }
         }
+
         let body = node
             .child_nodes()
             .into_iter()
             .find(|child| is_expression(child.kind()))
             .and_then(|child| self.lower_expression(child));
         self.scope = outer;
-        body
+        Some(Arm {
+            head,
+            span,
+            bindings,
+            body: body?,
+        })
     }
 
     fn push_expr(&mut self, kind: ExprKind, span: Span) -> ExprId {
@@ -1414,6 +1460,10 @@ fn item_kind(kind: SyntaxKind) -> Option<DefKind> {
 /// A tool is named by a path, so its name is the path's first segment — and a
 /// pattern binding has the same shape: `Failed(reason)` binds `reason`, whose
 /// token lives inside a `Path`, not as a token of the pattern itself.
+fn zero_span() -> Span {
+    Span::new(nudo_span::BytePos::new(0), nudo_span::BytePos::new(0))
+}
+
 fn item_name_token(node: SyntaxNode<'_>) -> Option<SyntaxToken<'_>> {
     name_token(node).or_else(|| {
         node.child_of_kind(SyntaxKind::Path)
@@ -1703,6 +1753,45 @@ mod tests {
         assert_eq!(
             result.hir.def(target).expect("a definiiton").kind,
             DefKind::Function
+        );
+    }
+
+    #[test]
+    fn a_match_arm_records_what_it_matches() {
+        let source = "enum Status {\n    Failed(reason: Text)\n    Ready\n}\n\nfn describe(status: Status) -> Text {\n    match status {\n        Failed(reason) => reason\n        Ready => \"ready\"\n    }\n}\n";
+        let compilation = Compilation::new(source);
+        let (_, resolved) = compilation.run();
+
+        // The function's body is a block whose final expression is the match.
+        let function = resolved
+            .hir
+            .defs()
+            .iter()
+            .find(|definition| definition.name == "describe")
+            .expect("the function");
+        let body = resolved
+            .hir
+            .expr(function.value.expect("a body"))
+            .expect("a body");
+        let ExprKind::Block {
+            value: Some(match_id),
+            ..
+        } = body.kind
+        else {
+            panic!("the body is a block with a value");
+        };
+        let matched = resolved.hir.expr(match_id).expect("the match");
+        let ExprKind::Match { arms, .. } = &matched.kind else {
+            panic!("the value is a match");
+        };
+
+        assert_eq!(arms.len(), 2, "{arms:?}");
+        assert_eq!(arms[0].head.as_deref(), Some("Failed"));
+        assert_eq!(arms[0].bindings.len(), 1, "the payload is bound");
+        assert_eq!(arms[1].head.as_deref(), Some("Ready"));
+        assert!(
+            arms[1].bindings.is_empty(),
+            "a variant without payload binds nothing"
         );
     }
 
