@@ -208,6 +208,33 @@ impl DefKind {
     }
 }
 
+/// A named field of a struct, or one field of an enum variant's payload.
+///
+/// Fields are **not** names in a scope: a field is reached through a value
+/// (`article.title`), never on its own, so they are recorded beside their owner
+/// rather than declared as definitions. That is why this is not a `Def`.
+#[derive(Debug, Clone)]
+pub struct Field {
+    /// The field's name.
+    pub name: String,
+    /// Its type, when one is written.
+    pub ty: Option<TypeRef>,
+    /// Where it is written.
+    pub span: Span,
+}
+
+/// One variant of an enum, with the payload it carries.
+#[derive(Debug, Clone)]
+pub struct Variant {
+    /// The variant's name.
+    pub name: String,
+    /// The payload's fields, in source order. Empty for a variant that carries
+    /// nothing.
+    pub fields: Vec<Field>,
+    /// Where it is written.
+    pub span: Span,
+}
+
 /// A definition: the thing a name resolves to.
 #[derive(Debug, Clone)]
 pub struct Def {
@@ -225,6 +252,10 @@ pub struct Def {
     pub value: Option<ExprId>,
     /// Its parameters, in source order, for anything callable.
     pub parameters: Vec<DefId>,
+    /// Its fields, for a `struct`.
+    pub fields: Vec<Field>,
+    /// Its variants, for an `enum`.
+    pub variants: Vec<Variant>,
 }
 
 impl Def {
@@ -752,6 +783,7 @@ impl Lowerer {
             }
         }
         self.defs[def_id.index() as usize].parameters = parameters;
+        self.lower_nominal_structure(node, def_id);
 
         // Return types, annotations and bodies are lowered after the parameters
         // are in scope, because they may name them.
@@ -776,6 +808,52 @@ impl Lowerer {
             self.defs[def_id.index() as usize].value = value;
         }
         self.scope = outer;
+    }
+
+    /// Records what a `struct` or an `enum` is made of.
+    ///
+    /// Fields and variants are lowered in the declaration's own scope, so a type
+    /// parameter of the declaration is visible inside them — which is what makes
+    /// `struct Pair<A> { first: A }` ready for instantiation later, without this
+    /// pass having to know anything about instantiation.
+    fn lower_nominal_structure(&mut self, node: SyntaxNode<'_>, def_id: DefId) {
+        match node.kind() {
+            SyntaxKind::StructDecl => {
+                let fields = self.lower_fields(node);
+                self.defs[def_id.index() as usize].fields = fields;
+            }
+            SyntaxKind::EnumDecl => {
+                let mut variants = Vec::new();
+                for variant in node.children_of_kind(SyntaxKind::Variant) {
+                    let Some(name) = name_token(variant) else {
+                        continue;
+                    };
+                    variants.push(Variant {
+                        name: name.text().to_string(),
+                        fields: self.lower_fields(variant),
+                        span: name.span(),
+                    });
+                }
+                self.defs[def_id.index() as usize].variants = variants;
+            }
+            _ => {}
+        }
+    }
+
+    /// The fields written directly inside `node`.
+    fn lower_fields(&mut self, node: SyntaxNode<'_>) -> Vec<Field> {
+        let mut fields = Vec::new();
+        for field in node.children_of_kind(SyntaxKind::Field) {
+            let Some(name) = name_token(field) else {
+                continue;
+            };
+            fields.push(Field {
+                name: name.text().to_string(),
+                ty: self.lower_annotation(field),
+                span: name.span(),
+            });
+        }
+        fields
     }
 
     fn find_def(&self, name: &str, span: Span) -> Option<DefId> {
@@ -1189,6 +1267,8 @@ impl Lowerer {
             ty,
             value: None,
             parameters: Vec::new(),
+            fields: Vec::new(),
+            variants: Vec::new(),
         });
         self.insert(name, namespace, id);
         id
