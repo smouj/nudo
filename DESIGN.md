@@ -55,6 +55,11 @@ The one-sentence version:
    implementation follows it.
 10. **Minimal syntax, strong semantics.** New keywords are the expensive way to
     solve a problem.
+11. **Self-hosting as a proof, not a prerequisite.** Rust is the bootstrap
+    implementation. Once NUDO is expressive and stable enough to implement a
+    compiler without special treatment, the canonical compiler and toolchain
+    should progressively move to NUDO. Current milestones are not delayed or
+    weakened to force that transition early.
 
 ## Non-goals
 
