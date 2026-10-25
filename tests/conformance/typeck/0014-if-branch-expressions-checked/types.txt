@@ -1,0 +1,4 @@
+# nudo-typeck v1
+def 0009 function `main` 1:4: Fn() -> Unit
+def 0010 binding `first` 3:13: Int
+def 0011 binding `second` 5:13: Text

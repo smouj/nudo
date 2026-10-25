@@ -162,8 +162,9 @@ declarations now carry their structure in HIR, field access is typed with
 generic field types substituted from the receiver. `if` conditions are checked
 as `Bool`, branch expressions are checked recursively, and the expected
 condition type reaches generic inference; the conditional result and branch
-agreement remain unspecified. The next slices are a stable diagnostic for
-unresolved generic parameters, match typing and
+agreement remain unspecified. Deferred expression forms also check their
+children for supported rules. The next slices are a stable diagnostic for
+unresolved generic parameters, operator and index typing, match typing and
 exhaustiveness, nominal construction, and `Result<T, E>`. Until a rule exists,
 the checker stays silent rather than inventing semantics. See
 [`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
@@ -198,6 +199,8 @@ rules of their own.
 * [x] Function types and calls; no implicit numeric conversion
 * [x] `if` conditions are checked as `Bool`; branch expressions are checked
       recursively, with expected type propagated for generic inference
+* [x] Deferred expression forms recursively check child expressions for
+      supported rules while their own typing rules remain pending
 * [ ] Agent, task and tool type declarations
 * [ ] Type errors with stable `NDO2xxx` codes
 

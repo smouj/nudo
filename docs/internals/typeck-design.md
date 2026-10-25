@@ -97,11 +97,14 @@ Every omission is a named next step, and each one is **silent** rather than
 wrong: unsupported expression results type as `Error`, and `Error` reports
 nothing. An `if` condition and the expressions inside its branches are checked,
 while the conditional result is still unknown until the language specifies how
-its branch values agree.
+its branch values agree. Deferred operators, indexing, `match`, and agentic
+expressions still recursively check their child expressions, so a supported
+call or annotation error inside them is not hidden.
 
 | Not yet | Arrives with |
 | ------- | ------------ |
 | The result type of `if`, including agreement between branch values | a specification decision |
+| Index, unary, and binary operation typing | expression typing; the integer behavior is in NEP-0007 |
 | A stable diagnostic for a generic parameter that remains unresolved (NEP-0013) | diagnostic NEP and implementation |
 | Reading an enum's payload: needs `match`, which is the next slice | after enums |
 | Building a nominal value: **the grammar has no construction syntax at all**, so it needs a NEP before it can be implemented | when the language decides |

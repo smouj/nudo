@@ -341,16 +341,45 @@ impl Checker<'_> {
                 then_block,
                 else_branch,
             } => self.type_of_if(condition, then_block, else_branch),
-            // Deferred, and silent about it: these produce `Error`, which is
-            // compatible with everything, so nothing is reported about work this
-            // slice does not do yet.
-            ExprKind::Index { .. }
-            | ExprKind::Unary { .. }
-            | ExprKind::Binary { .. }
-            | ExprKind::Match { .. }
-            | ExprKind::Ask { .. }
-            | ExprKind::Verify { .. }
-            | ExprKind::Delegate { .. } => Type::Error,
+            // The operation-specific rule is deferred, but its child
+            // expressions may contain constructs this slice can already check.
+            ExprKind::Index { base, index } => {
+                self.type_of_expression(base);
+                self.type_of_expression(index);
+                Type::Error
+            }
+            ExprKind::Unary { operand, .. } => {
+                self.type_of_expression(operand);
+                Type::Error
+            }
+            ExprKind::Binary { left, right, .. } => {
+                self.type_of_expression(left);
+                self.type_of_expression(right);
+                Type::Error
+            }
+            ExprKind::Match { scrutinee, arms } => {
+                self.type_of_expression(scrutinee);
+                for arm in arms {
+                    self.type_of_expression(arm.body);
+                }
+                Type::Error
+            }
+            ExprKind::Ask { prompt, .. } => {
+                if let Some(prompt) = prompt {
+                    self.type_of_expression(prompt);
+                }
+                Type::Error
+            }
+            ExprKind::Verify { value, .. } => {
+                self.type_of_expression(value);
+                Type::Error
+            }
+            ExprKind::Delegate { request, .. } => {
+                if let Some(request) = request {
+                    self.type_of_expression(request);
+                }
+                Type::Error
+            }
         };
         if let Some(slot) = self.expression_types.get_mut(id.index() as usize) {
             *slot = Some(typed.clone());
@@ -976,6 +1005,80 @@ mod tests {
     }
 
     #[test]
+    fn if_conditions_must_be_bool_including_nested_else_if_conditions() {
+        let program = "fn main() {\n    if 1 {} else if \"ready\" {} else {};\n}\n";
+        assert_eq!(
+            codes_for(program),
+            vec!["NDO2004".to_string(), "NDO2004".to_string()]
+        );
+    }
+
+    #[test]
+    fn an_if_condition_provides_context_for_generic_result_inference() {
+        let program =
+            "fn empty<T>() -> T {\n    empty()\n}\n\nfn main() {\n    if empty() {};\n}\n";
+        let mut sources = SourceMap::new();
+        let id = sources.add("main.nudo", program);
+        let file = sources.get(id).expect("just added");
+        let parsed = parse(file);
+        assert!(!parsed.has_errors(), "the input must parse");
+        let resolved = lower(parsed.tree(), id);
+        assert!(
+            resolved.diagnostics.is_empty(),
+            "the input must resolve: {:?}",
+            resolved.diagnostics
+        );
+        let result = check(&resolved.hir, id);
+        assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+
+        let main = resolved
+            .hir
+            .defs()
+            .iter()
+            .find(|definition| definition.is_main())
+            .expect("main function");
+        let body = main.value.expect("main body");
+        let ExprKind::Block {
+            statements,
+            value: None,
+        } = &resolved.hir.expr(body).expect("main body expression").kind
+        else {
+            panic!("main should have one expression statement and no tail value");
+        };
+        let statement = resolved
+            .hir
+            .statement(statements[0])
+            .expect("if expression statement");
+        let StmtKind::Expression(if_expression) = statement.kind else {
+            panic!("main's expression statement should contain the if expression");
+        };
+        let ExprKind::If { condition, .. } = &resolved
+            .hir
+            .expr(if_expression)
+            .expect("if expression")
+            .kind
+        else {
+            panic!("main's expression statement should contain an if expression");
+        };
+        assert_eq!(result.type_of_expr(*condition), Some(&Type::Bool));
+    }
+
+    #[test]
+    fn expressions_inside_if_branches_are_checked() {
+        let program = "fn main() {\n    if true {\n        let first: Int = true;\n    } else if false {\n        let second: Text = 2;\n    };\n}\n";
+        assert_eq!(
+            codes_for(program),
+            vec!["NDO2004".to_string(), "NDO2004".to_string()]
+        );
+    }
+
+    #[test]
+    fn supported_calls_inside_deferred_binary_expressions_are_checked() {
+        let program = "fn add(a: Int, b: Int) -> Int {\n    a\n}\n\nfn main() {\n    let value = add(1, true) + 2;\n}\n";
+        assert_eq!(codes_for(program), vec!["NDO2004".to_string()]);
+    }
+
+    #[test]
     fn a_path_takes_the_type_of_what_it_resolved_to() {
         let (_, _, result) = checked("let value: Int = 1;\nlet copy = value;\n");
         assert_eq!(result.diagnostics.len(), 0, "{:?}", result.diagnostics);
@@ -1010,16 +1113,14 @@ mod tests {
     }
 
     #[test]
-    fn this_slice_does_not_report_about_work_it_does_not_do() {
-        // Calls are the next slice. They must be silent, not wrong: `Error` is
-        // compatible with everything, so nothing is reported about them.
+    fn a_valid_call_does_not_produce_diagnostics() {
         let (_, _, result) = checked(
             "fn add(a: Int, b: Int) -> Int {\n    a\n}\n\nfn main() {\n    let total = add(1, 2);\n}\n",
         );
         assert_eq!(
             result.diagnostics.len(),
             0,
-            "a later slice's work must not produce a diagnostic now: {:?}",
+            "a valid call must not produce a diagnostic: {:?}",
             result.diagnostics
         );
     }
