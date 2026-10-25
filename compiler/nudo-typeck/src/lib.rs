@@ -17,9 +17,9 @@
 //! and the diagnostics. Spans come from HIR, so a diagnostic points where the
 //! resolver would have pointed.
 //!
-//! # What this first slice checks
+//! # What this checker checks today
 //!
-//! Deliberately small, and complete within itself:
+//! Deliberately bounded, with each supported rule exercised independently:
 //!
 //! * **Literal typing.** An integer literal is `Int`, a float is `Float`, `true`
 //!   is `Bool`, text is `Text`.
@@ -31,19 +31,25 @@
 //!   end.
 //! * **Names.** A path takes the type of the definition it resolved to, which is
 //!   why resolution had to exist first.
+//! * **Calls.** Arity, callability, argument compatibility, and generic type
+//!   arguments inferred from those arguments in source order.
+//! * **Fields.** A field access takes its declared field type and reports a
+//!   missing field on a known struct.
 //! * **One diagnostic.** `NDO2004`, with `expected` and `found` as structure
 //!   rather than as a sentence to re-parse.
 //!
 //! # What it deliberately does not check yet
 //!
-//! Everything else, and each omission is a named next step rather than a hole:
-//! calls beyond their type (arity and argument compatibility), generics and
-//! instantiation, structs and enums, `Result<T, E>` exhaustiveness, effects, and
-//! the trust rules of M3.3. Until then those expressions type as [`Type::Error`],
-//! which is compatible with everything and therefore reports nothing: silence,
-//! not a wrong answer.
+//! Each omission is a named next step rather than a hole: contextual generic
+//! inference, diagnostics for unresolved generic parameters, generic field
+//! substitution, `Result<T, E>` exhaustiveness, effects, and the trust rules of
+//! M3.3. Until then those expressions type as [`Type::Error`], which is
+//! compatible with everything and therefore reports nothing: silence, not a
+//! wrong answer.
 
 pub mod types;
+
+use std::collections::{HashMap, HashSet};
 
 use nudo_diagnostics::{Diagnostic, Diagnostics, codes};
 use nudo_hir::{Def, DefId, DefKind, ExprId, ExprKind, Hir, LiteralKind, StmtKind, TypeRef};
@@ -342,10 +348,10 @@ impl Checker<'_> {
     /// is the wrong type (`NDO2004`, reported at the argument, because that is
     /// the thing to change).
     ///
-    /// A signature mentioning a type parameter is **not checked**: instantiation
-    /// is the next slice (NEP-0013), and comparing an argument against `T` would
-    /// invent an error about a rule that does not exist yet. The call is typed as
-    /// unknown instead, which reports nothing.
+    /// Type parameters are inferred from arguments, left to right, as NEP-0013
+    /// specifies. Contextual inference and a diagnostic for parameters that stay
+    /// unresolved are later parts of that NEP, so a result that still contains
+    /// one is typed as unknown rather than guessed.
     fn type_of_call(&mut self, callee: ExprId, arguments: &[ExprId]) -> Type {
         let callee_type = self.type_of_expression(callee);
         let Type::Function { parameters, result } = callee_type.clone() else {
@@ -360,14 +366,6 @@ impl Checker<'_> {
             }
             return Type::Error;
         };
-
-        if parameters
-            .iter()
-            .any(|parameter| self.mentions_type_parameter(parameter))
-            || self.mentions_type_parameter(&result)
-        {
-            return Type::Error;
-        }
 
         if arguments.len() != parameters.len() {
             let expected = if parameters.len() == 1 {
@@ -390,19 +388,64 @@ impl Checker<'_> {
                 .with_note(format!("found: {}", arguments.len()))
                 .with_help("every call passes exactly what the signature takes"),
             );
+            return if self.mentions_type_parameter(&result) {
+                Type::Error
+            } else {
+                *result
+            };
+        }
+
+        let mut generic_parameters = HashSet::new();
+        for parameter in &parameters {
+            self.collect_type_parameters(parameter, &mut generic_parameters);
+        }
+        self.collect_type_parameters(&result, &mut generic_parameters);
+
+        if generic_parameters.is_empty() {
+            for (index, argument) in arguments.iter().enumerate() {
+                let actual = self.type_of_expression(*argument);
+                let expected = parameters[index].clone();
+                let span = self
+                    .hir
+                    .expr(*argument)
+                    .map_or_else(zero_span, |it| it.span);
+                self.expect(&expected, &actual, span);
+            }
             return *result;
         }
 
+        let mut substitutions = HashMap::new();
+        for (parameter, argument) in parameters.iter().zip(arguments) {
+            let actual = self.type_of_expression(*argument);
+            self.infer_type_arguments(parameter, &actual, &generic_parameters, &mut substitutions);
+        }
+
+        let unresolved_parameters = generic_parameters
+            .iter()
+            .filter(|parameter| !substitutions.contains_key(parameter))
+            .copied()
+            .collect::<HashSet<_>>();
         for (index, argument) in arguments.iter().enumerate() {
             let actual = self.type_of_expression(*argument);
-            let expected = parameters[index].clone();
+            let expected = self.substitute_type(&parameters[index], &substitutions);
             let span = self
                 .hir
                 .expr(*argument)
                 .map_or_else(zero_span, |it| it.span);
-            self.expect(&expected, &actual, span);
+            if !self.compatible_with_unresolved_parameters(
+                &actual,
+                &expected,
+                &unresolved_parameters,
+            ) {
+                self.expect(&expected, &actual, span);
+            }
         }
-        *result
+        let result = self.substitute_type(&result, &substitutions);
+        if self.contains_type_parameters(&result, &unresolved_parameters) {
+            Type::Error
+        } else {
+            result
+        }
     }
 
     /// Types a field access: `article.title`.
@@ -488,29 +531,14 @@ impl Checker<'_> {
         );
     }
 
-    /// Whether a type mentions a type parameter of the declaration it came from.
-    ///
-    /// This is what tells the checker that a signature is not instantiable yet,
-    /// and therefore that comparing against it would be inventing a rule.
+    /// Whether a type mentions any type parameter.
     fn mentions_type_parameter(&self, ty: &Type) -> bool {
         match ty {
-            Type::Named {
-                definition,
-                arguments,
-                ..
-            } => {
-                if let Some(id) = definition.resolved() {
-                    if self
-                        .hir
-                        .def(id)
-                        .is_some_and(|definition| definition.kind == DefKind::TypeParameter)
-                    {
-                        return true;
-                    }
-                }
-                arguments
-                    .iter()
-                    .any(|argument| self.mentions_type_parameter(argument))
+            Type::Named { arguments, .. } => {
+                self.type_parameter_id(ty).is_some()
+                    || arguments
+                        .iter()
+                        .any(|argument| self.mentions_type_parameter(argument))
             }
             Type::Function { parameters, result } => {
                 parameters
@@ -519,6 +547,222 @@ impl Checker<'_> {
                     || self.mentions_type_parameter(result)
             }
             _ => false,
+        }
+    }
+
+    /// Collects the resolved type parameter definitions present in a type.
+    fn collect_type_parameters(&self, ty: &Type, found: &mut HashSet<DefId>) {
+        match ty {
+            Type::Named { arguments, .. } => {
+                if let Some(id) = self.type_parameter_id(ty) {
+                    found.insert(id);
+                    return;
+                }
+                for argument in arguments {
+                    self.collect_type_parameters(argument, found);
+                }
+            }
+            Type::Function { parameters, result } => {
+                for parameter in parameters {
+                    self.collect_type_parameters(parameter, found);
+                }
+                self.collect_type_parameters(result, found);
+            }
+            _ => {}
+        }
+    }
+
+    /// Adds the type arguments that a formal parameter determines from an
+    /// actual argument. An existing binding wins, so later arguments are checked
+    /// against it in the ordinary compatibility pass.
+    fn infer_type_arguments(
+        &self,
+        formal: &Type,
+        actual: &Type,
+        generic_parameters: &HashSet<DefId>,
+        substitutions: &mut HashMap<DefId, Type>,
+    ) {
+        if actual.is_error() {
+            return;
+        }
+        if let Some(id) = self.type_parameter_id(formal) {
+            if generic_parameters.contains(&id) {
+                substitutions.entry(id).or_insert_with(|| actual.clone());
+            }
+            return;
+        }
+        match (formal, actual) {
+            (
+                Type::Named {
+                    definition: formal_definition,
+                    arguments: formal_arguments,
+                    ..
+                },
+                Type::Named {
+                    definition: actual_definition,
+                    arguments: actual_arguments,
+                    ..
+                },
+            ) if formal_definition == actual_definition
+                && formal_arguments.len() == actual_arguments.len() =>
+            {
+                for (formal, actual) in formal_arguments.iter().zip(actual_arguments) {
+                    self.infer_type_arguments(formal, actual, generic_parameters, substitutions);
+                }
+            }
+            (
+                Type::Function {
+                    parameters: formal_parameters,
+                    result: formal_result,
+                },
+                Type::Function {
+                    parameters: actual_parameters,
+                    result: actual_result,
+                },
+            ) if formal_parameters.len() == actual_parameters.len() => {
+                for (formal, actual) in formal_parameters.iter().zip(actual_parameters) {
+                    self.infer_type_arguments(formal, actual, generic_parameters, substitutions);
+                }
+                self.infer_type_arguments(
+                    formal_result,
+                    actual_result,
+                    generic_parameters,
+                    substitutions,
+                );
+            }
+            _ => {}
+        }
+    }
+
+    /// The definition id when `ty` is a type parameter.
+    fn type_parameter_id(&self, ty: &Type) -> Option<DefId> {
+        let Type::Named { definition, .. } = ty else {
+            return None;
+        };
+        let id = definition.resolved()?;
+        self.hir
+            .def(id)
+            .is_some_and(|definition| definition.kind == DefKind::TypeParameter)
+            .then_some(id)
+    }
+
+    /// Replaces each type parameter that this call inferred.
+    fn substitute_type(&self, ty: &Type, substitutions: &HashMap<DefId, Type>) -> Type {
+        if let Some(id) = self.type_parameter_id(ty) {
+            return substitutions
+                .get(&id)
+                .cloned()
+                .unwrap_or_else(|| ty.clone());
+        }
+        match ty {
+            Type::Named {
+                name,
+                definition,
+                arguments,
+            } => Type::Named {
+                name: name.clone(),
+                definition: *definition,
+                arguments: arguments
+                    .iter()
+                    .map(|argument| self.substitute_type(argument, substitutions))
+                    .collect(),
+            },
+            Type::Function { parameters, result } => Type::Function {
+                parameters: parameters
+                    .iter()
+                    .map(|parameter| self.substitute_type(parameter, substitutions))
+                    .collect(),
+                result: Box::new(self.substitute_type(result, substitutions)),
+            },
+            _ => ty.clone(),
+        }
+    }
+
+    /// Whether a type still contains one of this call's unresolved parameters.
+    fn contains_type_parameters(&self, ty: &Type, unresolved: &HashSet<DefId>) -> bool {
+        if self
+            .type_parameter_id(ty)
+            .is_some_and(|id| unresolved.contains(&id))
+        {
+            return true;
+        }
+        match ty {
+            Type::Named { arguments, .. } => arguments
+                .iter()
+                .any(|argument| self.contains_type_parameters(argument, unresolved)),
+            Type::Function { parameters, result } => {
+                parameters
+                    .iter()
+                    .any(|parameter| self.contains_type_parameters(parameter, unresolved))
+                    || self.contains_type_parameters(result, unresolved)
+            }
+            _ => false,
+        }
+    }
+
+    /// Compares types while treating this call's unresolved parameters as
+    /// wildcards. This still catches known mismatches around an uninferred part
+    /// of a nested generic type without claiming to know that parameter itself.
+    fn compatible_with_unresolved_parameters(
+        &self,
+        actual: &Type,
+        expected: &Type,
+        unresolved: &HashSet<DefId>,
+    ) -> bool {
+        if actual.is_error() || expected.is_error() {
+            return true;
+        }
+        if self
+            .type_parameter_id(expected)
+            .is_some_and(|id| unresolved.contains(&id))
+        {
+            return true;
+        }
+        match (actual, expected) {
+            (
+                Type::Named {
+                    definition: actual_definition,
+                    arguments: actual_arguments,
+                    ..
+                },
+                Type::Named {
+                    definition: expected_definition,
+                    arguments: expected_arguments,
+                    ..
+                },
+            ) => {
+                actual_definition == expected_definition
+                    && actual_arguments.len() == expected_arguments.len()
+                    && actual_arguments
+                        .iter()
+                        .zip(expected_arguments)
+                        .all(|(actual, expected)| {
+                            self.compatible_with_unresolved_parameters(actual, expected, unresolved)
+                        })
+            }
+            (
+                Type::Function {
+                    parameters: actual_parameters,
+                    result: actual_result,
+                },
+                Type::Function {
+                    parameters: expected_parameters,
+                    result: expected_result,
+                },
+            ) => {
+                actual_parameters.len() == expected_parameters.len()
+                    && actual_parameters.iter().zip(expected_parameters).all(
+                        |(actual, expected)| {
+                            self.compatible_with_unresolved_parameters(actual, expected, unresolved)
+                        },
+                    )
+                    && self.compatible_with_unresolved_parameters(
+                        actual_result,
+                        expected_result,
+                        unresolved,
+                    )
+            }
+            _ => actual.is_compatible_with(expected),
         }
     }
 
@@ -733,11 +977,26 @@ mod tests {
     }
 
     #[test]
-    fn a_call_to_a_generic_function_is_not_checked_yet() {
-        // Instantiation is the next slice (NEP-0013). Comparing an argument
-        // against `T` would invent an error about a rule that does not exist, so
-        // the call is typed as unknown and says nothing.
+    fn a_generic_call_infers_its_result_from_the_argument() {
         let program = "fn identity<T>(value: T) -> T {\n    value\n}\n\nfn main() {\n    let one = identity(1);\n}\n";
+        let (_, _, result) = checked(program);
+        assert_eq!(result.diagnostics.len(), 0, "{:?}", result.diagnostics);
+        assert!(
+            named_types(&result).contains(&"Int".to_string()),
+            "the inferred binding should have type Int: {:?}",
+            named_types(&result)
+        );
+    }
+
+    #[test]
+    fn repeated_generic_arguments_must_agree() {
+        let program = "fn same<T>(first: T, second: T) -> T {\n    first\n}\n\nfn main() {\n    let value = same(1, true);\n}\n";
+        assert_eq!(codes_for(program), vec!["NDO2004".to_string()]);
+    }
+
+    #[test]
+    fn generic_inference_walks_nested_named_types() {
+        let program = "struct Box<T> {\n    value: T\n}\n\nfn nested<T>(value: Box<T>) -> Box<T> {\n    value\n}\n\nfn forward<U>(value: Box<U>) -> Box<U> {\n    nested(value)\n}\n";
         assert_eq!(codes_for(program), Vec::<String>::new());
     }
 
@@ -789,11 +1048,9 @@ mod tests {
     }
 
     #[test]
-    fn a_field_access_on_an_unknown_value_says_nothing() {
-        // The receiver's type is unknown (a call to a generic function), so the
-        // access is unknown too: silence, not a guess.
+    fn a_field_access_on_an_inferred_primitive_reports_the_missing_field() {
         let program = "fn identity<T>(value: T) -> T {\n    value\n}\n\nfn main() {\n    let anything = identity(1);\n    let field = anything.name;\n}\n";
-        assert_eq!(codes_for(program), Vec::<String>::new());
+        assert_eq!(codes_for(program), vec!["NDO2007".to_string()]);
     }
 
     #[test]

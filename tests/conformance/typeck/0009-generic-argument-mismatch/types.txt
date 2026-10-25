@@ -1,0 +1,7 @@
+# nudo-typeck v1
+def 0009 function `same` 1:4: Fn(T, T) -> T
+def 0010 function `main` 5:4: Fn() -> Unit
+def 0011 type-parameter `T` 1:9: <unknown>
+def 0012 parameter `first` 1:12: T
+def 0013 parameter `second` 1:22: T
+def 0014 binding `value` 6:9: Int

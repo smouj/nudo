@@ -1,11 +1,10 @@
 //! The type the checker assigns to something.
 //!
-//! One enum, and the whole point of it is what it is *ready* for. This first
-//! slice types primitives and nothing else, but the shape already carries the
-//! things M3.2 and M3.3 will need — a named type with arguments, a function
-//! type, and an error type that keeps a bad definition from becoming a cascade —
-//! so that adding `Struct`, `Enum`, `Result<T, E>`, `Generated<T>` and
-//! `Verified<T>` is filling in cases rather than redesigning the centre.
+//! One enum, and the whole point of it is what it is *ready* for. The checker
+//! types primitives and functions, and carries named types with arguments plus
+//! an error type that keeps a bad definition from becoming a cascade. Adding
+//! `Struct`, `Enum`, `Result<T, E>`, `Generated<T>` and `Verified<T>` fills in
+//! cases rather than redesigning the centre.
 //!
 //! Two deliberate omissions, both visible rather than hidden:
 //!
@@ -13,9 +12,9 @@
 //!   compatible when they resolve to the same definition. Field and variant
 //!   checking is the next slice; identity is already the right answer for the
 //!   cases that exist today, and it is the answer that cannot be wrong.
-//! * **There is no type variable.** Inference (NEP-0013) is bounded and local,
-//!   and until generic instantiation exists there is nothing to solve, so a type
-//!   variable here would be a placeholder pretending to be a decision.
+//! * **There is no type variable.** Call-local inference (NEP-0013) substitutes
+//!   declaration parameters directly from argument types. A variable would add
+//!   machinery the bounded rule does not need.
 
 use std::fmt;
 

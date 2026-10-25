@@ -1,9 +1,10 @@
 # Type checker design (M3.2)
 
-**Status: first slice implemented.** `nudo-typeck` exists and is exercised by
-unit tests and by `tests/conformance/typeck`. This document records what it
-checks, what it deliberately does not, and the one architectural rule that makes
-"is HIR enough?" a question with a test.
+**Status: first slice and argument-driven generic inference implemented.**
+`nudo-typeck` is exercised by unit tests and by `tests/conformance/typeck`.
+Contextual generic inference and diagnostics for unresolved type parameters
+remain pending. This document records what the checker does and the one
+architectural rule that makes "is HIR enough?" a question with a test.
 
 Read [`hir-design.md`](hir-design.md) first; this layer consumes what that one
 produces.
@@ -61,9 +62,9 @@ fill in cases instead of redesigning the centre:
   are the same type when they mean the same definition. Structural comparison —
   fields, variants — is a later slice; identity is already the right answer for
   everything that exists today, and it is the answer that cannot be wrong.
-* **There is no type variable.** Inference is bounded and local (NEP-0013), and
-  until generic instantiation exists there is nothing to solve. A type variable
-  here would be a placeholder pretending to be a decision.
+* **There is no type variable.** Call-local inference (NEP-0013) substitutes
+  declaration parameters directly from argument types. A variable would add
+  machinery the bounded rule does not need.
 
 ## What the first slice checks
 
@@ -76,6 +77,7 @@ fill in cases instead of redesigning the centre:
 | Functions | a body is compared with the written return type; with none written, the body's type *is* the result type |
 | Field access | `article.title` takes the field's type; a field the type does not have is `NDO2007`, naming the field and listing what the type does have |
 | Calls | arity (`NDO2005`), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`) |
+| Generic calls | Argument-driven inference in source order, including nested named and function types; inferred substitutions determine the call result |
 | One diagnostic shape | `expected` and `found` as structure, never as prose to re-parse |
 
 The diagnostic points at the **value**, not at the name it was bound to: the
@@ -95,7 +97,9 @@ wrong: those expressions type as `Error`, and `Error` reports nothing.
 
 | Not yet | Arrives with |
 | ------- | ------------ |
-| Generic instantiation and bounded inference (NEP-0013) — a call to a generic function is typed as unknown and says nothing, because comparing an argument against `T` would invent a rule | next slice |
+| Inference from an already-known expected type (NEP-0013) | next inference slice |
+| A stable diagnostic for a generic parameter that remains unresolved (NEP-0013) | diagnostic NEP and implementation |
+| Substituting generic struct parameters when reading a field | generic field typing |
 | Reading an enum's payload: needs `match`, which is the next slice | after enums |
 | Building a nominal value: **the grammar has no construction syntax at all**, so it needs a NEP before it can be implemented | when the language decides |
 | `Result<T, E>` and exhaustiveness of `match` (NEP-0014) | after enums |

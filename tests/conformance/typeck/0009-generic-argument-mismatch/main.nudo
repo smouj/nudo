@@ -1,0 +1,7 @@
+fn same<T>(first: T, second: T) -> T {
+    first
+}
+
+fn main() {
+    let value = same(1, true);
+}

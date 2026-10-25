@@ -182,8 +182,10 @@ rules of their own.
       so a program can hold a nominal value (a parameter, a return) but cannot
       make one. It needs a NEP - the syntax is a language decision, not a parser
       gap - and it is recorded here rather than invented in the checker.
-* [ ] Generic instantiation and bounded inference, following accepted
-      [NEP-0013](neps/0013-generic-inference.md)
+* [x] Call-argument inference for generic functions, left to right and through
+      nested named and function types, following [NEP-0013](neps/0013-generic-inference.md)
+* [ ] Inference from an already-known expected type, plus a stable diagnostic
+      for generic parameters that remain unresolved (NEP-0013)
 * [ ] `match` typing: variant validation, payload binding, arm type agreement
       and exhaustiveness; HIR already records each arm's pattern
 * [ ] `Result<T, E>` as an intrinsic type, using the same exhaustive `match`

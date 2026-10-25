@@ -136,9 +136,9 @@ checked 1 file: 0 errors and 0 warnings
 ```
 
 The `typeck` corpus uses `types.txt` for the `nudo-typeck v1` dump. The CLI does
-not expose a type dump yet — the checker is deliberately not wired into `check`
-until calls exist — so those expectations are written by their driver with
-`NUDO_BLESS=1` and reviewed as a diff, exactly like every other expectation here.
+not expose a type dump yet because the checker is not wired into `check`, so
+those expectations are written by their driver with `NUDO_BLESS=1` and reviewed
+as a diff, exactly like every other expectation here.
 
 For the token corpus, use the same command with `--dump-tokens`, `tokens.txt`
 and the `lexer/` directory. For the resolution corpus, `--dump-resolutions`,

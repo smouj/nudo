@@ -1,0 +1,6 @@
+# nudo-typeck v1
+def 0009 function `identity` 1:4: Fn(T) -> T
+def 0010 function `main` 5:4: Fn() -> Unit
+def 0011 type-parameter `T` 1:13: <unknown>
+def 0012 parameter `value` 1:16: T
+def 0013 binding `answer` 6:9: Int
