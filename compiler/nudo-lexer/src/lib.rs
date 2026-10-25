@@ -138,6 +138,8 @@ pub enum TokenKind {
     Star,
     /// `/`
     Slash,
+    /// `%`
+    Percent,
     /// `;`
     Semi,
     /// Whitespace, produced only by [`tokenize_with_trivia`].
@@ -195,6 +197,7 @@ impl TokenKind {
             TokenKind::Minus => "Minus",
             TokenKind::Star => "Star",
             TokenKind::Slash => "Slash",
+            TokenKind::Percent => "Percent",
             TokenKind::Semi => "Semi",
             TokenKind::Whitespace => "Whitespace",
             TokenKind::Comment => "Comment",
@@ -558,6 +561,10 @@ impl<'a> Lexer<'a> {
                 '/' => {
                     self.bump();
                     Some(TokenKind::Slash)
+                }
+                '%' => {
+                    self.bump();
+                    Some(TokenKind::Percent)
                 }
                 ';' => {
                     self.bump();
@@ -1089,7 +1096,7 @@ mod tests {
     #[test]
     fn lexes_the_extended_punctuation() {
         assert_eq!(
-            kinds("[ ] :: . ? => != < > <= >= && || !"),
+            kinds("[ ] :: . ? => != < > <= >= && || ! %"),
             vec![
                 TokenKind::LBracket,
                 TokenKind::RBracket,
@@ -1105,6 +1112,7 @@ mod tests {
                 TokenKind::AmpAmp,
                 TokenKind::PipePipe,
                 TokenKind::Bang,
+                TokenKind::Percent,
                 TokenKind::Eof,
             ]
         );

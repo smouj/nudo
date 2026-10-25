@@ -1,0 +1,2 @@
+# nudo-typeck v1
+def 0009 binding `value` 1:5: <error>

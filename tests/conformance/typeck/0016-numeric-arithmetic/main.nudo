@@ -1,0 +1,10 @@
+fn add(left: Int, right: Int) -> Int {
+    left + right
+}
+
+let sum = 1 + 2 * 3;
+let difference = 6 - 2;
+let quotient = 4.0 / 2.0;
+let scaled = 1.5 * 2.0;
+let remainder = -7 % 2;
+let negative = -3;

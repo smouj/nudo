@@ -87,7 +87,7 @@ keyword             = "fn" | "let" | "struct" | "enum" | "if" | "else"
 punctuation         = "(" | ")" | "{" | "}" | "[" | "]" | ":" | "," | "::"
                     | "->" | "=>" | "." | "?" | "=" | "==" | "!="
                     | "<" | ">" | "<=" | ">=" | "&&" | "||" | "!"
-                    | "+" | "-" | "*" | "/" | ";" ;
+                    | "+" | "-" | "*" | "/" | "%" | ";" ;
 
 token               = identifier | integer-literal | float-literal
                     | text-literal | keyword | punctuation ;
@@ -224,7 +224,7 @@ additive            = multiplicative, { additive-operator, multiplicative } ;
 additive-operator   = "+" | "-" ;
 
 multiplicative      = unary-expression, { multiplicative-operator, unary-expression } ;
-multiplicative-operator = "*" | "/" ;
+multiplicative-operator = "*" | "/" | "%" ;
 
 unary-expression    = prefix-operator, unary-expression
                     | postfix-expression ;

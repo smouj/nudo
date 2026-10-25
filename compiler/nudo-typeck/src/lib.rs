@@ -35,6 +35,9 @@
 //!   arguments inferred from those arguments in source order.
 //! * **Fields.** A field access takes its declared field type and reports a
 //!   missing field on a known struct.
+//! * **Numeric arithmetic.** When both operands are `Int` or `Float`, `+`,
+//!   `-`, `*` and `/` require matching types; `%` requires `Int`; unary `-`
+//!   preserves its numeric operand type.
 //! * **Conditions.** An `if` condition is checked as `Bool`, with that expected
 //!   type available to generic inference.
 //! * **One diagnostic.** `NDO2004`, with `expected` and `found` as structure
@@ -44,10 +47,11 @@
 //!
 //! Each omission is a named next step rather than a hole: the condition of an
 //! `if` is checked as `Bool`, but its branch/result typing remains deferred;
-//! diagnostics for unresolved generic parameters, `Result<T, E>` exhaustiveness,
-//! effects, and the trust rules of M3.3 also remain. Unsupported expression
-//! results type as [`Type::Error`], which is compatible with everything and
-//! therefore reports nothing: silence, not a wrong answer.
+//! logical, equality and comparison operators, indexing, diagnostics for
+//! unresolved generic parameters, `Result<T, E>` exhaustiveness, effects, and
+//! the trust rules of M3.3 also remain. Unsupported expression results type as
+//! [`Type::Error`], which is compatible with everything and therefore reports
+//! nothing: silence, not a wrong answer.
 
 pub mod types;
 
@@ -341,22 +345,17 @@ impl Checker<'_> {
                 then_block,
                 else_branch,
             } => self.type_of_if(condition, then_block, else_branch),
-            // The operation-specific rule is deferred, but its child
-            // expressions may contain constructs this slice can already check.
             ExprKind::Index { base, index } => {
                 self.type_of_expression(base);
                 self.type_of_expression(index);
                 Type::Error
             }
-            ExprKind::Unary { operand, .. } => {
-                self.type_of_expression(operand);
-                Type::Error
-            }
-            ExprKind::Binary { left, right, .. } => {
-                self.type_of_expression(left);
-                self.type_of_expression(right);
-                Type::Error
-            }
+            ExprKind::Unary { operator, operand } => self.type_of_unary(&operator, operand),
+            ExprKind::Binary {
+                operator,
+                left,
+                right,
+            } => self.type_of_binary(&operator, left, right),
             ExprKind::Match { scrutinee, arms } => {
                 self.type_of_expression(scrutinee);
                 for arm in arms {
@@ -411,6 +410,84 @@ impl Checker<'_> {
         }
 
         Type::Error
+    }
+
+    /// Types unary numeric negation, whose operand determines the result type.
+    fn type_of_unary(&mut self, operator: &str, operand: ExprId) -> Type {
+        let operand_type = self.type_of_expression(operand);
+        if operand_type.is_error() {
+            return Type::Error;
+        }
+        if operator != "-" {
+            // The type rule for logical negation has not been specified yet.
+            return Type::Error;
+        }
+        if is_numeric(&operand_type) {
+            return operand_type;
+        }
+        // Other operand domains remain deferred until their rules are
+        // specified; do not reject a possible future built-in operation here.
+        Type::Error
+    }
+
+    /// Types the arithmetic operators whose numeric behavior is fixed by
+    /// NEP-0007. Other operators remain deferred until their rules are decided.
+    fn type_of_binary(&mut self, operator: &str, left: ExprId, right: ExprId) -> Type {
+        let left_type = self.type_of_expression(left);
+        let right_type = self.type_of_expression(right);
+        if left_type.is_error() || right_type.is_error() {
+            return Type::Error;
+        }
+        if operator == "%" {
+            let expected = Type::Int;
+            if !left_type.is_compatible_with(&expected) {
+                let span = self.hir.expr(left).map_or_else(zero_span, |it| it.span);
+                self.report_type_mismatch(
+                    &expected.to_string(),
+                    &left_type.to_string(),
+                    span,
+                    "remainder requires `Int` operands",
+                );
+            }
+            if !right_type.is_compatible_with(&expected) {
+                let span = self.hir.expr(right).map_or_else(zero_span, |it| it.span);
+                self.report_type_mismatch(
+                    &expected.to_string(),
+                    &right_type.to_string(),
+                    span,
+                    "remainder requires `Int` operands",
+                );
+            }
+            return if left_type.is_compatible_with(&expected)
+                && right_type.is_compatible_with(&expected)
+            {
+                Type::Int
+            } else {
+                Type::Error
+            };
+        }
+        if !matches!(operator, "+" | "-" | "*" | "/") {
+            return Type::Error;
+        }
+
+        let left_numeric = is_numeric(&left_type);
+        let right_numeric = is_numeric(&right_type);
+        if !left_numeric || !right_numeric {
+            // The operator domains beyond numeric operands are not specified
+            // yet, so keep those results deferred rather than inventing rules.
+            return Type::Error;
+        }
+        if !left_type.is_compatible_with(&right_type) {
+            let span = self.hir.expr(right).map_or_else(zero_span, |it| it.span);
+            self.report_type_mismatch(
+                &left_type.to_string(),
+                &right_type.to_string(),
+                span,
+                "arithmetic operands must have the same numeric type",
+            );
+            return Type::Error;
+        }
+        left_type
     }
 
     /// Types a call: the callee's signature decides everything.
@@ -878,24 +955,43 @@ impl Checker<'_> {
         if found.is_compatible_with(expected) {
             return;
         }
+        self.report_type_mismatch(
+            &expected.to_string(),
+            &found.to_string(),
+            span,
+            "an annotation is a promise, and this value does not keep it",
+        );
+    }
+
+    /// Reports a mismatch with context-specific expected and found details.
+    fn report_type_mismatch(&mut self, expected: &str, found: &str, span: Span, help: &str) {
         self.diagnostics.push(
             Diagnostic::error(codes::TYPE_MISMATCH, "type mismatch")
                 .with_location(self.source, span)
                 .with_note(format!("expected: `{expected}`"))
                 .with_note(format!("found: `{found}`"))
-                .with_help("an annotation is a promise, and this value does not keep it"),
+                .with_help(help),
         );
     }
+}
+
+fn is_numeric(ty: &Type) -> bool {
+    matches!(ty, Type::Int | Type::Float)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nudo_hir::lower;
+    use nudo_hir::{Hir, lower};
     use nudo_parser::parse;
     use nudo_source::SourceMap;
 
     fn checked(text: &str) -> (SourceMap, SourceId, TypeckResult) {
+        let (sources, id, _hir, result) = checked_with_hir(text);
+        (sources, id, result)
+    }
+
+    fn checked_with_hir(text: &str) -> (SourceMap, SourceId, Hir, TypeckResult) {
         let mut sources = SourceMap::new();
         let id = sources.add("main.nudo", text);
         let file = sources.get(id).expect("just added");
@@ -907,7 +1003,7 @@ mod tests {
             "the input must resolve: {text}"
         );
         let result = check(&resolved.hir, id);
-        (sources, id, result)
+        (sources, id, resolved.hir, result)
     }
 
     fn codes_for(text: &str) -> Vec<String> {
@@ -982,6 +1078,71 @@ mod tests {
         assert_eq!(
             codes_for("let x: Float = 1;\n"),
             vec!["NDO2004".to_string()]
+        );
+    }
+
+    #[test]
+    fn numeric_arithmetic_preserves_its_operand_type() {
+        let (_, _, hir, result) = checked_with_hir(
+            "fn add(left: Int, right: Int) -> Int { left + right }\n\
+             let sum = 1 + 2;\n\
+             let difference = 6 - 2;\n\
+             let quotient = 4.0 / 2.0;\n\
+             let scaled = 1.5 * 2.0;\n\
+             let remainder = -7 % 2;\n\
+             let negative = -3;\n",
+        );
+        assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+        let add = hir
+            .defs()
+            .iter()
+            .find(|definition| definition.name == "add")
+            .expect("function exists");
+        assert_eq!(
+            result.type_of_expr(add.value.expect("function has a body")),
+            Some(&Type::Int),
+            "function body takes the arithmetic result type"
+        );
+        for (name, expected) in [
+            ("sum", Type::Int),
+            ("difference", Type::Int),
+            ("quotient", Type::Float),
+            ("scaled", Type::Float),
+            ("remainder", Type::Int),
+            ("negative", Type::Int),
+        ] {
+            let definition = hir
+                .defs()
+                .iter()
+                .find(|definition| definition.name == name)
+                .unwrap_or_else(|| panic!("missing binding `{name}`"));
+            let value = definition.value.expect("binding has an initializer");
+            assert_eq!(result.type_of_expr(value), Some(&expected), "{name}");
+        }
+    }
+
+    #[test]
+    fn mixed_numeric_arithmetic_is_a_type_mismatch_at_the_right_operand() {
+        let (sources, id, result) = checked("let value = 1 + 2.0;\n");
+        assert_eq!(
+            result
+                .diagnostics
+                .as_slice()
+                .iter()
+                .map(|diagnostic| diagnostic.code().id())
+                .collect::<Vec<_>>(),
+            vec!["NDO2004"]
+        );
+        let diagnostic = &result.diagnostics.as_slice()[0];
+        let notes = diagnostic.notes().join(" | ");
+        assert!(notes.contains("expected: `Int`"), "{notes}");
+        assert!(notes.contains("found: `Float`"), "{notes}");
+        let file = sources.get(id).expect("just added");
+        let span = diagnostic.span().expect("a span");
+        let expected_column = "let value = 1 + 2.0;".find("2.0").expect("right operand") + 1;
+        assert_eq!(
+            file.line_col(span.start()).to_string(),
+            format!("1:{expected_column}")
         );
     }
 

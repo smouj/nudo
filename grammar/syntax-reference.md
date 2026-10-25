@@ -32,7 +32,7 @@ let message = "escapes: \n \r \t \\ \" \0";
 | Text | `"…"`, closed on the same line |
 | Reserved words | `fn`, `let`, `struct`, `enum`, `if`, `else`, `match`, `const`, `true`, `false` |
 | Contextual words | `agent`, `task`, `tool`, `model`, `role`, `tools`, `allow`, `budget`, `with`, `verify`, `ask`, `delegate` — keywords in position, ordinary names elsewhere |
-| Punctuation | `( ) { } [ ] : :: , . ? -> => = == != < > <= >= && \|\| ! + - * / ;` |
+| Punctuation | `( ) { } [ ] : :: , . ? -> => = == != < > <= >= && \|\| ! + - * / % ;` |
 
 Details, including what is rejected and why, are in
 [`../spec/lexical-structure.md`](../spec/lexical-structure.md).
@@ -165,7 +165,7 @@ terms of the next one, so the grammar and this table cannot disagree — and
 | `equality` | `==`, `!=` | left |
 | `comparison` | `<`, `>`, `<=`, `>=` | **none** — `a < b < c` is an error |
 | `additive` | `+`, `-` | left |
-| `multiplicative` | `*`, `/` | left |
+| `multiplicative` | `*`, `/`, `%` | left |
 | `unary-expression` | `-x`, `!x` | prefix, right |
 | `postfix-expression` | `f(x)`, `a.b`, `a[i]` | left, chains |
 | `primary-expression` | literals, paths, `( … )`, blocks, `if`, `match`, `ask`, `verify`, `delegate` | — |

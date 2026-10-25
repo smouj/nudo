@@ -156,6 +156,8 @@ pub enum SyntaxKind {
     Star,
     /// `/`
     Slash,
+    /// `%`
+    Percent,
     /// `;`
     Semi,
 
@@ -324,6 +326,7 @@ impl SyntaxKind {
             SyntaxKind::Minus => "Minus",
             SyntaxKind::Star => "Star",
             SyntaxKind::Slash => "Slash",
+            SyntaxKind::Percent => "Percent",
             SyntaxKind::Semi => "Semi",
             SyntaxKind::Eof => "Eof",
             SyntaxKind::SourceFile => "SourceFile",

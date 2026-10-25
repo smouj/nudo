@@ -163,10 +163,11 @@ generic field types substituted from the receiver. `if` conditions are checked
 as `Bool`, branch expressions are checked recursively, and the expected
 condition type reaches generic inference; the conditional result and branch
 agreement remain unspecified. Deferred expression forms also check their
-children for supported rules. The next slices are a stable diagnostic for
-unresolved generic parameters, operator and index typing, match typing and
-exhaustiveness, nominal construction, and `Result<T, E>`. Until a rule exists,
-the checker stays silent rather than inventing semantics. See
+children for supported rules. Numeric arithmetic typing is in place. The next
+slices are a stable diagnostic for unresolved generic parameters, the remaining
+operator and index rules, match typing and exhaustiveness, nominal construction,
+and `Result<T, E>`. Until a rule exists, the checker stays silent rather than
+inventing semantics. See
 [`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
 
 Two gates are taken before this one is written, so that the checker is written
@@ -176,8 +177,8 @@ the arguments and the expected type, and
 rules of their own.
 
 * [x] Primitive types: `Int` (with NEP-0007's rules), `Float`, `Bool`, `Text`,
-      `Unit` — typed in the first slice; `Int`'s arithmetic rules arrive with
-      expression typing
+      `Unit` — typed in the first slice; numeric operator typing is now part of
+      M3.2, while evaluation and literal range checking remain later work
 * [x] Arity checking: a call passes exactly what the signature takes
 * [x] Nominal structure and field access: HIR records a `struct`'s fields and an
       `enum`'s variants; generic field types are instantiated from the receiver,
@@ -190,6 +191,10 @@ rules of their own.
 * [x] Generic inference from call arguments and already-known expected result
       types, left to right and through nested named and function types, following
       [NEP-0013](neps/0013-generic-inference.md)
+* [x] Numeric arithmetic typing: matching numeric `Int` or `Float` operands
+      preserve their type for `+`, `-`, `*` and `/`; `%` is `Int`-only, and
+      unary `-` preserves its numeric operand type
+* [ ] Logical negation, logical/equality/comparison operators and index typing
 * [ ] A stable diagnostic for generic parameters that remain unresolved
       (NEP-0013)
 * [ ] `match` typing: variant validation, payload binding, arm type agreement

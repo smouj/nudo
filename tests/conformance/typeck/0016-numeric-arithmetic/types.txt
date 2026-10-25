@@ -1,0 +1,10 @@
+# nudo-typeck v1
+def 0009 function `add` 1:4: Fn(Int, Int) -> Int
+def 0010 binding `sum` 5:5: Int
+def 0011 binding `difference` 6:5: Int
+def 0012 binding `quotient` 7:5: Float
+def 0013 binding `scaled` 8:5: Float
+def 0014 binding `remainder` 9:5: Int
+def 0015 binding `negative` 10:5: Int
+def 0016 parameter `left` 1:8: Int
+def 0017 parameter `right` 1:19: Int

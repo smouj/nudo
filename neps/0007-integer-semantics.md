@@ -85,6 +85,9 @@ and unusable as the default. The choice below pays the cost where it is visible.
 
 ## Implementation status
 
-**Not implemented.** `nudo-lexer` produces integer and float literals and does
-not compute their values; range checking and evaluation arrive with the type
-checker (M3) and the interpreter (M4).
+**Partly implemented.** The lexer and grammar accept `%`; M3.2 gives `+`, `-`,
+`*` and `/` the result type of matching numeric `Int` or `Float` operands,
+rejects mixed `Int`/`Float` operands, requires `Int` for `%`, and preserves the
+numeric type through unary `-`. Other operator operand domains need settled type
+rules. Integer literal range checking needs value parsing in the type checker
+(M3), and arithmetic evaluation needs the interpreter (M4).

@@ -192,6 +192,7 @@ pub fn syntax_kind(kind: TokenKind) -> SyntaxKind {
         TokenKind::Minus => SyntaxKind::Minus,
         TokenKind::Star => SyntaxKind::Star,
         TokenKind::Slash => SyntaxKind::Slash,
+        TokenKind::Percent => SyntaxKind::Percent,
         TokenKind::Semi => SyntaxKind::Semi,
         TokenKind::Eof => SyntaxKind::Eof,
     }
@@ -1260,7 +1261,10 @@ impl<'a> Parser<'a> {
         if self.pos == before {
             return;
         }
-        while self.at(SyntaxKind::Star) || self.at(SyntaxKind::Slash) {
+        while self.at(SyntaxKind::Star)
+            || self.at(SyntaxKind::Slash)
+            || self.at(SyntaxKind::Percent)
+        {
             self.builder
                 .start_node_at(checkpoint, SyntaxKind::BinaryExpression);
             self.bump();
@@ -1710,15 +1714,16 @@ mod tests {
 
     #[test]
     fn precedence_is_the_shape_of_the_tree() {
-        // `1 + 2 * 3` is `1 + (2 * 3)`: the additive node's right child is a
-        // binary node, and the whole thing is one additive at the top.
-        let (dump, errors, _) = parse_text("let x = 1 + 2 * 3;");
+        // Multiplication, division and remainder bind tighter than addition,
+        // and the multiplicative forms chain left.
+        let (dump, errors, _) = parse_text("let x = 1 + 2 * 3 % 4;");
         assert!(errors.is_empty());
         let root_index = dump.find("BinaryExpression").expect("a binary node");
         let plus = dump.find("\"+\"").expect("the plus operator");
         let star = dump.find("\"*\"").expect("the star operator");
-        assert!(root_index < plus && plus < star, "{dump}");
-        assert_eq!(dump.matches("BinaryExpression").count(), 2, "{dump}");
+        let percent = dump.find("\"%\"").expect("the remainder operator");
+        assert!(root_index < plus && plus < star && star < percent, "{dump}");
+        assert_eq!(dump.matches("BinaryExpression").count(), 3, "{dump}");
     }
 
     #[test]
@@ -1949,6 +1954,7 @@ mod tests {
         assert_eq!(syntax_kind(TokenKind::Eof), SyntaxKind::Eof);
         assert_eq!(syntax_kind(TokenKind::Unknown), SyntaxKind::Unknown);
         assert_eq!(syntax_kind(TokenKind::FatArrow), SyntaxKind::FatArrow);
+        assert_eq!(syntax_kind(TokenKind::Percent), SyntaxKind::Percent);
     }
 
     #[test]
