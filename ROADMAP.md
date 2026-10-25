@@ -158,10 +158,14 @@ primitives and literals, compares annotations, types paths from resolution, and
 reports `NDO2004` with structured `expected` and `found`. Calls are checked
 for arity (`NDO2005`), argument types and callability (`NDO2006`). Nominal
 declarations now carry their structure in HIR, field access is typed with
-`NDO2007`, and match arms carry the pattern information the checker needs.
-Generic instantiation, match typing and exhaustiveness, nominal construction and
-`Result<T, E>` are the next slices. Until a rule exists, the checker stays
-silent rather than inventing semantics. See
+`NDO2007`, and generic calls use argument- and context-driven inference, with
+generic field types substituted from the receiver. `if` conditions are checked
+as `Bool`, branch expressions are checked recursively, and the expected
+condition type reaches generic inference; the conditional result and branch
+agreement remain unspecified. The next slices are a stable diagnostic for
+unresolved generic parameters, match typing and
+exhaustiveness, nominal construction, and `Result<T, E>`. Until a rule exists,
+the checker stays silent rather than inventing semantics. See
 [`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
 
 Two gates are taken before this one is written, so that the checker is written
@@ -192,6 +196,8 @@ rules of their own.
 * [ ] `Result<T, E>` as an intrinsic type, using the same exhaustive `match`
       rules as every other enum
 * [x] Function types and calls; no implicit numeric conversion
+* [x] `if` conditions are checked as `Bool`; branch expressions are checked
+      recursively, with expected type propagated for generic inference
 * [ ] Agent, task and tool type declarations
 * [ ] Type errors with stable `NDO2xxx` codes
 

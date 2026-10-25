@@ -75,6 +75,7 @@ fill in cases instead of redesigning the centre:
 | Blocks | a block's type is its final expression's, or `Unit` when it has none |
 | Names | a path takes the type of the definition it resolved to |
 | Functions | a body is compared with the written return type; with none written, the body's type *is* the result type |
+| `if` | the condition is checked as `Bool`; branches are checked recursively, and the expected condition type drives generic call inference |
 | Field access | `article.title` takes the field's type after substituting the receiver's generic arguments; a missing field is `NDO2007` |
 | Calls | arity (`NDO2005`), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`) |
 | Generic calls | Argument-driven inference in source order, then inference from a known expected result type; substitutions recurse through nested named and function types |
@@ -93,10 +94,14 @@ note: found: `Bool`
 ## What it deliberately does not check
 
 Every omission is a named next step, and each one is **silent** rather than
-wrong: those expressions type as `Error`, and `Error` reports nothing.
+wrong: unsupported expression results type as `Error`, and `Error` reports
+nothing. An `if` condition and the expressions inside its branches are checked,
+while the conditional result is still unknown until the language specifies how
+its branch values agree.
 
 | Not yet | Arrives with |
 | ------- | ------------ |
+| The result type of `if`, including agreement between branch values | a specification decision |
 | A stable diagnostic for a generic parameter that remains unresolved (NEP-0013) | diagnostic NEP and implementation |
 | Reading an enum's payload: needs `match`, which is the next slice | after enums |
 | Building a nominal value: **the grammar has no construction syntax at all**, so it needs a NEP before it can be implemented | when the language decides |

@@ -35,16 +35,19 @@
 //!   arguments inferred from those arguments in source order.
 //! * **Fields.** A field access takes its declared field type and reports a
 //!   missing field on a known struct.
+//! * **Conditions.** An `if` condition is checked as `Bool`, with that expected
+//!   type available to generic inference.
 //! * **One diagnostic.** `NDO2004`, with `expected` and `found` as structure
 //!   rather than as a sentence to re-parse.
 //!
 //! # What it deliberately does not check yet
 //!
-//! Each omission is a named next step rather than a hole: diagnostics for
-//! unresolved generic parameters, `Result<T, E>` exhaustiveness, effects, and
-//! the trust rules of M3.3. Until then those expressions type as
-//! [`Type::Error`], which is compatible with everything and therefore reports
-//! nothing: silence, not a wrong answer.
+//! Each omission is a named next step rather than a hole: the condition of an
+//! `if` is checked as `Bool`, but its branch/result typing remains deferred;
+//! diagnostics for unresolved generic parameters, `Result<T, E>` exhaustiveness,
+//! effects, and the trust rules of M3.3 also remain. Unsupported expression
+//! results type as [`Type::Error`], which is compatible with everything and
+//! therefore reports nothing: silence, not a wrong answer.
 
 pub mod types;
 
@@ -333,13 +336,17 @@ impl Checker<'_> {
             }
             ExprKind::Call { callee, arguments } => self.type_of_call(callee, &arguments, expected),
             ExprKind::Field { receiver, name } => self.type_of_field(receiver, &name),
+            ExprKind::If {
+                condition,
+                then_block,
+                else_branch,
+            } => self.type_of_if(condition, then_block, else_branch),
             // Deferred, and silent about it: these produce `Error`, which is
             // compatible with everything, so nothing is reported about work this
             // slice does not do yet.
             ExprKind::Index { .. }
             | ExprKind::Unary { .. }
             | ExprKind::Binary { .. }
-            | ExprKind::If { .. }
             | ExprKind::Match { .. }
             | ExprKind::Ask { .. }
             | ExprKind::Verify { .. }
@@ -349,6 +356,32 @@ impl Checker<'_> {
             *slot = Some(typed.clone());
         }
         typed
+    }
+
+    /// Checks the condition rule for `if`. The expression's result remains
+    /// unknown until the specification settles how its branch values agree.
+    fn type_of_if(
+        &mut self,
+        condition: ExprId,
+        then_block: ExprId,
+        else_branch: Option<ExprId>,
+    ) -> Type {
+        let expected = Type::Bool;
+        let actual = self.type_of_expression_with_expected(condition, Some(&expected));
+        let span = self
+            .hir
+            .expr(condition)
+            .map_or_else(zero_span, |expression| expression.span);
+        self.expect(&expected, &actual, span);
+
+        // Branch agreement is not specified yet, but expressions inside either
+        // branch still get their independent checks (including nested `if`s).
+        self.type_of_expression(then_block);
+        if let Some(else_branch) = else_branch {
+            self.type_of_expression(else_branch);
+        }
+
+        Type::Error
     }
 
     /// Types a call: the callee's signature decides everything.
