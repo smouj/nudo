@@ -270,6 +270,8 @@ pub struct Def {
     pub value: Option<ExprId>,
     /// Its parameters, in source order, for anything callable.
     pub parameters: Vec<DefId>,
+    /// Its type parameters, in declaration order, for generic instantiation.
+    pub type_parameters: Vec<DefId>,
     /// Its fields, for a `struct`.
     pub fields: Vec<Field>,
     /// Its variants, for an `enum`.
@@ -768,20 +770,22 @@ impl Lowerer {
         self.scope = self.push_scope(outer, "declaration");
         // A declaration's own type parameters and parameters are visible inside
         // it, and nowhere else.
+        let mut type_parameters = Vec::new();
         for list in node.children_of_kind(SyntaxKind::GenericParameterList) {
             for token in list
                 .child_tokens()
                 .into_iter()
                 .filter(|token| token.kind() == SyntaxKind::Ident)
             {
-                self.declare(
+                type_parameters.push(self.declare(
                     token.text().to_string(),
                     DefKind::TypeParameter,
                     token.span(),
                     None,
-                );
+                ));
             }
         }
+        self.defs[def_id.index() as usize].type_parameters = type_parameters;
         // A declaration's parameters belong to the declaration, not to the
         // file: they are declared here, in its own scope, with their
         // annotations lowered where its type parameters are already visible.
@@ -1313,6 +1317,7 @@ impl Lowerer {
             ty,
             value: None,
             parameters: Vec::new(),
+            type_parameters: Vec::new(),
             fields: Vec::new(),
             variants: Vec::new(),
         });
@@ -1714,6 +1719,20 @@ mod tests {
                 .iter()
                 .any(|def| def.name == "T" && def.kind == DefKind::TypeParameter)
         );
+        let identity = parsed_then_hir
+            .1
+            .hir
+            .defs()
+            .iter()
+            .find(|definition| definition.name == "identity")
+            .expect("identity is declared");
+        let parameter_names = identity
+            .type_parameters
+            .iter()
+            .filter_map(|parameter| parsed_then_hir.1.hir.def(*parameter))
+            .map(|parameter| parameter.name.as_str())
+            .collect::<Vec<_>>();
+        assert_eq!(parameter_names, ["T"]);
     }
 
     #[test]

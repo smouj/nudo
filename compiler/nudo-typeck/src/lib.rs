@@ -40,12 +40,11 @@
 //!
 //! # What it deliberately does not check yet
 //!
-//! Each omission is a named next step rather than a hole: contextual generic
-//! inference, diagnostics for unresolved generic parameters, generic field
-//! substitution, `Result<T, E>` exhaustiveness, effects, and the trust rules of
-//! M3.3. Until then those expressions type as [`Type::Error`], which is
-//! compatible with everything and therefore reports nothing: silence, not a
-//! wrong answer.
+//! Each omission is a named next step rather than a hole: diagnostics for
+//! unresolved generic parameters, `Result<T, E>` exhaustiveness, effects, and
+//! the trust rules of M3.3. Until then those expressions type as
+//! [`Type::Error`], which is compatible with everything and therefore reports
+//! nothing: silence, not a wrong answer.
 
 pub mod types;
 
@@ -240,15 +239,16 @@ impl Checker<'_> {
         let Some(value) = definition.value else {
             return;
         };
-        let actual = self.type_of_expression(value);
         let span = self.hir.expr(value).map_or(definition.span, |it| it.span);
 
         match definition.kind {
             DefKind::Function => {
-                let expected = match &definition.ty {
-                    Some(annotation) => self.type_of_annotation(annotation),
-                    None => actual.clone(),
-                };
+                let declared_result = definition
+                    .ty
+                    .as_ref()
+                    .map(|annotation| self.type_of_annotation(annotation));
+                let actual = self.type_of_expression_with_expected(value, declared_result.as_ref());
+                let expected = declared_result.unwrap_or_else(|| actual.clone());
                 self.expect(&expected, &actual, span);
                 let parameters = definition
                     .parameters
@@ -267,19 +267,29 @@ impl Checker<'_> {
             _ => match &definition.ty {
                 Some(annotation) => {
                     let expected = self.type_of_annotation(annotation);
+                    let actual = self.type_of_expression_with_expected(value, Some(&expected));
                     // Point at the value, not at the name: the value is what
                     // breaks the promise, and that is the place a reader has to
                     // change.
                     self.expect(&expected, &actual, span);
                     self.definition_types[id.index() as usize] = Some(expected);
                 }
-                None => self.definition_types[id.index() as usize] = Some(actual),
+                None => {
+                    self.definition_types[id.index() as usize] =
+                        Some(self.type_of_expression(value));
+                }
             },
         }
     }
 
     /// Types an expression, writing the answer down as it goes.
     fn type_of_expression(&mut self, id: ExprId) -> Type {
+        self.type_of_expression_with_expected(id, None)
+    }
+
+    /// Types an expression with a type already required by its surrounding
+    /// annotation, return type, or call parameter.
+    fn type_of_expression_with_expected(&mut self, id: ExprId, expected: Option<&Type>) -> Type {
         if let Some(known) = self
             .expression_types
             .get(id.index() as usize)
@@ -317,11 +327,11 @@ impl Checker<'_> {
                     }
                 }
                 match value {
-                    Some(value) => self.type_of_expression(value),
+                    Some(value) => self.type_of_expression_with_expected(value, expected),
                     None => Type::Unit,
                 }
             }
-            ExprKind::Call { callee, arguments } => self.type_of_call(callee, &arguments),
+            ExprKind::Call { callee, arguments } => self.type_of_call(callee, &arguments, expected),
             ExprKind::Field { receiver, name } => self.type_of_field(receiver, &name),
             // Deferred, and silent about it: these produce `Error`, which is
             // compatible with everything, so nothing is reported about work this
@@ -348,11 +358,16 @@ impl Checker<'_> {
     /// is the wrong type (`NDO2004`, reported at the argument, because that is
     /// the thing to change).
     ///
-    /// Type parameters are inferred from arguments, left to right, as NEP-0013
-    /// specifies. Contextual inference and a diagnostic for parameters that stay
-    /// unresolved are later parts of that NEP, so a result that still contains
-    /// one is typed as unknown rather than guessed.
-    fn type_of_call(&mut self, callee: ExprId, arguments: &[ExprId]) -> Type {
+    /// Type parameters are inferred from arguments, left to right, and then from
+    /// an already-known expected result type, as NEP-0013 specifies. A diagnostic
+    /// for parameters that stay unresolved is still pending, so a result that
+    /// contains one is typed as unknown rather than guessed.
+    fn type_of_call(
+        &mut self,
+        callee: ExprId,
+        arguments: &[ExprId],
+        expected_result: Option<&Type>,
+    ) -> Type {
         let callee_type = self.type_of_expression(callee);
         let Type::Function { parameters, result } = callee_type.clone() else {
             if !callee_type.is_error() {
@@ -403,7 +418,8 @@ impl Checker<'_> {
 
         if generic_parameters.is_empty() {
             for (index, argument) in arguments.iter().enumerate() {
-                let actual = self.type_of_expression(*argument);
+                let actual =
+                    self.type_of_expression_with_expected(*argument, Some(&parameters[index]));
                 let expected = parameters[index].clone();
                 let span = self
                     .hir
@@ -416,8 +432,16 @@ impl Checker<'_> {
 
         let mut substitutions = HashMap::new();
         for (parameter, argument) in parameters.iter().zip(arguments) {
-            let actual = self.type_of_expression(*argument);
+            let actual = self.type_of_expression_with_expected(*argument, Some(parameter));
             self.infer_type_arguments(parameter, &actual, &generic_parameters, &mut substitutions);
+        }
+        if let Some(expected_result) = expected_result {
+            self.infer_type_arguments(
+                &result,
+                expected_result,
+                &generic_parameters,
+                &mut substitutions,
+            );
         }
 
         let unresolved_parameters = generic_parameters
@@ -427,7 +451,11 @@ impl Checker<'_> {
             .collect::<HashSet<_>>();
         for (index, argument) in arguments.iter().enumerate() {
             let actual = self.type_of_expression(*argument);
+            let actual = self.substitute_type(&actual, &substitutions);
             let expected = self.substitute_type(&parameters[index], &substitutions);
+            if let Some(slot) = self.expression_types.get_mut(argument.index() as usize) {
+                *slot = Some(actual.clone());
+            }
             let span = self
                 .hir
                 .expr(*argument)
@@ -466,7 +494,12 @@ impl Checker<'_> {
         }
         let span = self.hir.expr(receiver).map_or_else(zero_span, |it| it.span);
 
-        let Type::Named { definition, .. } = &receiver_type else {
+        let Type::Named {
+            definition,
+            arguments,
+            ..
+        } = &receiver_type
+        else {
             self.report_unknown_field(name, &receiver_type, span, &[]);
             return Type::Error;
         };
@@ -476,13 +509,14 @@ impl Checker<'_> {
 
         // Everything read out of the definition is copied first: reporting a
         // diagnostic needs `&mut self`, and a borrow of the HIR would outlive it.
-        let (is_struct, found, available) = {
+        let (is_struct, type_parameters, found, available) = {
             let Some(definition) = self.hir.def(id) else {
                 return Type::Error;
             };
             match definition.kind {
                 DefKind::Struct => (
                     true,
+                    definition.type_parameters.clone(),
                     definition
                         .fields
                         .iter()
@@ -494,7 +528,7 @@ impl Checker<'_> {
                         .map(|field| field.name.clone())
                         .collect::<Vec<String>>(),
                 ),
-                _ => (false, None, Vec::new()),
+                _ => (false, Vec::new(), None, Vec::new()),
             }
         };
 
@@ -502,7 +536,18 @@ impl Checker<'_> {
             return Type::Error;
         }
         if let Some(annotation) = found {
-            return self.type_of_annotation(&annotation);
+            if type_parameters.len() != arguments.len() {
+                // Type-argument arity is checked in its own slice. Until then,
+                // do not invent a field type from an incomplete instantiation.
+                return Type::Error;
+            }
+            let substitutions = type_parameters
+                .iter()
+                .copied()
+                .zip(arguments.iter().cloned())
+                .collect::<HashMap<_, _>>();
+            let field_type = self.type_of_annotation(&annotation);
+            return self.substitute_type(&field_type, &substitutions);
         }
         self.report_unknown_field(name, &receiver_type, span, &available);
         Type::Error
@@ -1001,6 +1046,24 @@ mod tests {
     }
 
     #[test]
+    fn an_expected_result_type_infers_generic_arguments() {
+        let program = "struct Box<T> {\n    value: T\n}\n\nfn empty<T>() -> Box<T> {\n    empty()\n}\n\nfn make_text() -> Box<Text> {\n    empty()\n}\n\nfn main() {\n    let answer: Box<Text> = empty();\n}\n";
+        assert_eq!(codes_for(program), Vec::<String>::new());
+    }
+
+    #[test]
+    fn a_call_parameter_provides_context_to_a_nested_generic_call() {
+        let program = "fn empty<T>() -> T {\n    empty()\n}\n\nfn take_text(value: Text) -> Text {\n    value\n}\n\nfn forward() -> Text {\n    take_text(empty())\n}\n";
+        assert_eq!(codes_for(program), Vec::<String>::new());
+    }
+
+    #[test]
+    fn a_known_argument_type_wins_over_a_conflicting_expected_result() {
+        let program = "fn identity<T>(value: T) -> T {\n    value\n}\n\nfn main() {\n    let answer: Text = identity(1);\n}\n";
+        assert_eq!(codes_for(program), vec!["NDO2004".to_string()]);
+    }
+
+    #[test]
     fn a_call_to_a_function_declared_later_works() {
         let program = "fn main() {\n    later();\n}\n\nfn later() {\n}\n";
         assert_eq!(codes_for(program), Vec::<String>::new());
@@ -1044,6 +1107,12 @@ mod tests {
     #[test]
     fn a_field_access_chains_through_struct_fields() {
         let program = "struct Author {\n    name: Text\n}\n\nstruct Article {\n    author: Author\n}\n\nfn author_name(article: Article) -> Text {\n    article.author.name\n}\n";
+        assert_eq!(codes_for(program), Vec::<String>::new());
+    }
+
+    #[test]
+    fn generic_struct_fields_use_the_receiver_type_arguments() {
+        let program = "struct Box<T> {\n    value: T\n}\n\nstruct Wrap<U> {\n    inner: Box<U>\n}\n\nfn get<T>(wrap: Wrap<T>) -> T {\n    wrap.inner.value\n}\n\nfn get_int(box: Box<Int>) -> Int {\n    box.value\n}\n";
         assert_eq!(codes_for(program), Vec::<String>::new());
     }
 

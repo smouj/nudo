@@ -1,9 +1,9 @@
 # Type checker design (M3.2)
 
-**Status: first slice and argument-driven generic inference implemented.**
+**Status: first slice and bounded generic inference implemented.**
 `nudo-typeck` is exercised by unit tests and by `tests/conformance/typeck`.
-Contextual generic inference and diagnostics for unresolved type parameters
-remain pending. This document records what the checker does and the one
+Diagnostics for unresolved type parameters remain pending. This document records
+what the checker does and the one
 architectural rule that makes "is HIR enough?" a question with a test.
 
 Read [`hir-design.md`](hir-design.md) first; this layer consumes what that one
@@ -75,9 +75,9 @@ fill in cases instead of redesigning the centre:
 | Blocks | a block's type is its final expression's, or `Unit` when it has none |
 | Names | a path takes the type of the definition it resolved to |
 | Functions | a body is compared with the written return type; with none written, the body's type *is* the result type |
-| Field access | `article.title` takes the field's type; a field the type does not have is `NDO2007`, naming the field and listing what the type does have |
+| Field access | `article.title` takes the field's type after substituting the receiver's generic arguments; a missing field is `NDO2007` |
 | Calls | arity (`NDO2005`), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`) |
-| Generic calls | Argument-driven inference in source order, including nested named and function types; inferred substitutions determine the call result |
+| Generic calls | Argument-driven inference in source order, then inference from a known expected result type; substitutions recurse through nested named and function types |
 | One diagnostic shape | `expected` and `found` as structure, never as prose to re-parse |
 
 The diagnostic points at the **value**, not at the name it was bound to: the
@@ -97,9 +97,7 @@ wrong: those expressions type as `Error`, and `Error` reports nothing.
 
 | Not yet | Arrives with |
 | ------- | ------------ |
-| Inference from an already-known expected type (NEP-0013) | next inference slice |
 | A stable diagnostic for a generic parameter that remains unresolved (NEP-0013) | diagnostic NEP and implementation |
-| Substituting generic struct parameters when reading a field | generic field typing |
 | Reading an enum's payload: needs `match`, which is the next slice | after enums |
 | Building a nominal value: **the grammar has no construction syntax at all**, so it needs a NEP before it can be implemented | when the language decides |
 | `Result<T, E>` and exhaustiveness of `match` (NEP-0014) | after enums |

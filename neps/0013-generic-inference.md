@@ -97,8 +97,9 @@ layer down. So inference is kept where it removes noise and nowhere else.
 ## Implementation status
 
 **Partially implemented.** `nudo-typeck` infers type parameters from call
-arguments in source order, including through nested named and function types;
-the `typeck` conformance corpus pins a generic identity call. Inference from an
-already-known expected type and the stable diagnostic for a parameter that
-remains unresolved are still pending. The full NEP is not complete until those
-rules are implemented and covered by conformance cases.
+arguments in source order and then from an already-known expected result type,
+including through nested named and function types. The `typeck` conformance
+corpus pins argument inference, contextual inference, and a repeated-parameter
+mismatch. A stable diagnostic for a parameter that remains unresolved is still
+pending. The full NEP is not complete until that rule is implemented and
+covered by conformance cases.

@@ -52,8 +52,10 @@ Hir
   diagnostic written at M3 is still renderable at M8.
 * **A definition carries its structure.** A `struct`'s fields and an `enum`'s
   variants are recorded with their types, lowered in the declaration's own scope
-  so that a declaration's type parameter is visible inside its own fields. They
-  are records, not definitions: a field is reached through a value
+  so that a declaration's type parameter is visible inside its own fields. The
+  owner also records its type-parameter `DefId`s in declaration order, so later
+  stages can instantiate those field types against a receiver. Fields are
+  records, not definitions: a field is reached through a value
   (`article.title`), never on its own, so it belongs to its owner rather than to
   a scope.
 * **A `match` arm carries its pattern.** The head as written, the definitions

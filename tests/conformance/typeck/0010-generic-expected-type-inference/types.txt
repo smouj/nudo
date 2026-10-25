@@ -1,0 +1,8 @@
+# nudo-typeck v1
+def 0009 struct `Box` 1:8: <unknown>
+def 0010 function `empty` 5:4: Fn() -> Box<T>
+def 0011 function `make_text` 9:4: Fn() -> Box<Text>
+def 0012 function `main` 13:4: Fn() -> Unit
+def 0013 type-parameter `T` 1:12: <unknown>
+def 0014 type-parameter `T` 5:10: <unknown>
+def 0015 binding `answer` 14:9: Box<Text>

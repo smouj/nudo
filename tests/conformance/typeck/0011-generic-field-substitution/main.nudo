@@ -1,0 +1,11 @@
+struct Box<T> {
+    value: T
+}
+
+struct Wrap<U> {
+    inner: Box<U>
+}
+
+fn get<T>(wrap: Wrap<T>) -> T {
+    wrap.inner.value
+}

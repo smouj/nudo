@@ -175,17 +175,18 @@ rules of their own.
       expression typing
 * [x] Arity checking: a call passes exactly what the signature takes
 * [x] Nominal structure and field access: HIR records a `struct`'s fields and an
-      `enum`'s variants, and `article.title` is typed, with `NDO2007` when the
-      field does not exist
+      `enum`'s variants; generic field types are instantiated from the receiver,
+      and `article.title` reports `NDO2007` when the field does not exist
 * [ ] **Construction of a nominal value.** Nothing in the grammar builds one:
       there is no `struct-expression`, no `enum-literal` and no field initialiser,
       so a program can hold a nominal value (a parameter, a return) but cannot
       make one. It needs a NEP - the syntax is a language decision, not a parser
       gap - and it is recorded here rather than invented in the checker.
-* [x] Call-argument inference for generic functions, left to right and through
-      nested named and function types, following [NEP-0013](neps/0013-generic-inference.md)
-* [ ] Inference from an already-known expected type, plus a stable diagnostic
-      for generic parameters that remain unresolved (NEP-0013)
+* [x] Generic inference from call arguments and already-known expected result
+      types, left to right and through nested named and function types, following
+      [NEP-0013](neps/0013-generic-inference.md)
+* [ ] A stable diagnostic for generic parameters that remain unresolved
+      (NEP-0013)
 * [ ] `match` typing: variant validation, payload binding, arm type agreement
       and exhaustiveness; HIR already records each arm's pattern
 * [ ] `Result<T, E>` as an intrinsic type, using the same exhaustive `match`
