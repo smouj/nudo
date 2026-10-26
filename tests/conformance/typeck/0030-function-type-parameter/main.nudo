@@ -1,0 +1,11 @@
+fn apply<T>(operation: (Fn(T) -> T), value: T) -> T {
+    operation(value)
+}
+
+fn increment(value: Int) -> Int {
+    value + 1
+}
+
+fn run() -> Int {
+    apply(increment, 41)
+}

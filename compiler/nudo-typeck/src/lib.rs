@@ -33,6 +33,9 @@
 //!   why resolution had to exist first.
 //! * **Calls.** Arity, callability, argument compatibility, and generic type
 //!   arguments inferred from those arguments in source order.
+//! * **Function types.** An annotation such as `Fn(Int) -> Text` retains its
+//!   function shape, so function-valued parameters are callable and participate
+//!   in structural type comparison and bounded generic inference.
 //! * **Fields.** A field access takes its declared field type and reports a
 //!   missing field on a known struct.
 //! * **Numeric arithmetic.** When both operands are assignable to the same
@@ -64,7 +67,9 @@ use std::{
 };
 
 use nudo_diagnostics::{Diagnostic, Diagnostics, codes};
-use nudo_hir::{Def, DefId, DefKind, ExprId, ExprKind, Hir, LiteralKind, StmtKind, TypeRef};
+use nudo_hir::{
+    Def, DefId, DefKind, ExprId, ExprKind, Hir, LiteralKind, StmtKind, TypeRef, TypeRefKind,
+};
 use nudo_source::SourceId;
 use nudo_span::Span;
 
@@ -240,6 +245,20 @@ impl Checker<'_> {
     /// definition rather than the spelling, because a type parameter can shadow
     /// a built-in in a nested scope.
     fn type_of_annotation(&self, annotation: &TypeRef) -> Type {
+        if annotation.kind == TypeRefKind::Function {
+            let Some((result, parameters)) = annotation.arguments.split_last() else {
+                return Type::Error;
+            };
+            return Type::Function {
+                parameters: parameters
+                    .iter()
+                    .map(|parameter| self.type_of_annotation(parameter))
+                    .collect::<Vec<_>>()
+                    .into(),
+                result: Arc::new(self.type_of_annotation(result)),
+            };
+        }
+
         let builtin_type = annotation
             .target
             .resolved()

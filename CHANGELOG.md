@@ -145,6 +145,12 @@ would be a promise the project cannot keep.
 
 ### Fixed
 
+* **Function type annotations keep their callable shape.** A function-valued
+  parameter such as `Fn(T) -> T` can be called in its body, accepts a matching
+  function value, and participates in bounded generic inference. HIR now records
+  composite type forms explicitly instead of encoding function types as an
+  unresolved display-name string.
+
 * **The documentation gate reads repository content, not the working tree.**
   `scripts/check-docs.py` walked every directory except a hand-written list of
   names, so git-ignored scratch and generated output were scanned too, and a

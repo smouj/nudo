@@ -58,6 +58,10 @@ Hir
   records, not definitions: a field is reached through a value
   (`article.title`), never on its own, so it belongs to its owner rather than to
   a scope.
+* **A type reference keeps its form.** Named types, sequences, optionals and
+  function types retain their child types in source order. In particular, a
+  function type is represented as parameter types followed by its result, not as
+  an unresolved named type whose display text happens to start with `Fn`.
 * **A `match` arm carries its pattern.** The head as written, the definitions
   the pattern introduces, and its body — because whether that head is a variant of
   the scrutinee's enum or a new binding is a question only the scrutinee's *type*

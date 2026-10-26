@@ -83,6 +83,7 @@ fill in cases instead of redesigning the centre:
 | `if` | the condition is checked as `Bool`; branches are checked recursively, and the expected condition type drives generic call inference |
 | Field access | `article.title` takes the field's type after substituting the receiver's generic arguments; a missing field is `NDO2007` |
 | Calls | arity (`NDO2005`), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`); malformed calls still check matched arguments against their parameters and excess argument expressions for nested errors |
+| Function types | `Fn(A, B) -> C` annotations keep parameter and result types as a function type, so function-valued parameters can be called and participate in structural comparison and bounded inference |
 | Generic calls | Argument-driven inference in source order, then inference from a known expected result type; substitutions recurse through nested named and function types |
 | Numeric arithmetic | On `Int` or `Float` values (including `Verified<T>` values assignable to those primitives), `+`, `-`, `*` and `/` require matching types; `%` is `Int`-only; unary `-` preserves the primitive result type; mismatches report `NDO2004` |
 | Trust assignment | The resolved built-in `Verified<T>` is usable where `T` is expected; `Generated<T>` is not, and the relation does not widen nested generic arguments |
