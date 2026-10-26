@@ -192,6 +192,8 @@ rules of their own.
 * [x] Generic inference from call arguments and already-known expected result
       types, left to right and through nested named and function types, following
       [NEP-0013](neps/0013-generic-inference.md)
+* [x] Type-argument arity for user types, type parameters and intrinsic types;
+      `NDO2017` points at the invalid type use, including fields and enum payloads
 * [x] Numeric arithmetic typing: matching numeric `Int` or `Float` operands
       preserve their type for `+`, `-`, `*` and `/`; `%` is `Int`-only, and
       unary `-` preserves its numeric operand type

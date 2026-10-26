@@ -25,6 +25,8 @@
 //!   is `Bool`, text is `Text`.
 //! * **Annotations.** `let x: Int = 1;` types the annotation and the value and
 //!   compares them.
+//! * **Named type arity.** Structs, enums, type parameters and intrinsic types
+//!   require exactly their declared number of type arguments (`NDO2017`).
 //! * **Blocks.** A block's type is its final expression's, or `Unit` when it has
 //!   none — which is why a function with no written return type takes the type
 //!   of its body, the same statement the specification makes read from the other
@@ -123,8 +125,13 @@ pub fn check(hir: &Hir, source: SourceId) -> TypeckResult {
         builtin_verified,
         definition_types: vec![None; hir.defs().len()],
         expression_types: vec![None; last_expression.map_or(0, |last| last as usize + 1)],
+        invalid_type_refs: HashSet::new(),
         diagnostics: Diagnostics::new(),
     };
+
+    // Reject malformed type applications before signatures are built, so their
+    // recovery type is Error and does not create follow-up mismatches.
+    checker.check_type_argument_arities();
 
     // Signatures first, so that a name's type is known whatever the order in the
     // file. HIR hoists declarations, and this pass respects that.
@@ -201,6 +208,7 @@ struct Checker<'a> {
     builtin_verified: Option<DefId>,
     definition_types: Vec<Option<Type>>,
     expression_types: Vec<Option<Type>>,
+    invalid_type_refs: HashSet<Span>,
     diagnostics: Diagnostics,
 }
 
@@ -238,6 +246,87 @@ impl Checker<'_> {
         }
     }
 
+    /// Checks every type reference, including types nested in fields and enum
+    /// payloads. The type checker runs once per compilation; this pass also
+    /// marks malformed references so later typing can recover as `Error`.
+    fn check_type_argument_arities(&mut self) {
+        let mut annotations = Vec::new();
+        for definition in self.hir.defs() {
+            annotations.extend(definition.ty.iter().cloned());
+            annotations.extend(
+                definition
+                    .fields
+                    .iter()
+                    .filter_map(|field| field.ty.clone()),
+            );
+            annotations.extend(
+                definition
+                    .variants
+                    .iter()
+                    .flat_map(|variant| variant.fields.iter().filter_map(|field| field.ty.clone())),
+            );
+        }
+        for annotation in &annotations {
+            self.check_type_argument_arity(annotation);
+        }
+    }
+
+    fn check_type_argument_arity(&mut self, annotation: &TypeRef) {
+        if annotation.kind == TypeRefKind::Named {
+            if let Some(expected) = self.expected_type_argument_count(annotation) {
+                let found = annotation.arguments.len();
+                if expected != found {
+                    self.invalid_type_refs.insert(annotation.span);
+                    let span = if found > expected {
+                        annotation
+                            .arguments
+                            .get(expected)
+                            .map_or(annotation.span, |argument| argument.span)
+                    } else {
+                        annotation
+                            .arguments
+                            .last()
+                            .map_or(annotation.span, |argument| argument.span)
+                    };
+                    let expected_label = if expected == 1 {
+                        "argument"
+                    } else {
+                        "arguments"
+                    };
+                    self.diagnostics.push(
+                        Diagnostic::error(
+                            codes::WRONG_TYPE_ARGUMENT_COUNT,
+                            format!("wrong number of type arguments for `{}`", annotation.name),
+                        )
+                        .with_location(self.source, span)
+                        .with_note(format!("expected: {expected}"))
+                        .with_note(format!("found: {found}"))
+                        .with_help(format!("provide exactly {expected} type {expected_label}")),
+                    );
+                }
+            }
+        }
+
+        for argument in &annotation.arguments {
+            self.check_type_argument_arity(argument);
+        }
+    }
+
+    fn expected_type_argument_count(&self, annotation: &TypeRef) -> Option<usize> {
+        let definition = self.hir.def(annotation.target.resolved()?)?;
+        match definition.kind {
+            DefKind::Struct | DefKind::Enum | DefKind::TypeParameter => {
+                Some(definition.type_parameters.len())
+            }
+            DefKind::BuiltinType => Some(match definition.name.as_str() {
+                "Result" => 2,
+                "Generated" | "Verified" => 1,
+                _ => 0,
+            }),
+            _ => None,
+        }
+    }
+
     /// The type an annotation names.
     ///
     /// A resolved built-in primitive is the type it names; anything else is a
@@ -245,6 +334,9 @@ impl Checker<'_> {
     /// definition rather than the spelling, because a type parameter can shadow
     /// a built-in in a nested scope.
     fn type_of_annotation(&self, annotation: &TypeRef) -> Type {
+        if self.invalid_type_refs.contains(&annotation.span) {
+            return Type::Error;
+        }
         if annotation.kind == TypeRefKind::Function {
             let Some((result, parameters)) = annotation.arguments.split_last() else {
                 return Type::Error;

@@ -77,6 +77,7 @@ fill in cases instead of redesigning the centre:
 | ---- | ------- |
 | Literal typing | `1` is `Int`, `1.5` is `Float`, `true` is `Bool`, `"nudo"` is `Text` |
 | Annotations | `let x: Int = 1;` types both sides and compares them |
+| Named type arity | Resolved structs, enums, type parameters and intrinsic types require their declared type-argument count; `NDO2017` points at the type use |
 | Blocks | a block's type is its final expression's, or `Unit` when it has none |
 | Names | a path takes the type of the definition it resolved to |
 | Functions | a body is compared with the written return type; with none written, the body's type *is* the result type |

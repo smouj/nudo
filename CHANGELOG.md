@@ -145,6 +145,11 @@ would be a promise the project cannot keep.
 
 ### Fixed
 
+* **Named type-argument arity is checked.** Structs, enums, type parameters and
+  intrinsic types now require their exact arity; `NDO2017` points to the invalid
+  type use, including annotations on fields and enum payloads. Invalid type
+  references recover as `Error` and do not create follow-up mismatches.
+
 * **Function type annotations keep their callable shape.** A function-valued
   parameter such as `Fn(T) -> T` can be called in its body, accepts a matching
   function value, and participates in bounded generic inference. HIR now records

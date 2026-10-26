@@ -86,8 +86,9 @@ Hir
 
 ## What it deliberately does not do
 
-* **No types.** `Int` resolves to a built-in definition and is not checked;
-  nothing is inferred; arity is not checked. That is M3.2. Nine built-in names
+* **No type checking.** `Int` resolves to a built-in definition, and HIR does
+  not decide whether the referenced type is well-formed. `nudo-typeck` checks
+  named type-argument arity in M3.2. Nine built-in names
   (`Int`, `Float`, `Bool`, `Text`, `Unit`, `Result`, `Generated`, `Verified`,
   `Fn`) are predeclared in the file scope so a program can name them without a
   declaration, and a program cannot redefine them by accident.
@@ -138,7 +139,9 @@ mistake rather than hiding it.
 ## Where this document goes next
 
 M3.2 adds the type layer: a type arena, `TypeId`, instantiation of generic
-declarations, `Result<T, E>` as an intrinsic type, exhaustiveness of `match`, and
-the arity and namespace checks that need types. The shape above is designed for
-that — a type arena beside the expression arena, and `DefId` as the thing types
-attach to — and if it is wrong, this document is the place to record why.
+declarations, `Result<T, E>` as an intrinsic type and exhaustiveness of `match`.
+The checker now validates named type-argument arity from the resolved
+declarations and intrinsic arities; other structural checks remain in M3.2. The
+shape above is designed for that — a type arena beside the expression arena, and
+`DefId` as the thing types attach to — and if it is wrong, this document is the
+place to record why.

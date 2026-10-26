@@ -5,8 +5,9 @@ partial.** [NEP-0006](../neps/0006-generic-syntax.md) settles angle-bracket
 syntax, [NEP-0010](../neps/0010-declaration-site-generics.md) settles
 declaration-site parameters, and [NEP-0013](../neps/0013-generic-inference.md)
 defines bounded inference. The parser accepts the syntax, and `nudo-typeck`
-implements inference from call arguments and from an already-known expected
-result type. The stable diagnostic for unresolved parameters remains pending.
+checks named type-argument arity and implements inference from call arguments
+and from an already-known expected result type. The stable diagnostic for
+unresolved parameters remains pending.
 
 ## What is needed
 

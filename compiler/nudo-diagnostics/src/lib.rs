@@ -172,6 +172,10 @@ pub mod codes {
     /// A field that the value being read has no such field on.
     pub const UNKNOWN_FIELD: DiagnosticCode = DiagnosticCode::new("NDO2007", "UNKNOWN_FIELD");
 
+    /// A named type was supplied a different number of arguments than it declares.
+    pub const WRONG_TYPE_ARGUMENT_COUNT: DiagnosticCode =
+        DiagnosticCode::new("NDO2017", "WRONG_TYPE_ARGUMENT_COUNT");
+
     // ---------------------------------------------------------------- 8xxx --
     /// The file being compiled does not use the `.nudo` extension.
     pub const UNEXPECTED_FILE_EXTENSION: DiagnosticCode =
@@ -193,6 +197,7 @@ pub mod codes {
         WRONG_ARGUMENT_COUNT,
         NOT_CALLABLE,
         UNKNOWN_FIELD,
+        WRONG_TYPE_ARGUMENT_COUNT,
         UNEXPECTED_FILE_EXTENSION,
     ];
 
@@ -212,6 +217,10 @@ pub mod codes {
         DUPLICATE_NAME,
         WRONG_NAMESPACE,
         TYPE_MISMATCH,
+        WRONG_ARGUMENT_COUNT,
+        NOT_CALLABLE,
+        UNKNOWN_FIELD,
+        WRONG_TYPE_ARGUMENT_COUNT,
         UNEXPECTED_FILE_EXTENSION,
     ];
 
