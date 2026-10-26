@@ -247,36 +247,63 @@ impl Checker<'_> {
     }
 
     /// Checks every type reference, including types nested in fields and enum
-    /// payloads. The type checker runs once per compilation; this pass also
-    /// marks malformed references so later typing can recover as `Error`.
+    /// payloads. References are traversed in place to avoid cloning complete
+    /// nested type trees before the signature pass.
     fn check_type_argument_arities(&mut self) {
-        let mut annotations = Vec::new();
-        for definition in self.hir.defs() {
-            annotations.extend(definition.ty.iter().cloned());
-            annotations.extend(
-                definition
-                    .fields
-                    .iter()
-                    .filter_map(|field| field.ty.clone()),
-            );
-            annotations.extend(
-                definition
-                    .variants
-                    .iter()
-                    .flat_map(|variant| variant.fields.iter().filter_map(|field| field.ty.clone())),
-            );
-        }
-        for annotation in &annotations {
-            self.check_type_argument_arity(annotation);
+        let hir = self.hir;
+        let source = self.source;
+        let invalid_type_refs = &mut self.invalid_type_refs;
+        let diagnostics = &mut self.diagnostics;
+
+        for definition in hir.defs() {
+            if let Some(annotation) = &definition.ty {
+                Self::check_type_argument_arity(
+                    hir,
+                    source,
+                    annotation,
+                    invalid_type_refs,
+                    diagnostics,
+                );
+            }
+            for field in &definition.fields {
+                if let Some(annotation) = &field.ty {
+                    Self::check_type_argument_arity(
+                        hir,
+                        source,
+                        annotation,
+                        invalid_type_refs,
+                        diagnostics,
+                    );
+                }
+            }
+            for variant in &definition.variants {
+                for field in &variant.fields {
+                    if let Some(annotation) = &field.ty {
+                        Self::check_type_argument_arity(
+                            hir,
+                            source,
+                            annotation,
+                            invalid_type_refs,
+                            diagnostics,
+                        );
+                    }
+                }
+            }
         }
     }
 
-    fn check_type_argument_arity(&mut self, annotation: &TypeRef) {
+    fn check_type_argument_arity(
+        hir: &Hir,
+        source: SourceId,
+        annotation: &TypeRef,
+        invalid_type_refs: &mut HashSet<Span>,
+        diagnostics: &mut Diagnostics,
+    ) {
         if annotation.kind == TypeRefKind::Named {
-            if let Some(expected) = self.expected_type_argument_count(annotation) {
+            if let Some(expected) = Self::expected_type_argument_count(hir, annotation) {
                 let found = annotation.arguments.len();
                 if expected != found {
-                    self.invalid_type_refs.insert(annotation.span);
+                    invalid_type_refs.insert(annotation.span);
                     let span = if found > expected {
                         annotation
                             .arguments
@@ -293,12 +320,12 @@ impl Checker<'_> {
                     } else {
                         "arguments"
                     };
-                    self.diagnostics.push(
+                    diagnostics.push(
                         Diagnostic::error(
                             codes::WRONG_TYPE_ARGUMENT_COUNT,
                             format!("wrong number of type arguments for `{}`", annotation.name),
                         )
-                        .with_location(self.source, span)
+                        .with_location(source, span)
                         .with_note(format!("expected: {expected}"))
                         .with_note(format!("found: {found}"))
                         .with_help(format!("provide exactly {expected} type {expected_label}")),
@@ -308,12 +335,12 @@ impl Checker<'_> {
         }
 
         for argument in &annotation.arguments {
-            self.check_type_argument_arity(argument);
+            Self::check_type_argument_arity(hir, source, argument, invalid_type_refs, diagnostics);
         }
     }
 
-    fn expected_type_argument_count(&self, annotation: &TypeRef) -> Option<usize> {
-        let definition = self.hir.def(annotation.target.resolved()?)?;
+    fn expected_type_argument_count(hir: &Hir, annotation: &TypeRef) -> Option<usize> {
+        let definition = hir.def(annotation.target.resolved()?)?;
         match definition.kind {
             DefKind::Struct | DefKind::Enum | DefKind::TypeParameter => {
                 Some(definition.type_parameters.len())
