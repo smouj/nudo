@@ -17,6 +17,11 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **Draft proposal NEP-0020: typed enum matching.** Defines proposed variant
+  patterns, explicit wildcards, payload bindings, exhaustive coverage and
+  order-independent arm result types. It records a design proposal only; the
+  specification and compiler behavior do not change before acceptance.
+
 * **M3.3: trust types follow their accepted assignment rule.** The resolved
   built-in `Verified<T>` can be used where `T` is expected, including function
   arguments, return values and numeric operations. `Generated<T>` remains
