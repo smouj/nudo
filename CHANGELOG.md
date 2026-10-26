@@ -26,8 +26,9 @@ would be a promise the project cannot keep.
   remain pending.
 
 * **Type checking continues through malformed calls.** Wrong argument counts
-  (`NDO2005`) and non-callable callees (`NDO2006`) no longer prevent checking
-  supplied argument expressions, so independent nested errors are not hidden.
+  (`NDO2005`) and non-callable callees (`NDO2006`) no longer hide mismatches in
+  arguments that have a matching parameter or independent nested errors in
+  excess arguments.
 
 * **Type-checker type trees share immutable child storage.** Cloning a named or
   function type shares its argument or parameter types instead of copying those

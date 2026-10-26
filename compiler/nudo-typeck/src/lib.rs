@@ -545,7 +545,8 @@ impl Checker<'_> {
             return Type::Error;
         };
 
-        if arguments.len() != parameters.len() {
+        let arity_mismatch = arguments.len() != parameters.len();
+        if arity_mismatch {
             let expected = if parameters.len() == 1 {
                 "argument"
             } else {
@@ -566,16 +567,6 @@ impl Checker<'_> {
                 .with_note(format!("found: {}", arguments.len()))
                 .with_help("every call passes exactly what the signature takes"),
             );
-            // A bad argument count makes the outer call invalid, but it does
-            // not make the supplied expressions opaque. Check them without
-            // positional expectations to surface independent nested errors
-            // without cascading mismatches from a malformed call.
-            self.check_arguments_without_expectations(arguments);
-            return if self.mentions_type_parameter(&result) {
-                Type::Error
-            } else {
-                result.as_ref().clone()
-            };
         }
 
         let mut generic_parameters = HashSet::new();
@@ -585,16 +576,17 @@ impl Checker<'_> {
         self.collect_type_parameters(&result, &mut generic_parameters);
 
         if generic_parameters.is_empty() {
-            for (index, argument) in arguments.iter().enumerate() {
-                let actual =
-                    self.type_of_expression_with_expected(*argument, Some(&parameters[index]));
-                let expected = parameters[index].clone();
+            for (expected, argument) in parameters.iter().zip(arguments) {
+                let actual = self.type_of_expression_with_expected(*argument, Some(expected));
                 let span = self
                     .hir
                     .expr(*argument)
                     .map_or_else(zero_span, |it| it.span);
-                self.expect(&expected, &actual, span);
+                self.expect(expected, &actual, span);
             }
+            self.check_arguments_without_expectations(
+                arguments.get(parameters.len()..).unwrap_or(&[]),
+            );
             return result.as_ref().clone();
         }
 
@@ -618,9 +610,13 @@ impl Checker<'_> {
             .copied()
             .collect::<HashSet<_>>();
         for (index, argument) in arguments.iter().enumerate() {
+            let Some(parameter) = parameters.get(index) else {
+                self.type_of_expression(*argument);
+                continue;
+            };
             let actual = self.type_of_expression(*argument);
             let actual = self.substitute_type(&actual, &substitutions);
-            let expected = self.substitute_type(&parameters[index], &substitutions);
+            let expected = self.substitute_type(parameter, &substitutions);
             if let Some(slot) = self.expression_types.get_mut(argument.index() as usize) {
                 *slot = Some(actual.clone());
             }
@@ -636,6 +632,15 @@ impl Checker<'_> {
                 self.expect(&expected, &actual, span);
             }
         }
+        if arity_mismatch {
+            // Keep the established error-recovery result for invalid calls:
+            // do not use a partial argument list to invent their result type.
+            return if self.mentions_type_parameter(&result) {
+                Type::Error
+            } else {
+                result.as_ref().clone()
+            };
+        }
         let result = self.substitute_type(&result, &substitutions);
         if self.contains_type_parameters(&result, &unresolved_parameters) {
             Type::Error
@@ -644,9 +649,9 @@ impl Checker<'_> {
         }
     }
 
-    /// Checks supplied call arguments when no reliable parameter context exists.
-    /// This keeps independent errors in nested expressions visible even when
-    /// the outer call is malformed.
+    /// Checks supplied call arguments when no parameter context exists, such as
+    /// arguments to a non-callable value or arguments beyond the arity. This
+    /// keeps independent errors in nested expressions visible.
     fn check_arguments_without_expectations(&mut self, arguments: &[ExprId]) {
         for argument in arguments {
             self.type_of_expression(*argument);
@@ -1395,6 +1400,24 @@ mod tests {
         assert_eq!(
             codes_for(program),
             vec!["NDO2005".to_string(), "NDO2006".to_string()]
+        );
+    }
+
+    #[test]
+    fn an_arity_error_still_checks_arguments_with_known_parameter_positions() {
+        let program = "fn add(left: Int, right: Int) -> Int { left }\n\
+                       fn main() {\n\
+                           let missing = add(true);\n\
+                           let extra = add(1, false, 2);\n\
+                       }\n";
+        assert_eq!(
+            codes_for(program),
+            vec![
+                "NDO2005".to_string(),
+                "NDO2004".to_string(),
+                "NDO2005".to_string(),
+                "NDO2004".to_string(),
+            ]
         );
     }
 

@@ -1,0 +1,15 @@
+fn add(left: Int, right: Int) -> Int {
+    left
+}
+
+fn same<T>(first: T, second: T) -> T {
+    first
+}
+
+let scalar = 1;
+
+fn main() {
+    let missing = add(true);
+    let extra = add(1, false, 2);
+    let generic = same(1, true, scalar());
+}
