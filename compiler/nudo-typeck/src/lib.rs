@@ -565,6 +565,13 @@ impl Checker<'_> {
                 .with_note(format!("found: {}", arguments.len()))
                 .with_help("every call passes exactly what the signature takes"),
             );
+            // A bad argument count makes the outer call invalid, but it does
+            // not make the supplied expressions opaque. Check them without
+            // positional expectations to surface independent nested errors
+            // without cascading mismatches from a malformed call.
+            for argument in arguments {
+                self.type_of_expression(*argument);
+            }
             return if self.mentions_type_parameter(&result) {
                 Type::Error
             } else {
@@ -1368,6 +1375,19 @@ mod tests {
         let wrong_count =
             "fn add(a: Int, b: Int) -> Int {\n    a\n}\n\nfn main() {\n    let one = add(1);\n}\n";
         assert_eq!(codes_for(wrong_count), vec!["NDO2005".to_string()]);
+    }
+
+    #[test]
+    fn an_arity_error_does_not_hide_errors_inside_supplied_arguments() {
+        let program = "fn takes(value: Int) {}\n\
+                       let number = 1;\n\
+                       fn main() {\n\
+                           let result = takes(0, number());\n\
+                       }\n";
+        assert_eq!(
+            codes_for(program),
+            vec!["NDO2005".to_string(), "NDO2006".to_string()]
+        );
     }
 
     #[test]

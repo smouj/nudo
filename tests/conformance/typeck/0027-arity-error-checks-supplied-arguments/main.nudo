@@ -1,0 +1,6 @@
+fn takes(value: Int) {}
+let number = 1;
+
+fn main() {
+    let result = takes(0, number());
+}

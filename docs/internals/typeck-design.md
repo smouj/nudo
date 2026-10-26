@@ -82,7 +82,7 @@ fill in cases instead of redesigning the centre:
 | Functions | a body is compared with the written return type; with none written, the body's type *is* the result type |
 | `if` | the condition is checked as `Bool`; branches are checked recursively, and the expected condition type drives generic call inference |
 | Field access | `article.title` takes the field's type after substituting the receiver's generic arguments; a missing field is `NDO2007` |
-| Calls | arity (`NDO2005`), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`) |
+| Calls | arity (`NDO2005`), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`); supplied expressions are still checked after an arity error so nested diagnostics are not hidden |
 | Generic calls | Argument-driven inference in source order, then inference from a known expected result type; substitutions recurse through nested named and function types |
 | Numeric arithmetic | On `Int` or `Float` values (including `Verified<T>` values assignable to those primitives), `+`, `-`, `*` and `/` require matching types; `%` is `Int`-only; unary `-` preserves the primitive result type; mismatches report `NDO2004` |
 | Trust assignment | The resolved built-in `Verified<T>` is usable where `T` is expected; `Generated<T>` is not, and the relation does not widen nested generic arguments |

@@ -26,7 +26,7 @@ use nudo_typeck::{check, dump_types};
 
 /// The number of cases the corpus must contain, so that deleting one cannot make
 /// this test quietly pass.
-const MINIMUM_CASES: usize = 26;
+const MINIMUM_CASES: usize = 27;
 
 fn corpus_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/conformance/typeck")

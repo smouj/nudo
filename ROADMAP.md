@@ -156,7 +156,9 @@ work rather than left as a surprise.
 `nudo-typeck` is implemented and growing by vertical slices. It types
 primitives and literals, compares annotations, types paths from resolution, and
 reports `NDO2004` with structured `expected` and `found`. Calls are checked
-for arity (`NDO2005`), argument types and callability (`NDO2006`). Nominal
+for arity (`NDO2005`), argument types (`NDO2004`) and callability (`NDO2006`);
+supplied argument expressions remain checked even when the call has the wrong
+count. Nominal
 declarations now carry their structure in HIR, field access is typed with
 `NDO2007`, and generic calls use argument- and context-driven inference, with
 generic field types substituted from the receiver. `if` conditions are checked
