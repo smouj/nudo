@@ -212,6 +212,43 @@ rules of their own.
 * [ ] Agent, task and tool type declarations
 * [ ] Type errors with stable `NDO2xxx` codes
 
+#### M3.2 readiness audit
+
+The implemented rules above have accepted semantics and conformance coverage.
+For the remaining work, a language rule is ready only when its semantic and
+diagnostic contracts are accepted; a Draft NEP is not an implementation target.
+
+**READY — semantics-preserving work:**
+
+* Audit and improve tests, diagnostics, robustness and measured performance for
+  the rules already implemented, without changing which programs those rules
+  accept.
+
+**BLOCKED_BY_SPEC — do not implement until the named decision is accepted:**
+
+* **Integer literal range checking:** NEP-0007 accepts signed 64-bit `Int` and
+  requires out-of-range literals to fail. NEP-0019 (Draft) decides whether the
+  `2^63` magnitude is valid under unary minus and proposes the stable diagnostic
+  `NDO2010`; do not implement boundary diagnostics until that contract is
+  accepted.
+* **Boolean operators:** typing and short-circuit evaluation for `!`, `&&` and
+  `||` are proposed in NEP-0017 (Draft).
+* **Uninferable generic parameters:** stable diagnostics and recovery are
+  proposed in NEP-0015 (Draft).
+* **Omitted function result types:** the current rules conflict; NEP-0016 is
+  Draft.
+* **`match` and `Result<T, E>`:** variant resolution, payload binding, arm
+  agreement and exhaustiveness are proposed in NEP-0020 (Draft); `Result`
+  checking depends on those rules.
+* **Equality, ordering and indexing:** complete operand, result and runtime
+  rules have not been accepted.
+* **Conditional result agreement:** the checker verifies `if` conditions and
+  visits branches, but no accepted rule defines the conditional's result type.
+* **Nominal construction:** the grammar has no struct or enum construction
+  syntax; a NEP must decide it before implementation.
+* **Agent, task and tool types:** their declaration semantics remain proposed
+  in the agent chapters; NEP-0001 (Draft) covers agent types.
+
 ### M3.3 — The trust types
 
 * [x] `Generated<T>` and `Verified<T>` are distinct types with no conversion
