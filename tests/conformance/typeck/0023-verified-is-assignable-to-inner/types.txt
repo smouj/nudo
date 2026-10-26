@@ -1,0 +1,14 @@
+# nudo-typeck v1
+def 0009 function `accept_int` 1:4: Fn(Int) -> Unit
+def 0010 function `return_int` 3:4: Fn(Verified<Int>) -> Int
+def 0011 function `return_generic` 4:4: Fn(Verified<T>) -> T
+def 0012 function `main` 6:4: Fn(Verified<Int>) -> Unit
+def 0013 parameter `value` 1:15: Int
+def 0014 parameter `value` 3:15: Verified<Int>
+def 0015 type-parameter `T` 4:19: <unknown>
+def 0016 parameter `value` 4:22: Verified<T>
+def 0017 parameter `verified` 6:9: Verified<Int>
+def 0018 binding `direct` 8:9: Int
+def 0019 binding `computed` 9:9: Int
+def 0020 binding `negated` 10:9: Int
+def 0021 binding `remainder` 11:9: Int

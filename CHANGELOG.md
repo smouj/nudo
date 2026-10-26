@@ -17,6 +17,18 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **M3.3: trust types follow their accepted assignment rule.** The resolved
+  built-in `Verified<T>` can be used where `T` is expected, including function
+  arguments, return values and numeric operations. `Generated<T>` remains
+  separate, generic arguments remain invariant, and type parameters named `Int`
+  or `Verified` do not gain built-in behavior. Conformance covers accepted flow,
+  rejected conversions and invariant nested arguments; `verify` and provenance
+  remain pending.
+
+* **Type-checker type trees share immutable child storage.** Cloning a named or
+  function type shares its argument or parameter types instead of copying those
+  arrays.
+
 * **HIR records what a `match` arm matches.** An arm now carries its pattern's
   head as written, the definitions the pattern introduces and its body. It is
   recorded rather than decided on purpose: whether a head is a variant of the

@@ -35,9 +35,12 @@
 //!   arguments inferred from those arguments in source order.
 //! * **Fields.** A field access takes its declared field type and reports a
 //!   missing field on a known struct.
-//! * **Numeric arithmetic.** When both operands are `Int` or `Float`, `+`,
-//!   `-`, `*` and `/` require matching types; `%` requires `Int`; unary `-`
-//!   preserves its numeric operand type.
+//! * **Numeric arithmetic.** When both operands are assignable to the same
+//!   primitive numeric type, `+`, `-`, `*` and `/` return that type; `%` requires
+//!   `Int`; unary `-` returns its operand's numeric type.
+//! * **Trust assignment.** The resolved built-in `Verified<T>` can be used
+//!   where `T` is expected. `Generated<T>` cannot, and generic arguments remain
+//!   invariant.
 //! * **Conditions.** An `if` condition is checked as `Bool`, with that expected
 //!   type available to generic inference.
 //! * **One diagnostic.** `NDO2004`, with `expected` and `found` as structure
@@ -48,14 +51,17 @@
 //! Each omission is a named next step rather than a hole: the condition of an
 //! `if` is checked as `Bool`, but its branch/result typing remains deferred;
 //! logical, equality and comparison operators, indexing, diagnostics for
-//! unresolved generic parameters, `Result<T, E>` exhaustiveness, effects, and
-//! the trust rules of M3.3 also remain. Unsupported expression results type as
-//! [`Type::Error`], which is compatible with everything and therefore reports
-//! nothing: silence, not a wrong answer.
+//! unresolved generic parameters, `verify`, provenance tracking,
+//! `Result<T, E>` exhaustiveness, and effects remain. Unsupported expression
+//! results type as [`Type::Error`], which is compatible with everything and
+//! therefore reports nothing: silence, not a wrong answer.
 
 pub mod types;
 
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 use nudo_diagnostics::{Diagnostic, Diagnostics, codes};
 use nudo_hir::{Def, DefId, DefKind, ExprId, ExprKind, Hir, LiteralKind, StmtKind, TypeRef};
@@ -99,10 +105,17 @@ pub fn check(hir: &Hir, source: SourceId) -> TypeckResult {
         .filter_map(|definition| definition.value)
         .map(|value| value.index())
         .max();
+    let builtin_verified = hir
+        .defs()
+        .iter()
+        .take_while(|definition| definition.kind == DefKind::BuiltinType)
+        .position(|definition| definition.name == "Verified")
+        .map(|index| DefId::from_index(index as u32));
 
     let mut checker = Checker {
         hir,
         source,
+        builtin_verified,
         definition_types: vec![None; hir.defs().len()],
         expression_types: vec![None; last_expression.map_or(0, |last| last as usize + 1)],
         diagnostics: Diagnostics::new(),
@@ -180,6 +193,7 @@ fn zero_span() -> Span {
 struct Checker<'a> {
     hir: &'a Hir,
     source: SourceId,
+    builtin_verified: Option<DefId>,
     definition_types: Vec<Option<Type>>,
     expression_types: Vec<Option<Type>>,
     diagnostics: Diagnostics,
@@ -190,7 +204,7 @@ impl Checker<'_> {
     fn signature_of(&self, definition: &Def) -> Option<Type> {
         match definition.kind {
             DefKind::Function => {
-                let parameters = definition
+                let parameters: Vec<_> = definition
                     .parameters
                     .iter()
                     .map(|parameter| {
@@ -207,8 +221,8 @@ impl Checker<'_> {
                     .as_ref()
                     .map_or(Type::Unit, |annotation| self.type_of_annotation(annotation));
                 Some(Type::Function {
-                    parameters,
-                    result: Box::new(result),
+                    parameters: parameters.into(),
+                    result: Arc::new(result),
                 })
             }
             DefKind::Parameter | DefKind::Binding | DefKind::Const => definition
@@ -221,11 +235,18 @@ impl Checker<'_> {
 
     /// The type an annotation names.
     ///
-    /// A built-in name is the type it names; anything else is a named type whose
-    /// arguments are lowered the same way. Nothing is looked up structurally:
-    /// identity is what this slice compares, and identity is already in HIR.
+    /// A resolved built-in primitive is the type it names; anything else is a
+    /// named type whose arguments are lowered the same way. Use the resolved
+    /// definition rather than the spelling, because a type parameter can shadow
+    /// a built-in in a nested scope.
     fn type_of_annotation(&self, annotation: &TypeRef) -> Type {
-        if let Some(builtin) = builtin(&annotation.name) {
+        let builtin_type = annotation
+            .target
+            .resolved()
+            .and_then(|id| self.hir.def(id))
+            .filter(|definition| definition.kind == DefKind::BuiltinType)
+            .and_then(|definition| builtin(&definition.name));
+        if let Some(builtin) = builtin_type {
             return builtin;
         }
         Type::Named {
@@ -235,7 +256,8 @@ impl Checker<'_> {
                 .arguments
                 .iter()
                 .map(|argument| self.type_of_annotation(argument))
-                .collect(),
+                .collect::<Vec<_>>()
+                .into(),
         }
     }
 
@@ -257,7 +279,7 @@ impl Checker<'_> {
                 let actual = self.type_of_expression_with_expected(value, declared_result.as_ref());
                 let expected = declared_result.unwrap_or_else(|| actual.clone());
                 self.expect(&expected, &actual, span);
-                let parameters = definition
+                let parameters: Vec<_> = definition
                     .parameters
                     .iter()
                     .map(|parameter| {
@@ -267,8 +289,8 @@ impl Checker<'_> {
                     })
                     .collect();
                 self.definition_types[id.index() as usize] = Some(Type::Function {
-                    parameters,
-                    result: Box::new(expected),
+                    parameters: parameters.into(),
+                    result: Arc::new(expected),
                 });
             }
             _ => match &definition.ty {
@@ -412,7 +434,8 @@ impl Checker<'_> {
         Type::Error
     }
 
-    /// Types unary numeric negation, whose operand determines the result type.
+    /// Types unary numeric negation, whose primitive operand type determines
+    /// the result type.
     fn type_of_unary(&mut self, operator: &str, operand: ExprId) -> Type {
         let operand_type = self.type_of_expression(operand);
         if operand_type.is_error() {
@@ -422,8 +445,8 @@ impl Checker<'_> {
             // The type rule for logical negation has not been specified yet.
             return Type::Error;
         }
-        if is_numeric(&operand_type) {
-            return operand_type;
+        if let Some(numeric_type) = self.numeric_type(&operand_type) {
+            return numeric_type;
         }
         // Other operand domains remain deferred until their rules are
         // specified; do not reject a possible future built-in operation here.
@@ -440,7 +463,9 @@ impl Checker<'_> {
         }
         if operator == "%" {
             let expected = Type::Int;
-            if !left_type.is_compatible_with(&expected) {
+            let left_is_int = self.is_assignable(&left_type, &expected);
+            let right_is_int = self.is_assignable(&right_type, &expected);
+            if !left_is_int {
                 let span = self.hir.expr(left).map_or_else(zero_span, |it| it.span);
                 self.report_type_mismatch(
                     &expected.to_string(),
@@ -449,7 +474,7 @@ impl Checker<'_> {
                     "remainder requires `Int` operands",
                 );
             }
-            if !right_type.is_compatible_with(&expected) {
+            if !right_is_int {
                 let span = self.hir.expr(right).map_or_else(zero_span, |it| it.span);
                 self.report_type_mismatch(
                     &expected.to_string(),
@@ -458,9 +483,7 @@ impl Checker<'_> {
                     "remainder requires `Int` operands",
                 );
             }
-            return if left_type.is_compatible_with(&expected)
-                && right_type.is_compatible_with(&expected)
-            {
+            return if left_is_int && right_is_int {
                 Type::Int
             } else {
                 Type::Error
@@ -470,24 +493,24 @@ impl Checker<'_> {
             return Type::Error;
         }
 
-        let left_numeric = is_numeric(&left_type);
-        let right_numeric = is_numeric(&right_type);
-        if !left_numeric || !right_numeric {
+        let left_numeric = self.numeric_type(&left_type);
+        let right_numeric = self.numeric_type(&right_type);
+        let (Some(left_numeric), Some(right_numeric)) = (left_numeric, right_numeric) else {
             // The operator domains beyond numeric operands are not specified
             // yet, so keep those results deferred rather than inventing rules.
             return Type::Error;
-        }
-        if !left_type.is_compatible_with(&right_type) {
+        };
+        if left_numeric != right_numeric {
             let span = self.hir.expr(right).map_or_else(zero_span, |it| it.span);
             self.report_type_mismatch(
-                &left_type.to_string(),
-                &right_type.to_string(),
+                &left_numeric.to_string(),
+                &right_numeric.to_string(),
                 span,
                 "arithmetic operands must have the same numeric type",
             );
             return Type::Error;
         }
-        left_type
+        left_numeric
     }
 
     /// Types a call: the callee's signature decides everything.
@@ -545,12 +568,12 @@ impl Checker<'_> {
             return if self.mentions_type_parameter(&result) {
                 Type::Error
             } else {
-                *result
+                result.as_ref().clone()
             };
         }
 
         let mut generic_parameters = HashSet::new();
-        for parameter in &parameters {
+        for parameter in parameters.iter() {
             self.collect_type_parameters(parameter, &mut generic_parameters);
         }
         self.collect_type_parameters(&result, &mut generic_parameters);
@@ -566,7 +589,7 @@ impl Checker<'_> {
                     .map_or_else(zero_span, |it| it.span);
                 self.expect(&expected, &actual, span);
             }
-            return *result;
+            return result.as_ref().clone();
         }
 
         let mut substitutions = HashMap::new();
@@ -742,12 +765,12 @@ impl Checker<'_> {
                     found.insert(id);
                     return;
                 }
-                for argument in arguments {
+                for argument in arguments.iter() {
                     self.collect_type_parameters(argument, found);
                 }
             }
             Type::Function { parameters, result } => {
-                for parameter in parameters {
+                for parameter in parameters.iter() {
                     self.collect_type_parameters(parameter, found);
                 }
                 self.collect_type_parameters(result, found);
@@ -790,7 +813,7 @@ impl Checker<'_> {
             ) if formal_definition == actual_definition
                 && formal_arguments.len() == actual_arguments.len() =>
             {
-                for (formal, actual) in formal_arguments.iter().zip(actual_arguments) {
+                for (formal, actual) in formal_arguments.iter().zip(actual_arguments.iter()) {
                     self.infer_type_arguments(formal, actual, generic_parameters, substitutions);
                 }
             }
@@ -804,7 +827,7 @@ impl Checker<'_> {
                     result: actual_result,
                 },
             ) if formal_parameters.len() == actual_parameters.len() => {
-                for (formal, actual) in formal_parameters.iter().zip(actual_parameters) {
+                for (formal, actual) in formal_parameters.iter().zip(actual_parameters.iter()) {
                     self.infer_type_arguments(formal, actual, generic_parameters, substitutions);
                 }
                 self.infer_type_arguments(
@@ -849,14 +872,16 @@ impl Checker<'_> {
                 arguments: arguments
                     .iter()
                     .map(|argument| self.substitute_type(argument, substitutions))
-                    .collect(),
+                    .collect::<Vec<_>>()
+                    .into(),
             },
             Type::Function { parameters, result } => Type::Function {
                 parameters: parameters
                     .iter()
                     .map(|parameter| self.substitute_type(parameter, substitutions))
-                    .collect(),
-                result: Box::new(self.substitute_type(result, substitutions)),
+                    .collect::<Vec<_>>()
+                    .into(),
+                result: Arc::new(self.substitute_type(result, substitutions)),
             },
             _ => ty.clone(),
         }
@@ -917,12 +942,11 @@ impl Checker<'_> {
             ) => {
                 actual_definition == expected_definition
                     && actual_arguments.len() == expected_arguments.len()
-                    && actual_arguments
-                        .iter()
-                        .zip(expected_arguments)
-                        .all(|(actual, expected)| {
+                    && actual_arguments.iter().zip(expected_arguments.iter()).all(
+                        |(actual, expected)| {
                             self.compatible_with_unresolved_parameters(actual, expected, unresolved)
-                        })
+                        },
+                    )
             }
             (
                 Type::Function {
@@ -935,24 +959,75 @@ impl Checker<'_> {
                 },
             ) => {
                 actual_parameters.len() == expected_parameters.len()
-                    && actual_parameters.iter().zip(expected_parameters).all(
-                        |(actual, expected)| {
+                    && actual_parameters
+                        .iter()
+                        .zip(expected_parameters.iter())
+                        .all(|(actual, expected)| {
                             self.compatible_with_unresolved_parameters(actual, expected, unresolved)
-                        },
-                    )
+                        })
                     && self.compatible_with_unresolved_parameters(
                         actual_result,
                         expected_result,
                         unresolved,
                     )
             }
+            // Assignment compatibility is intentionally not recursive here:
+            // generic arguments and function components remain invariant even
+            // though a top-level Verified<T> can be used as T.
             _ => actual.is_compatible_with(expected),
+        }
+    }
+
+    /// Whether a value can be used where `expected` is required.
+    ///
+    /// Most values must have the identical resolved type. The one accepted
+    /// subtype relation is the built-in `Verified<T>` to `T` rule. Comparing
+    /// resolved definition identities prevents a type parameter with the same
+    /// spelling from acquiring this privilege.
+    fn is_assignable(&self, found: &Type, expected: &Type) -> bool {
+        if found.is_compatible_with(expected) {
+            return true;
+        }
+        let mut candidate = found;
+        loop {
+            if candidate.is_compatible_with(expected) {
+                return true;
+            }
+            let Type::Named {
+                definition,
+                arguments,
+                ..
+            } = candidate
+            else {
+                return false;
+            };
+            if arguments.len() != 1 {
+                return false;
+            }
+            let is_builtin_verified = self
+                .builtin_verified
+                .is_some_and(|builtin| definition.resolved() == Some(builtin));
+            if !is_builtin_verified {
+                return false;
+            }
+            candidate = &arguments[0];
+        }
+    }
+
+    /// The primitive numeric type a value is assignable to, if any.
+    fn numeric_type(&self, ty: &Type) -> Option<Type> {
+        if self.is_assignable(ty, &Type::Int) {
+            Some(Type::Int)
+        } else if self.is_assignable(ty, &Type::Float) {
+            Some(Type::Float)
+        } else {
+            None
         }
     }
 
     /// Reports a mismatch, with the two types as structure rather than prose.
     fn expect(&mut self, expected: &Type, found: &Type, span: Span) {
-        if found.is_compatible_with(expected) {
+        if self.is_assignable(found, expected) {
             return;
         }
         self.report_type_mismatch(
@@ -973,10 +1048,6 @@ impl Checker<'_> {
                 .with_help(help),
         );
     }
-}
-
-fn is_numeric(ty: &Type) -> bool {
-    matches!(ty, Type::Int | Type::Float)
 }
 
 #[cfg(test)]

@@ -1,8 +1,9 @@
 # Types
 
-**State: proposed.** No type checker exists (milestone M3). This chapter records
-the decisions that are settled enough to design against, and marks the rest as
-open.
+**State: partly decided; type checking is in progress (M3.2–M3.3).** Primitive
+types, numeric conversion rules, declaration-site generics and bounded
+inference are accepted designs. Trust-type and some composite-type semantics
+remain open, as marked below and in the related NEPs.
 
 ## Design constraints
 
@@ -66,6 +67,11 @@ Rules, which are the whole point:
 * There is no implicit conversion from `Generated<T>` to `T` either. Dropping
   the provenance of a model-produced value must be visible in the source,
   because it is the single most important thing a reviewer needs to see.
+* `Verified<T>` is assignable where `T` is expected. This is the one trust-type
+  subtype relation; it does not make `Generated<T>` assignable to `T`, and it
+  does not make `Generated<T>` and `Verified<T>` interchangeable
+  ([NEP-0002](../neps/0002-generated-verified.md),
+  [NEP-0014](../neps/0014-trust-types-obey-the-rules.md)).
 * `Verified<T>` carries the verifier and the inputs that produced it, as
   provenance ([`trust/provenance.md`](trust/provenance.md)).
 
@@ -103,9 +109,10 @@ asked at different times, and one mechanism is better than two.
 
 ## Subtyping
 
-There is no subtyping between structs, and no structural typing. If two types
-must be interchangeable, that is a named relationship the specification
-describes, not an accident of having the same fields.
+There is no subtyping between structs, and no structural typing. The one
+specified relation is `Verified<T>` assignable to `T`, described above. Generic
+type arguments remain invariant: this relation does not make `Box<Verified<T>>`
+assignable to `Box<T>`.
 
 ## Open questions
 

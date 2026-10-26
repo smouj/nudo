@@ -1,6 +1,7 @@
-# Type checker design (M3.2)
+# Type checker design (M3.2–M3.3)
 
-**Status: first slice and bounded generic inference implemented.**
+**Status: first slice, bounded generic inference, and the M3.3 trust-type
+assignment rule implemented.**
 `nudo-typeck` is exercised by unit tests and by `tests/conformance/typeck`.
 Diagnostics for unresolved type parameters remain pending. This document records
 what the checker does and the one
@@ -53,6 +54,10 @@ Type
 └── Error                                 already reported; compatible with everything
 ```
 
+Named-type arguments and function components live in immutable shared storage.
+Cloning a type therefore shares its nested type tree rather than allocating and
+copying each generic argument or function parameter at every use site.
+
 Three decisions are visible in that shape, and each is there so that later slices
 fill in cases instead of redesigning the centre:
 
@@ -79,7 +84,8 @@ fill in cases instead of redesigning the centre:
 | Field access | `article.title` takes the field's type after substituting the receiver's generic arguments; a missing field is `NDO2007` |
 | Calls | arity (`NDO2005`), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`) |
 | Generic calls | Argument-driven inference in source order, then inference from a known expected result type; substitutions recurse through nested named and function types |
-| Numeric arithmetic | On `Int` or `Float` operands, `+`, `-`, `*` and `/` require matching types; `%` is `Int`-only; unary `-` preserves the numeric type; mismatches report `NDO2004` |
+| Numeric arithmetic | On `Int` or `Float` values (including `Verified<T>` values assignable to those primitives), `+`, `-`, `*` and `/` require matching types; `%` is `Int`-only; unary `-` preserves the primitive result type; mismatches report `NDO2004` |
+| Trust assignment | The resolved built-in `Verified<T>` is usable where `T` is expected; `Generated<T>` is not, and the relation does not widen nested generic arguments |
 | One diagnostic shape | `expected` and `found` as structure, never as prose to re-parse |
 
 The diagnostic points at the **value**, not at the name it was bound to: the
@@ -112,16 +118,16 @@ or annotation error inside them is not hidden.
 | Building a nominal value: **the grammar has no construction syntax at all**, so it needs a NEP before it can be implemented | when the language decides |
 | `Result<T, E>` and exhaustiveness of `match` (NEP-0014) | after enums |
 | Effects | M5 |
-| `Generated<T>` / `Verified<T>` as distinct types with no conversion (NEP-0002) | M3.3 |
+| `verify`, provenance tracking, and `Result<T, E>` exhaustiveness for trust values | M3.3 and later slices |
 
 Two rules are worth stating as *absences*, because they are decisions rather than
 gaps:
 
 * **No implicit numeric conversion.** `let x: Float = 1;` is `NDO2004`. NEP-0007
   says the conversion is written down, and this is what "written down" means.
-* **No special rule for the trust types** (NEP-0014). When they arrive they will
-  be ordinary `Named` types with ordinary rules, and their conformance cases must
-  not assert an error that is about anything else.
+* **No `Result`-specific rule for the trust types** (NEP-0014). They are
+  ordinary `Named` types; the accepted `Verified<T>`-to-`T` assignment relation
+  is checked by resolved built-in identity, and generic arguments stay invariant.
 
 ## Why the checker is not wired into `nudo check` yet
 

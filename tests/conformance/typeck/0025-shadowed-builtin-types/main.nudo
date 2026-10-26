@@ -1,0 +1,8 @@
+fn accept_int(value: Int) {}
+fn accept_verified(value: Verified<Int>) {}
+
+fn shadow<Verified, Int>(verified: Verified<Int>, integer: Int) {
+    accept_int(verified);
+    accept_verified(verified);
+    accept_int(integer);
+}

@@ -211,10 +211,17 @@ rules of their own.
 
 ### M3.3 — The trust types
 
-* [ ] `Generated<T>` and `Verified<T>` as distinct types, with no conversion
-      between them
-* [ ] `verify` yielding `Result<Verified<T>, VerificationError>`
-* [ ] Conformance cases: conversion rejection, verification failure, provenance
+* [x] `Generated<T>` and `Verified<T>` are distinct types with no conversion
+      between them; conformance pins both accepted same-type flow and rejection
+      in each direction
+* [x] The resolved built-in `Verified<T>` is usable where `T` is expected, as
+      specified by NEP-0002 and NEP-0014; generic arguments stay invariant
+* [ ] `verify` yields `Result<Verified<T>, VerificationError>` after the
+      verifier declaration and deterministic contract are statically checkable
+      (NEP-0018; **Draft**)
+* [x] Conformance cases: trust-type identity, rejected implicit conversions,
+      shadowed built-in names, and invariant generic arguments
+* [ ] Conformance cases: verification failure and provenance
 
 **Exit criteria for M3:** the program below is *rejected*, and the one after it is
 accepted, both pinned by conformance cases:
@@ -290,7 +297,10 @@ error, with a diagnostic that names the effect and the path that introduced it.
 
 ## M6 — `Generated<T>` and `Verified<T>` — **planned**
 
-* [ ] Verifier protocol, and `verify` in the grammar
+* [x] Restricted `verify value with Verifier` syntax and HIR representation
+      (M2/M3.1)
+* [ ] Statically checkable verifier declaration and deterministic contract
+      (NEP-0018; **Draft**)
 * [ ] Provenance records attached to verified values (`nudo-provenance`)
 * [ ] Execution traces (`nudo-trace`)
 * [ ] `nudo trace`

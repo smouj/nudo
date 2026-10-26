@@ -1,0 +1,10 @@
+# nudo-typeck v1
+def 0009 function `accept_int` 1:4: Fn(Int) -> Unit
+def 0010 function `accept_verified` 2:4: Fn(Verified<Int>) -> Unit
+def 0011 function `shadow` 4:4: Fn(Verified<Int>, Int) -> Unit
+def 0012 parameter `value` 1:15: Int
+def 0013 parameter `value` 2:20: Verified<Int>
+def 0014 type-parameter `Verified` 4:11: <unknown>
+def 0015 type-parameter `Int` 4:21: <unknown>
+def 0016 parameter `verified` 4:26: Verified<Int>
+def 0017 parameter `integer` 4:51: Int

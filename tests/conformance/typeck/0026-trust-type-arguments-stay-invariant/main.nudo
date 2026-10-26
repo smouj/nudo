@@ -1,0 +1,7 @@
+fn accept_plain(value: Generated<Int>) {}
+fn accept_verified_inner(value: Generated<Verified<Int>>) {}
+
+fn main(generated_verified: Generated<Verified<Int>>, generated_plain: Generated<Int>) {
+    accept_plain(generated_verified);
+    accept_verified_inner(generated_plain);
+}

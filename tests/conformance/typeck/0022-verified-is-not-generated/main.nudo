@@ -1,0 +1,5 @@
+fn accept_generated(value: Generated<Int>) {}
+
+fn main(verified: Verified<Int>) {
+    accept_generated(verified);
+}

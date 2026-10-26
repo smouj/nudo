@@ -1,0 +1,8 @@
+# nudo-typeck v1
+def 0009 function `accept_plain` 1:4: Fn(Generated<Int>) -> Unit
+def 0010 function `accept_verified_inner` 2:4: Fn(Generated<Verified<Int>>) -> Unit
+def 0011 function `main` 4:4: Fn(Generated<Verified<Int>>, Generated<Int>) -> Unit
+def 0012 parameter `value` 1:17: Generated<Int>
+def 0013 parameter `value` 2:26: Generated<Verified<Int>>
+def 0014 parameter `generated_verified` 4:9: Generated<Verified<Int>>
+def 0015 parameter `generated_plain` 4:55: Generated<Int>

@@ -15,8 +15,12 @@
 //! * **There is no type variable.** Call-local inference (NEP-0013) substitutes
 //!   declaration parameters directly from argument types. A variable would add
 //!   machinery the bounded rule does not need.
+//!
+//! Composite type children use immutable shared storage. Cloning a named or
+//! function type shares its children instead of allocating and copying each
+//! nested type at every use site.
 
-use std::fmt;
+use std::{fmt, sync::Arc};
 
 use nudo_hir::Resolution;
 
@@ -39,15 +43,15 @@ pub enum Type {
         name: String,
         /// Its definition, when the name resolved.
         definition: Resolution,
-        /// Its type arguments, in source order.
-        arguments: Vec<Type>,
+        /// Its type arguments, in source order, shared across clones.
+        arguments: Arc<[Type]>,
     },
     /// `Fn(A, B) -> C`.
     Function {
-        /// The parameter types, in order.
-        parameters: Vec<Type>,
-        /// The result type.
-        result: Box<Type>,
+        /// The parameter types, in order, shared across clones.
+        parameters: Arc<[Type]>,
+        /// The result type, shared across clones.
+        result: Arc<Type>,
     },
     /// A type error already reported. Compatible with everything, so that one
     /// mistake is one diagnostic instead of a cascade.
@@ -91,7 +95,7 @@ impl Type {
                     && actual_arguments.len() == expected_arguments.len()
                     && actual_arguments
                         .iter()
-                        .zip(expected_arguments)
+                        .zip(expected_arguments.iter())
                         .all(|(actual, expected)| actual.is_compatible_with(expected))
             }
             (
@@ -107,7 +111,7 @@ impl Type {
                 actual.len() == expected.len()
                     && actual
                         .iter()
-                        .zip(expected)
+                        .zip(expected.iter())
                         .all(|(actual, expected)| actual.is_compatible_with(expected))
                     && actual_result.is_compatible_with(expected_result)
             }
@@ -209,7 +213,7 @@ mod tests {
         let named = |name: &str| Type::Named {
             name: name.to_string(),
             definition: Resolution::Unresolved,
-            arguments: Vec::new(),
+            arguments: Vec::new().into(),
         };
         assert!(named("Article").is_compatible_with(&named("Article")));
     }
@@ -219,7 +223,7 @@ mod tests {
         let generated = |argument: Type| Type::Named {
             name: "Generated".to_string(),
             definition: Resolution::Unresolved,
-            arguments: vec![argument],
+            arguments: vec![argument].into(),
         };
         assert!(generated(Type::Int).is_compatible_with(&generated(Type::Int)));
         assert!(!generated(Type::Int).is_compatible_with(&generated(Type::Bool)));
@@ -228,8 +232,8 @@ mod tests {
     #[test]
     fn a_function_type_compares_its_parts() {
         let function = |parameters: Vec<Type>, result: Type| Type::Function {
-            parameters,
-            result: Box::new(result),
+            parameters: parameters.into(),
+            result: Arc::new(result),
         };
         assert!(
             function(vec![Type::Int], Type::Bool)
@@ -252,15 +256,15 @@ mod tests {
             Type::Named {
                 name: "Result".to_string(),
                 definition: Resolution::Unresolved,
-                arguments: vec![Type::Int],
+                arguments: vec![Type::Int].into(),
             }
             .to_string(),
             "Result<Int>"
         );
         assert_eq!(
             Type::Function {
-                parameters: vec![Type::Int],
-                result: Box::new(Type::Text),
+                parameters: vec![Type::Int].into(),
+                result: Arc::new(Type::Text),
             }
             .to_string(),
             "Fn(Int) -> Text"
@@ -272,8 +276,9 @@ mod tests {
                 arguments: vec![Type::Named {
                     name: "Article".to_string(),
                     definition: Resolution::Unresolved,
-                    arguments: Vec::new(),
-                }],
+                    arguments: Vec::new().into(),
+                }]
+                .into(),
             }
             .to_string(),
             "Verified<Article>"
