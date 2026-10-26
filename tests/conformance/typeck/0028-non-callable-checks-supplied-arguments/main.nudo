@@ -1,0 +1,6 @@
+let number = 1;
+
+fn main() {
+    let result = number(number());
+    let tainted = number()(number());
+}

@@ -25,9 +25,9 @@ would be a promise the project cannot keep.
   rejected conversions and invariant nested arguments; `verify` and provenance
   remain pending.
 
-* **Type checking continues through malformed calls.** A wrong argument count
-  still reports `NDO2005`, and the supplied arguments are checked so independent
-  nested errors such as calling a non-function are not hidden.
+* **Type checking continues through malformed calls.** Wrong argument counts
+  (`NDO2005`) and non-callable callees (`NDO2006`) no longer prevent checking
+  supplied argument expressions, so independent nested errors are not hidden.
 
 * **Type-checker type trees share immutable child storage.** Cloning a named or
   function type shares its argument or parameter types instead of copying those

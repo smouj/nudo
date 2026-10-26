@@ -541,6 +541,7 @@ impl Checker<'_> {
                         .with_help("only a function type can be called"),
                 );
             }
+            self.check_arguments_without_expectations(arguments);
             return Type::Error;
         };
 
@@ -569,9 +570,7 @@ impl Checker<'_> {
             // not make the supplied expressions opaque. Check them without
             // positional expectations to surface independent nested errors
             // without cascading mismatches from a malformed call.
-            for argument in arguments {
-                self.type_of_expression(*argument);
-            }
+            self.check_arguments_without_expectations(arguments);
             return if self.mentions_type_parameter(&result) {
                 Type::Error
             } else {
@@ -642,6 +641,15 @@ impl Checker<'_> {
             Type::Error
         } else {
             result
+        }
+    }
+
+    /// Checks supplied call arguments when no reliable parameter context exists.
+    /// This keeps independent errors in nested expressions visible even when
+    /// the outer call is malformed.
+    fn check_arguments_without_expectations(&mut self, arguments: &[ExprId]) {
+        for argument in arguments {
+            self.type_of_expression(*argument);
         }
     }
 
@@ -1387,6 +1395,24 @@ mod tests {
         assert_eq!(
             codes_for(program),
             vec!["NDO2005".to_string(), "NDO2006".to_string()]
+        );
+    }
+
+    #[test]
+    fn a_non_callable_call_does_not_hide_errors_inside_arguments() {
+        let program = "let number = 1;\n\
+                       fn main() {\n\
+                           let result = number(number());\n\
+                           let tainted = number()(number());\n\
+                       }\n";
+        assert_eq!(
+            codes_for(program),
+            vec![
+                "NDO2006".to_string(),
+                "NDO2006".to_string(),
+                "NDO2006".to_string(),
+                "NDO2006".to_string(),
+            ]
         );
     }
 

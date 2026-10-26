@@ -1,0 +1,5 @@
+# nudo-diagnostics v1
+error NDO2006 4:18
+error NDO2006 4:25
+error NDO2006 5:19
+error NDO2006 5:28
