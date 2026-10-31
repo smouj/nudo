@@ -17,6 +17,17 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **M3.2: `match` typing, first half.** The checker now types a `match`:
+  a variant head is validated against the matched enum, each payload binding
+  receives the field's type, and every arm after the first must agree with it
+  (`NDO2004` at the offending arm). A pattern that binds a different number of
+  values than its variant carries is `NDO2009`. Exhaustiveness (`NDO2010`) is
+  reported only when every arm is either a known variant or a wildcard: a bare
+  head that is not a variant may be a binding pattern, and the specification has
+  not decided which spelling wins, so the checker stays silent rather than
+  inventing the rule. Unknown variants are reserved as `NDO2008` and are not
+  emitted yet, for the same reason.
+
 * **HIR records what a `match` arm matches.** An arm now carries its pattern's
   head as written, the definitions the pattern introduces and its body. It is
   recorded rather than decided on purpose: whether a head is a variant of the

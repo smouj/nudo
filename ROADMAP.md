@@ -159,7 +159,7 @@ reports `NDO2004` with structured `expected` and `found`. Calls are checked
 for arity (`NDO2005`), argument types and callability (`NDO2006`). Nominal
 declarations now carry their structure in HIR, field access is typed with
 `NDO2007`, and match arms carry the pattern information the checker needs.
-Generic instantiation, match typing and exhaustiveness, nominal construction and
+Generic instantiation, the remaining match cases, nominal construction and
 `Result<T, E>` are the next slices. Until a rule exists, the checker stays
 silent rather than inventing semantics. See
 [`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
@@ -184,8 +184,11 @@ rules of their own.
       gap - and it is recorded here rather than invented in the checker.
 * [ ] Generic instantiation and bounded inference, following accepted
       [NEP-0013](neps/0013-generic-inference.md)
-* [ ] `match` typing: variant validation, payload binding, arm type agreement
-      and exhaustiveness; HIR already records each arm's pattern
+* [x] `match` typing, first half: variant validation, payload binding, arm type
+      agreement (`NDO2004`), pattern arity (`NDO2009`) and exhaustiveness
+      (`NDO2010`) when every arm is decided. A bare head that is not a variant
+      may be a binding pattern, and the specification has not decided which
+      spelling wins, so that case stays silent instead of inventing a rule.
 * [ ] `Result<T, E>` as an intrinsic type, using the same exhaustive `match`
       rules as every other enum
 * [x] Function types and calls; no implicit numeric conversion
