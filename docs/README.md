@@ -24,6 +24,7 @@ Documentation also exists for contributors:
 | ------- | -------- |
 | [`getting-started/`](getting-started/installing.md) | Installing the toolchain, and the first program |
 | [`language/`](language/tour.md) | A tour of the syntax, with the provisional parts clearly marked |
+| [`language/comparison.md`](language/comparison.md) | NUDO against Python, Rust, Go and TypeScript, with every NUDO claim classified as implemented, partial, specified or planned |
 | [`agents/`](agents/README.md) | Agents, tasks and trust, explained for a reader |
 | [`security/`](security/README.md) | The threat model, and the security posture |
 | [`compiler/`](compiler/pipeline.md) | How the compiler is put together |

@@ -317,6 +317,7 @@ impl Checker<'_> {
             }
             ExprKind::Call { callee, arguments } => self.type_of_call(callee, &arguments),
             ExprKind::Field { receiver, name } => self.type_of_field(receiver, &name),
+            ExprKind::Match { scrutinee, arms } => self.type_of_match(scrutinee, &arms),
             // Deferred, and silent about it: these produce `Error`, which is
             // compatible with everything, so nothing is reported about work this
             // slice does not do yet.
@@ -324,7 +325,6 @@ impl Checker<'_> {
             | ExprKind::Unary { .. }
             | ExprKind::Binary { .. }
             | ExprKind::If { .. }
-            | ExprKind::Match { .. }
             | ExprKind::Ask { .. }
             | ExprKind::Verify { .. }
             | ExprKind::Delegate { .. } => Type::Error,
@@ -403,6 +403,173 @@ impl Checker<'_> {
             self.expect(&expected, &actual, span);
         }
         *result
+    }
+
+    /// Types a match expression.
+    ///
+    /// What is checked is exactly what the specification already decides, and
+    /// nothing more:
+    ///
+    /// * Known variants. An arm whose head names a variant of the matched enum
+    ///   is checked: the variant exists, the pattern binds as many values as the
+    ///   variant carries, and each binding gets the payload field's type.
+    /// * Arm agreement. Every arm produces the value of the match, so after the
+    ///   first non-error arm every other arm must be compatible with it.
+    /// * Exhaustiveness. Reported only when every arm is either a known variant
+    ///   or a wildcard. A bare head that is not a variant may be a binding
+    ///   pattern, and the specification has not decided which spelling wins;
+    ///   guessing would be inventing a language rule in the checker.
+    ///
+    /// The type of a match over Bool is checked for true/false heads by the same
+    /// rule. A match over any other type types its arms and says nothing about
+    /// coverage, because there is no finite set to cover.
+    fn type_of_match(&mut self, scrutinee: ExprId, arms: &[nudo_hir::Arm]) -> Type {
+        let scrutinee_type = self.type_of_expression(scrutinee);
+
+        // Everything read from the HIR is copied before the first diagnostic,
+        // because reporting needs &mut self and a borrow of self.hir would
+        // outlive it.
+        let (variant_payloads, is_bool) = match &scrutinee_type {
+            Type::Named { definition, .. } => {
+                let payloads = definition
+                    .resolved()
+                    .and_then(|id| self.hir.def(id))
+                    .filter(|definition| definition.kind == DefKind::Enum)
+                    .map(|definition| {
+                        definition
+                            .variants
+                            .iter()
+                            .map(|variant| {
+                                (
+                                    variant.name.clone(),
+                                    variant
+                                        .fields
+                                        .iter()
+                                        .map(|field| {
+                                            field.ty.as_ref().map_or(Type::Error, |annotation| {
+                                                self.type_of_annotation(annotation)
+                                            })
+                                        })
+                                        .collect::<Vec<Type>>(),
+                                )
+                            })
+                            .collect::<Vec<(String, Vec<Type>)>>()
+                    })
+                    .unwrap_or_default();
+                (payloads, false)
+            }
+            Type::Bool => (Vec::new(), true),
+            _ => (Vec::new(), false),
+        };
+
+        let mut covered: Vec<String> = Vec::new();
+        let mut catch_all = false;
+        let mut every_arm_is_decided = !arms.is_empty();
+        let mut result: Option<Type> = None;
+
+        for arm in arms {
+            let head = arm.head.as_deref();
+            let mut payload: Option<&Vec<Type>> = None;
+
+            if let Some(name) = head {
+                if name == "_" {
+                    catch_all = true;
+                } else if let Some((_, fields)) =
+                    variant_payloads.iter().find(|(variant, _)| variant == name)
+                {
+                    covered.push(name.to_string());
+                    payload = Some(fields);
+                } else if is_bool {
+                    if name == "true" || name == "false" {
+                        covered.push(name.to_string());
+                    } else {
+                        every_arm_is_decided = false;
+                    }
+                } else {
+                    // A head that is neither a variant nor a wildcard: possibly a
+                    // binding pattern, and the specification has not said which
+                    // spelling wins. Leave it undecided rather than guessing.
+                    every_arm_is_decided = false;
+                }
+            } else {
+                every_arm_is_decided = false;
+            }
+
+            if let Some(fields) = payload {
+                if arm.bindings.len() != fields.len() {
+                    let expected = fields.len();
+                    let found = arm.bindings.len();
+                    self.diagnostics.push(
+                        Diagnostic::error(
+                            codes::WRONG_PATTERN_ARITY,
+                            format!(
+                                "this pattern binds {found} and the variant carries {expected}"
+                            ),
+                        )
+                        .with_location(self.source, arm.span)
+                        .with_note(format!("expected: {expected}"))
+                        .with_note(format!("found: {found}"))
+                        .with_help("a pattern binds exactly the payload the variant carries"),
+                    );
+                }
+                for (index, binding) in arm.bindings.iter().enumerate() {
+                    let ty = fields.get(index).cloned().unwrap_or(Type::Error);
+                    if let Some(slot) = self.definition_types.get_mut(binding.index() as usize) {
+                        *slot = Some(ty);
+                    }
+                }
+            }
+
+            let body_type = self.type_of_expression(arm.body);
+            match &result {
+                None => {
+                    if !body_type.is_error() {
+                        result = Some(body_type);
+                    }
+                }
+                Some(expected) => {
+                    let expected = expected.clone();
+                    let span = self.hir.expr(arm.body).map_or(arm.span, |it| it.span);
+                    self.expect(&expected, &body_type, span);
+                }
+            }
+        }
+
+        if every_arm_is_decided && !catch_all {
+            let missing: Vec<String> = if is_bool {
+                ["true", "false"]
+                    .iter()
+                    .filter(|value| !covered.iter().any(|head| head == *value))
+                    .map(|value| (*value).to_string())
+                    .collect()
+            } else {
+                variant_payloads
+                    .iter()
+                    .map(|(name, _)| name)
+                    .filter(|name| !covered.contains(name))
+                    .cloned()
+                    .collect()
+            };
+            if !missing.is_empty() {
+                let span = self
+                    .hir
+                    .expr(scrutinee)
+                    .map_or_else(zero_span, |it| it.span);
+                self.diagnostics.push(
+                    Diagnostic::error(
+                        codes::NON_EXHAUSTIVE_MATCH,
+                        "this match does not cover every value",
+                    )
+                    .with_location(self.source, span)
+                    .with_note(format!("missing: {}", missing.join(", ")))
+                    .with_help(
+                        "add the missing arm, or a wildcard arm if every other value is acceptable",
+                    ),
+                );
+            }
+        }
+
+        result.unwrap_or(Type::Error)
     }
 
     /// Types a field access: `article.title`.
@@ -805,5 +972,29 @@ mod tests {
             .filter(|ty| ty.is_some())
             .count();
         assert!(typed >= 2, "each literal and each path is typed: {typed}");
+    }
+
+    #[test]
+    fn a_match_over_an_enum_binds_payloads_and_types_its_arms() {
+        let source = "enum Status {\n    Ready\n    Failed(reason: Text)\n}\n\nfn describe(status: Status) -> Text {\n    match status {\n        Failed(reason) => reason\n        Ready => \"ready\"\n    }\n}\n";
+        assert_eq!(codes_for(source), Vec::<String>::new());
+    }
+
+    #[test]
+    fn a_match_whose_arms_disagree_is_ndo2004() {
+        let source = "enum Status {\n    Ready\n    Failed(reason: Text)\n}\n\nfn f(status: Status) -> Int {\n    match status {\n        Ready => 1\n        Failed(reason) => reason\n    }\n}\n";
+        assert_eq!(codes_for(source), vec!["NDO2004".to_string()]);
+    }
+
+    #[test]
+    fn a_match_that_misses_a_variant_is_ndo2010() {
+        let source = "enum Status {\n    Ready\n    Failed(reason: Text)\n}\n\nfn describe(status: Status) -> Text {\n    match status {\n        Ready => \"ready\"\n    }\n}\n";
+        assert_eq!(codes_for(source), vec!["NDO2010".to_string()]);
+    }
+
+    #[test]
+    fn a_wildcard_arm_makes_an_enum_match_exhaustive() {
+        let source = "enum Status {\n    Ready\n    Failed(reason: Text)\n}\n\nfn describe(status: Status) -> Text {\n    match status {\n        Ready => \"ready\"\n        _ => \"other\"\n    }\n}\n";
+        assert_eq!(codes_for(source), Vec::<String>::new());
     }
 }

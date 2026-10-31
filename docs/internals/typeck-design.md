@@ -111,6 +111,32 @@ gaps:
   be ordinary `Named` types with ordinary rules, and their conformance cases must
   not assert an error that is about anything else.
 
+## `match` typing, first half
+
+A `match` is the only way to read an enum's payload, so it is the next slice
+after nominal structure. Three rules are implemented, and each one is checked
+against the scrutinee's type rather than against spelling:
+
+1. **A variant head is validated.** The arm's `head` is looked up in the
+   matched enum's variants. The pattern must bind exactly the fields the variant
+   carries (`NDO2009`), and each binding definition receives the field's type,
+   which is what makes `Failed(reason) => reason` type as `Text`.
+2. **Arms agree with each other.** The first non-error arm sets the match's
+   type; every later arm is compared with it and a disagreement is `NDO2004`
+   at that arm's body.
+3. **Exhaustiveness is reported when it is decided.** Missing variants (or a
+   missing `true`/`false` in a `Bool` match) are `NDO2010`. A wildcard arm
+   covers the rest.
+
+The deliberate silence is the interesting part. HIR records a pattern's head
+*as written* because a bare name in a pattern is either a variant or a new
+binding, and which one it is needs the scrutinee's type. The specification has
+not yet decided how a binding pattern is spelled, so when an arm's head is
+neither a known variant nor `_`, the checker marks the match as *undecided* and
+reports no exhaustiveness for it. It also does not emit `NDO2008`
+(`UNKNOWN_VARIANT`) yet: a name that is not a variant may be a binding, and
+calling it an unknown variant would be a wrong answer, not a strict one.
+
 ## Why the checker is not wired into `nudo check` yet
 
 `check` currently lexes, parses and resolves, and the checker runs beside it in

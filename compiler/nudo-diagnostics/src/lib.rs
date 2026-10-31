@@ -172,6 +172,18 @@ pub mod codes {
     /// A field that the value being read has no such field on.
     pub const UNKNOWN_FIELD: DiagnosticCode = DiagnosticCode::new("NDO2007", "UNKNOWN_FIELD");
 
+    /// A \`match\` arm names a variant the matched enum does not have.
+    pub const UNKNOWN_VARIANT: DiagnosticCode = DiagnosticCode::new("NDO2008", "UNKNOWN_VARIANT");
+
+    /// A \`match\` pattern binds a different number of values than its variant
+    /// carries.
+    pub const WRONG_PATTERN_ARITY: DiagnosticCode =
+        DiagnosticCode::new("NDO2009", "WRONG_PATTERN_ARITY");
+
+    /// A \`match\` does not cover every value the matched type can take.
+    pub const NON_EXHAUSTIVE_MATCH: DiagnosticCode =
+        DiagnosticCode::new("NDO2010", "NON_EXHAUSTIVE_MATCH");
+
     // ---------------------------------------------------------------- 8xxx --
     /// The file being compiled does not use the `.nudo` extension.
     pub const UNEXPECTED_FILE_EXTENSION: DiagnosticCode =
@@ -193,6 +205,9 @@ pub mod codes {
         WRONG_ARGUMENT_COUNT,
         NOT_CALLABLE,
         UNKNOWN_FIELD,
+        UNKNOWN_VARIANT,
+        WRONG_PATTERN_ARITY,
+        NON_EXHAUSTIVE_MATCH,
         UNEXPECTED_FILE_EXTENSION,
     ];
 
@@ -212,6 +227,9 @@ pub mod codes {
         DUPLICATE_NAME,
         WRONG_NAMESPACE,
         TYPE_MISMATCH,
+        UNKNOWN_VARIANT,
+        WRONG_PATTERN_ARITY,
+        NON_EXHAUSTIVE_MATCH,
         UNEXPECTED_FILE_EXTENSION,
     ];
 
