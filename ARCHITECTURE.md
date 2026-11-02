@@ -86,7 +86,7 @@ change when work starts.
 | `nudo-parser` | Recursive-descent parser producing the syntax tree. | **Implemented (M2)** |
 | `nudo-ast` | Typed AST and visitors. | **Implemented (M2)** |
 | `nudo-hir` | Name resolution and desugaring into a resolved IR. | **Implemented (M3.1)** |
-| `nudo-typeck` | Type representation and checking for primitives, functions, calls, nominal structure and field access; generics, `match`, `Result` and trust types follow in M3.2–M3.3. | **Implemented partially (M3.2 in progress)** |
+| `nudo-typeck` | Type representation and checking for primitives, functions, calls, nominal structure, field access, bounded generic inference and the accepted trust-type assignment rule; `match`, `Result`, verification and provenance remain pending. | **Implemented partially (M3.2 in progress)** |
 | `nudo-effects` | Effect and capability inference and checking. | Planned (M5) |
 | `nudo-mir` | Mid-level IR: control flow made explicit, backends consume this. | Planned (M4) |
 | `nudo-codegen` | Backend-agnostic lowering from MIR. | Planned (M4) |
