@@ -210,19 +210,22 @@ mod tests {
 
     #[test]
     fn a_named_type_is_compatible_with_the_same_definition() {
-        let named = |name: &str| Type::Named {
+        let named = |name: &str, definition| Type::Named {
             name: name.to_string(),
-            definition: Resolution::Unresolved,
+            definition: Resolution::Resolved(nudo_hir::DefId::from_index(definition)),
             arguments: Vec::new().into(),
         };
-        assert!(named("Article").is_compatible_with(&named("Article")));
+        assert!(named("Article", 0).is_compatible_with(&named("Article", 0)));
+        assert!(named("Article", 0).is_compatible_with(&named("Alias", 0)));
+        assert!(!named("Article", 0).is_compatible_with(&named("Article", 1)));
+        assert!(!named("Article", 0).is_compatible_with(&named("Book", 1)));
     }
 
     #[test]
     fn named_types_are_invariant_in_their_arguments() {
         let generated = |argument: Type| Type::Named {
             name: "Generated".to_string(),
-            definition: Resolution::Unresolved,
+            definition: Resolution::Resolved(nudo_hir::DefId::from_index(0)),
             arguments: vec![argument].into(),
         };
         assert!(generated(Type::Int).is_compatible_with(&generated(Type::Int)));
