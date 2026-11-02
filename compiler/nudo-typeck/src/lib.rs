@@ -499,7 +499,11 @@ impl Checker<'_> {
                 }
             }
             ExprKind::Call { callee, arguments } => self.type_of_call(callee, &arguments, expected),
-            ExprKind::Field { receiver, name } => self.type_of_field(receiver, &name),
+            ExprKind::Field {
+                receiver,
+                name,
+                name_span,
+            } => self.type_of_field(receiver, &name, name_span),
             ExprKind::If {
                 condition,
                 then_block,
@@ -807,12 +811,11 @@ impl Checker<'_> {
     /// Two receivers stay silent. An unknown one (`Error`) has nothing to say. An
     /// `enum` one is read through a `match`, and typing a `match` is the next
     /// slice: saying nothing beats inventing a rule for reaching into a variant.
-    fn type_of_field(&mut self, receiver: ExprId, name: &str) -> Type {
+    fn type_of_field(&mut self, receiver: ExprId, name: &str, name_span: Span) -> Type {
         let receiver_type = self.type_of_expression(receiver);
         if receiver_type.is_error() {
             return Type::Error;
         }
-        let span = self.hir.expr(receiver).map_or_else(zero_span, |it| it.span);
 
         let Type::Named {
             definition,
@@ -820,7 +823,7 @@ impl Checker<'_> {
             ..
         } = &receiver_type
         else {
-            self.report_unknown_field(name, &receiver_type, span, &[]);
+            self.report_unknown_field(name, &receiver_type, name_span, &[]);
             return Type::Error;
         };
         let Some(id) = definition.resolved() else {
@@ -869,7 +872,7 @@ impl Checker<'_> {
             let field_type = self.type_of_annotation(&annotation);
             return self.substitute_type(&field_type, &substitutions);
         }
-        self.report_unknown_field(name, &receiver_type, span, &available);
+        self.report_unknown_field(name, &receiver_type, name_span, &available);
         Type::Error
     }
 
@@ -1662,9 +1665,12 @@ mod tests {
     #[test]
     fn the_field_diagnostic_names_the_field_and_what_the_type_has() {
         let program = "struct Article {\n    title: Text\n    body: Text\n}\n\nfn headline(article: Article) -> Text {\n    article.titel\n}\n";
-        let (_, _, result) = checked(program);
+        let (sources, id, result) = checked(program);
         let diagnostic = &result.diagnostics.as_slice()[0];
         assert_eq!(diagnostic.message(), "`Article` has no field `titel`");
+        let file = sources.get(id).expect("just added");
+        let span = diagnostic.span().expect("the unknown field has a span");
+        assert_eq!(file.span_text(span), Some("titel"));
         let notes = diagnostic.notes().join(" | ");
         assert!(notes.contains("found: `Article`"), "{notes}");
         assert!(notes.contains("fields: title, body"), "{notes}");
