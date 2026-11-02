@@ -1663,11 +1663,10 @@ mod tests {
     fn the_field_diagnostic_names_the_field_and_what_the_type_has() {
         let program = "struct Article {\n    title: Text\n    body: Text\n}\n\nfn headline(article: Article) -> Text {\n    article.titel\n}\n";
         let (_, _, result) = checked(program);
-        let notes = result.diagnostics.as_slice()[0].notes().join(" | ");
-        assert!(
-            notes.contains("no field `titel`") || notes.contains("found: `Article`"),
-            "{notes}"
-        );
+        let diagnostic = &result.diagnostics.as_slice()[0];
+        assert_eq!(diagnostic.message(), "`Article` has no field `titel`");
+        let notes = diagnostic.notes().join(" | ");
+        assert!(notes.contains("found: `Article`"), "{notes}");
         assert!(notes.contains("fields: title, body"), "{notes}");
     }
 
