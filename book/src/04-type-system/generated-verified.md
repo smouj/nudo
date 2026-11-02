@@ -1,36 +1,58 @@
-# 04.2 — `Generated<T>` and `Verified<T>`
+# 04.2 — Generated and Verified values
 
-> **Status:** Proposed  
-> **Summary:** The trust types are intended to prevent probabilistic output from becoming trusted application data through an implicit conversion.
-
+> **Status:** Implemented / Specified / Planned
+>
+> **Summary:** The checker enforces the distinction between generated and verified types, while executing verification and recording provenance remain future runtime work.
 
 {{#include ../diagrams/trust-flow.svg}}
 
-*A model output becomes a verified value only through an explicit step.*
+*The static type rules are implemented in part; the verify operation and
+provenance path are a design preview and are not executable today.*
 
-## Why not `T`?
+## The trust distinction
 
-If a model returns an `Article` directly, provenance about how that value was
-produced disappears from the type boundary.
+<code>Generated&lt;T&gt;</code> and <code>Verified&lt;T&gt;</code> are distinct
+types. The checker does not implicitly convert between them, and their generic
+arguments stay invariant. A generated result therefore cannot satisfy a
+parameter that explicitly requires the verified type.
 
-## Why not `Result<T, E>`?
+The accepted rules also allow the built-in <code>Verified&lt;T&gt;</code> to be
+used where <code>T</code> is expected in supported positions. This is based on
+the resolved built-in type identity; a user-defined type with the same spelling
+does not acquire that rule. The behavior is covered by type-checker conformance
+cases, but <code>nudo check</code> does not run type checking yet.
 
-`Result` can represent success/failure of an operation. It does not represent the
-trust status of a successful value. A perfectly parsed model response can still be
-unverified.
+## The planned verification operation
 
-## Why not a Boolean flag?
+The syntax <code>verify value with Verifier</code> is accepted by the parser and
+represented in HIR. The verifier contract, execution, failure handling and
+provenance are not implemented. The verifier design remains a proposal, so the
+following shape illustrates the intended flow rather than a runnable program:
 
-```text
+~~~nudo
+let checked: Result<Verified<Article>, VerificationError> =
+    verify draft with ArticleVerifier
+~~~
+
+The design makes two separate facts visible: verification can fail, and a
+successful value carries a different trust type. It does not make probabilistic
+generation deterministic; it makes the boundary reviewable.
+
+## Why not represent trust with a Boolean?
+
+~~~text
 ModelOutput<T> { value: T, verified: Bool }
-```
+~~~
 
-This pushes the rule into runtime convention. A caller can forget to inspect the
-flag. Distinct types allow the checker to make the missing transition impossible to
-ignore.
+A caller can forget to inspect a flag. Distinct types let the checker reject a
+value at a supported type-checking boundary instead of relying on a runtime
+convention.
 
-## Required design questions
+## What remains
 
-Before stabilization, NUDO must specify verifier failure types, composition,
-provenance retention, serialization boundaries and interactions with generics and
-pattern matching.
+The runtime operation, statically checkable verifier declarations, a stable
+failure type, provenance records and traces remain planned or proposed work.
+<code>Result&lt;T, E&gt;</code> can be named with its required type arguments,
+but match typing and exhaustive handling are not implemented.
+
+\n

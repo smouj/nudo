@@ -34,7 +34,9 @@ def english_chapters() -> dict[str, str]:
             if not filename.endswith(".md"):
                 continue
             absolute = os.path.join(directory, filename)
-            relative = os.path.relpath(absolute, SOURCE)
+            # Manifests are shared across Windows and Unix CI. Store paths in
+            # the same slash-separated form on every platform.
+            relative = os.path.relpath(absolute, SOURCE).replace(os.sep, "/")
             with open(absolute, "rb") as handle:
                 chapters[relative] = hashlib.sha256(handle.read()).hexdigest()
     return chapters

@@ -54,7 +54,10 @@ def main() -> int:
         manifest = {}
         if os.path.isfile(manifest_path):
             with open(manifest_path, encoding="utf-8") as handle:
-                manifest = json.load(handle)
+                manifest = {
+                    name.replace("\\", "/"): digest
+                    for name, digest in json.load(handle).items()
+                }
 
         missing = [name for name in english if not os.path.isfile(os.path.join(language_dir, "src", name))]
         behind = [
