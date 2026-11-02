@@ -1312,6 +1312,23 @@ mod tests {
     }
 
     #[test]
+    fn a_nominal_mismatch_names_both_types_and_points_at_the_value() {
+        let program = "struct Article {\n    title: Text\n}\n\
+                       struct Book {\n    title: Text\n}\n\
+                       fn publish(article: Article) -> Text {\n    article.title\n}\n\
+                       fn main(book: Book) -> Text {\n    publish(book)\n}\n";
+        let (sources, id, result) = checked(program);
+        let diagnostic = &result.diagnostics.as_slice()[0];
+        assert_eq!(diagnostic.code().id(), "NDO2004");
+        let notes = diagnostic.notes().join(" | ");
+        assert!(notes.contains("expected: `Article`"), "{notes}");
+        assert!(notes.contains("found: `Book`"), "{notes}");
+        let file = sources.get(id).expect("just added");
+        let span = diagnostic.span().expect("the argument has a span");
+        assert_eq!(file.span_text(span), Some("book"));
+    }
+
+    #[test]
     fn there_is_no_implicit_numeric_conversion() {
         assert_eq!(
             codes_for("let x: Float = 1;\n"),
