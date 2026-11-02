@@ -35,11 +35,12 @@ harness rather than the parser.
 | Case | Input shape |
 | ---- | ----------- |
 | `functions` | 2 000 function declarations with parameters and arithmetic |
+| `calls` | 2 000 pairs of ordinary and inferred generic function calls |
 | `bindings` | 5 000 `let` bindings with numbers and `_` separators |
 | `text-literals` | 2 000 text literals with escapes |
 | `comments` | 2 000 comment-heavy blocks, line and block |
 
-Each case runs at every stage above, so the table has sixteen rows. Inputs are
+Each case runs at every stage above, so the table has twenty rows. Inputs are
 generated deterministically before timing, and a run reports each stage's
 observed output count as `units`.
 
