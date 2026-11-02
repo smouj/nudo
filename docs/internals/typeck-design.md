@@ -116,7 +116,7 @@ or annotation error inside them is not hidden.
 | Other operator operand domains, logical negation, logical operators, equality, comparisons and indexing | their complete operand and result rules are not specified yet |
 | Integer literal range checking and arithmetic evaluation | the interpreter and compile-time literal checking; arithmetic behavior is in NEP-0007 |
 | A stable diagnostic for a generic parameter that remains unresolved (NEP-0013) | diagnostic NEP and implementation |
-| Enum pattern resolution, payload binding, exhaustiveness and arm result types | NEP-0020 (**Draft**); do not implement before acceptance |
+| Enum pattern resolution, payload binding, exhaustiveness and arm result types | NEP-0020 (**Draft**); current HIR keeps the head and flat binding definitions but lacks the full ordered payload patterns and wildcard spans; do not implement before acceptance |
 | Building a nominal value: **the grammar has no construction syntax at all**, so it needs a NEP before it can be implemented | when the language decides |
 | `Result<T, E>` and exhaustive `match` behavior | after enum matching is accepted and implemented |
 | Effects | M5 |

@@ -203,9 +203,11 @@ rules of their own.
       (NEP-0013)
 * [ ] `match` typing: variant validation, payload binding, arm type agreement
       and exhaustiveness (NEP-0020; **Draft**; do not implement before
-      acceptance); HIR already records each arm's pattern
+      acceptance). Current HIR stores the head and a flat list of local
+      definitions, but not the complete ordered payload patterns or wildcard
+      spans; NEP-0020 proposes the required HIR representation.
 * [ ] `Result<T, E>` as an intrinsic type, using the same exhaustive `match`
-      rules as every other enum
+      rules as every other enum after NEP-0020 is accepted and implemented
 * [x] Function types and calls; no implicit numeric conversion
 * [x] `if` conditions are checked as `Bool`; branch expressions are checked
       recursively, with expected type propagated for generic inference

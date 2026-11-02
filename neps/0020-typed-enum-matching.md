@@ -23,11 +23,12 @@ until it is accepted.
 
 ## Motivation
 
-The grammar accepts `match`, the HIR records each arm head and its payload
-bindings, and the specification requires exhaustive matches. It does not yet say
-how to distinguish a variant from a binding, how payload types reach bindings,
-or how arm result types are chosen. Implementing those rules from convention
-would silently define the language.
+The grammar accepts `match`, and HIR records each arm's head as written and its
+nested names as bindings. The specification requires exhaustive matches, but it
+does not yet say how to distinguish variants from bindings, how payload types
+reach bindings, or how arm result types are chosen. The current HIR arm also
+does not preserve wildcard-versus-binding structure or every payload position.
+Implementing those rules from convention would silently define the language.
 
 The ambiguity also affects safety. If an unknown head is treated as a binding,
 a typo can swallow every variant and make an apparently exhaustive check skip a
@@ -140,11 +141,48 @@ the resolved variant by the type checker.
 * An enum declaration has at least one variant. The grammar is narrowed to
   require one; uninhabited enums and a bottom result type need a separate design.
 
+### Proposed HIR pattern representation
+
+The current M3.1 `Arm` stores an optional head name, the head span, a flat list
+of binding definitions, and the body. Lowering currently creates a local for
+each nested pattern name, including `_`. This is enough to preserve today's
+unresolved syntax, but it cannot distinguish a wildcard from a binding or keep
+the position of each payload pattern.
+
+If this NEP is accepted, HIR gives the pattern shape an explicit representation:
+
+```text
+MatchPattern =
+    Wildcard { span }
+  | Variant { name, name_span, span, payloads: [PayloadPattern] }
+
+PayloadPattern =
+    Binding { definition: DefId, span }
+  | Wildcard { span }
+
+Arm = { pattern: MatchPattern, body: ExprId }
+```
+
+The variant name remains unresolved text in HIR: type checking resolves it
+against the scrutinee's enum, rather than treating an unknown head as a local
+binding. Payload patterns remain in source order. A binding points to its arm
+local through `DefId`; a wildcard has no definition. Each pattern node retains
+its span, so an excess payload can be underlined directly and a missing payload
+can point at the whole variant pattern. This representation is a proposal; the
+current HIR and its behavior do not change while NEP-0020 is Draft.
+
 ### Coverage and result types
 
 * With no wildcard, every variant must appear exactly once. With a wildcard,
   variants may be omitted, but the wildcard must follow all explicit variants.
-  A repeated variant, or any arm after a wildcard, is unreachable.
+  A wildcard is itself unreachable when the preceding explicit arms already
+  cover every variant. A repeated variant or any arm after a wildcard is also
+  unreachable. Each such arm produces `NDO2015` at its pattern head; for the
+  unreachable wildcard, that is the `_` token.
+* For example, when `Only` is the sole variant, `Only => 1` followed by
+  `_ => 2` reports `NDO2015` on `_`: no variant remains for the wildcard to
+  match. A reachable wildcard covers all variants omitted by earlier explicit
+  arms.
 * Coverage is checked against the enum definition, not against the variant names
   that happen to appear in the source. For `Result<T, E>`, the two variants are
   `Ok(T)` and `Err(E)` as defined by NEP-0008. NEP-0014's no-must-use rule still
@@ -164,15 +202,26 @@ the resolved variant by the type checker.
 
 ### Error recovery
 
-The checker continues through every arm after a pattern, coverage or type
-error, so independent diagnostics remain visible. An already erroneous
-scrutinee or arm does not cause a second diagnostic solely because its type is
-`Error`. If this match reports a pattern, coverage or arm-compatibility
-diagnostic, or its scrutinee or an arm already has type `Error`, the match
-itself has type `Error`; otherwise it has the expected type `R`, or the common
-arm type when there is no expected type. The recovered match type does not
-depend on arm order; `NDO2016` expected/found orientation uses the first
-non-error arm as its diagnostic baseline.
+The checker checks every arm body even after a pattern, coverage or type error,
+so independent diagnostics remain visible. An already erroneous scrutinee or
+arm does not cause another diagnostic solely because its type is `Error`.
+
+With an expected result type `R`, each body is checked against `R`. A body that
+is not assignable to `R` emits the ordinary `NDO2004` and makes the match's
+recovered type `Error`. Without an expected type, differing non-error arm types
+emit `NDO2016` and also make the match's type `Error`. Any pattern or coverage
+diagnostic (`NDO2011`–`NDO2015`), or an already erroneous scrutinee or arm, makes
+the match's type `Error` as well. Only a match with no such error has type `R`,
+or the common arm type when there is no expected type.
+
+For example, if `render` returns `Text` and a `match` arm returns `true`, that
+arm emits `NDO2004` against the expected `Text`, and the recovered type of the
+whole `match` is `Error`. The enclosing return check does not infer a successful
+`Text` result from the failed arm or add a second mismatch for the same error.
+
+The recovered match type does not depend on arm order. `NDO2016` uses the first
+non-error arm only as the expected/found diagnostic baseline; it does not choose
+the result type.
 
 ### Proposed diagnostics
 
@@ -185,7 +234,7 @@ allocated or emitted before acceptance:
 | `NDO2012` | `INVALID_MATCH_PATTERN` | A syntactically valid variant identifier is not a variant of the resolved enum; underline that identifier |
 | `NDO2013` | `WRONG_VARIANT_PATTERN_ARITY` | A variant pattern has the wrong number of payload sub-patterns; underline the first excess sub-pattern, or the whole variant pattern when fields are missing |
 | `NDO2014` | `NON_EXHAUSTIVE_MATCH` | One or more variants are uncovered; underline the whole match and list missing variants in declaration order |
-| `NDO2015` | `UNREACHABLE_MATCH_ARM` | A duplicate variant arm or an arm after `_`; underline the unreachable arm's pattern head |
+| `NDO2015` | `UNREACHABLE_MATCH_ARM` | A duplicate variant arm, a wildcard after all variants are covered, or an arm after `_`; underline the unreachable arm's pattern head |
 | `NDO2016` | `MATCH_ARM_TYPE_MISMATCH` | Arm bodies disagree without an expected result type; underline the mismatching body and include structured expected/found types |
 
 When an expected result type exists, a body that does not satisfy it uses the
@@ -218,7 +267,7 @@ checker from checking other arm bodies for independent errors.
 | ---- | ------ |
 | Specification | Defines enum `match` in declarations, expressions, grammar and errors |
 | Grammar | Requires at least one enum variant; reserves exact `_` for wildcard patterns and narrows match patterns to one variant head with binding or wildcard payloads |
-| Compiler | `nudo-hir` must preserve wildcard and payload positions; `nudo-typeck` resolves variants, substitutes payload types, checks coverage and arm types |
+| Compiler | If accepted, `nudo-hir` adopts the proposed explicit pattern representation; `nudo-typeck` resolves variants, substitutes payload types, checks coverage and arm types |
 | Conformance | Adds valid, non-enum, unknown-variant, wrong-payload-count, non-exhaustive, unreachable, generic payload and arm-type cases |
 | Tooling | Parser and HIR dumps must display the accepted pattern shape; formatter and LSP can follow later |
 | Security | Explicit wildcard and static exhaustiveness make omitted `Result` and enum cases reviewable; no trust-specific bypass is introduced |

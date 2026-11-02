@@ -62,10 +62,12 @@ Hir
   function types retain their child types in source order. In particular, a
   function type is represented as parameter types followed by its result, not as
   an unresolved named type whose display text happens to start with `Fn`.
-* **A `match` arm carries its pattern.** The head as written, the definitions
-  the pattern introduces, and its body — because whether that head is a variant of
-  the scrutinee's enum or a new binding is a question only the scrutinee's *type*
-  can answer, and the type checker is the layer that has it.
+* **A `match` arm carries the current partial pattern data.** HIR stores the
+  head as written, the definitions nested names introduce, and the body. This
+  lets a later type checker interpret a head using the scrutinee's type, but it
+  does not preserve wildcard-versus-binding structure or each payload position.
+  Draft NEP-0020 proposes the richer HIR pattern contract needed before match
+  typing can be implemented.
 * **Names are kept for diagnostics only.** `ExprKind::Path` holds both the name
   as written and its `Resolution`, because an error message needs the text and a
   later stage needs the target. Keeping the text is not a failure to resolve.
@@ -93,13 +95,14 @@ Hir
   `Fn`) are predeclared in the file scope so a program can name them without a
   declaration, and a program cannot redefine them by accident.
 * **No pattern resolution.** A pattern head — `Pending` in `match x { Pending
-  => … }` — cannot be resolved without the scrutinee's type: a bare name there is
-  either a variant or a new binding, and the spelling does not say which. Guessing
-  from capitalisation would be inventing a language rule, so the head is left for
-  M3.2 and sub-patterns become bindings. The head is now *recorded* rather than
-  discarded — as written, with the bindings beside it — so that the checker can
-  decide it with the scrutinee's type in hand. A case in
-  `tests/conformance/resolve` pins the part that is still unresolved.
+  => … }` — cannot be resolved without the scrutinee's type. The current HIR
+  records that head as written and lowers nested names as local definitions, but
+  this partial representation does not define whether a head is a variant or a
+  binding. Draft NEP-0020 proposes variant-only heads, explicit wildcard nodes,
+  and ordered payload patterns; it remains a proposal, so no type-checking rule
+  is implemented. If accepted, the HIR shape changes before the type checker
+  consumes patterns. A case in `tests/conformance/resolve` pins the current
+  unresolved representation.
 * **No modules.** A path written with `::` is reported unresolved with a note,
   because `::` reaches into a module and modules are M10.
 * **No diagnostics beyond `NDO2001`–`NDO2003`.** The `2xxx` family grows with the
@@ -138,10 +141,12 @@ mistake rather than hiding it.
 
 ## Where this document goes next
 
-M3.2 adds the type layer: a type arena, `TypeId`, instantiation of generic
-declarations, `Result<T, E>` as an intrinsic type and exhaustiveness of `match`.
-The checker now validates named type-argument arity from the resolved
-declarations and intrinsic arities; other structural checks remain in M3.2. The
-shape above is designed for that — a type arena beside the expression arena, and
-`DefId` as the thing types attach to — and if it is wrong, this document is the
-place to record why.
+M3.2 adds the type layer: a type arena, `TypeId`, and instantiation of generic
+declarations. `Result<T, E>` checking and exhaustive `match` remain gated on
+accepted semantics; NEP-0020 is still Draft. If accepted, HIR must first preserve
+variant heads, wildcard nodes, ordered payload patterns and their spans. The
+checker now validates named type-argument arity from resolved declarations and
+intrinsic arities; other structural checks remain in M3.2. The shape above is
+designed for that — a type arena beside the expression arena, and `DefId` as the
+thing types attach to — and if it is wrong, this document is the place to record
+why.
