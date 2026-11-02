@@ -695,7 +695,12 @@ impl Checker<'_> {
 
         let arity_mismatch = arguments.len() != parameters.len();
         if arity_mismatch {
-            let expected = if parameters.len() == 1 {
+            let expected_noun = if parameters.len() == 1 {
+                "argument"
+            } else {
+                "arguments"
+            };
+            let found_noun = if arguments.len() == 1 {
                 "argument"
             } else {
                 "arguments"
@@ -704,7 +709,7 @@ impl Checker<'_> {
                 Diagnostic::error(
                     codes::WRONG_ARGUMENT_COUNT,
                     format!(
-                        "this call passes {} and the function takes {} {expected}",
+                        "this call passes {} {found_noun}, but the function takes {} {expected_noun}",
                         arguments.len(),
                         parameters.len()
                     ),
@@ -1570,6 +1575,37 @@ mod tests {
         let file = sources.get(id).expect("just added");
         let span = diagnostic.span().expect("the argument list has a span");
         assert_eq!(file.span_text(span), Some("(1)"));
+    }
+
+    #[test]
+    fn an_arity_diagnostic_pluralizes_expected_and_found_counts() {
+        let program = "fn takes_two(left: Int, right: Int) {}\n\
+                       fn takes_none() {}\n\
+                       fn takes_one(value: Int) {}\n\
+                       fn main() {\n\
+                           takes_two(1);\n\
+                           takes_two(1, 2, 3);\n\
+                           takes_none(1);\n\
+                           takes_one();\n\
+                       }\n";
+        let (_, _, result) = checked(program);
+        let messages = result
+            .diagnostics
+            .as_slice()
+            .iter()
+            .filter(|diagnostic| diagnostic.code().id() == "NDO2005")
+            .map(|diagnostic| diagnostic.message())
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            messages,
+            vec![
+                "this call passes 1 argument, but the function takes 2 arguments",
+                "this call passes 3 arguments, but the function takes 2 arguments",
+                "this call passes 1 argument, but the function takes 0 arguments",
+                "this call passes 0 arguments, but the function takes 1 argument",
+            ]
+        );
     }
 
     #[test]
