@@ -4,8 +4,9 @@
 milestone next to each feature before assuming it runs. Today the toolchain
 lexes, parses and resolves names: the lexer (M1), the parser and lossless syntax
 tree (M2) and name resolution in `nudo-hir` (M3.1) are implemented, and
-`nudo check` runs all three. Type checking is not implemented yet, and neither is
-anything after it. The toolchain's full state is in
+`nudo check` runs those stages. The `nudo-typeck` crate implements part of M3.2
+and is exercised separately, but is not wired into `nudo check`; effect checking
+and execution are not implemented. The toolchain's full state is in
 [`../../ROADMAP.md`](../../ROADMAP.md).
 
 ## The shape of a program
@@ -40,8 +41,9 @@ enum Status {
 }
 ```
 
-`match` must be exhaustive, there is no implicit numeric conversion, and there
-is no truthiness: a condition is a `Bool`.
+The language design requires exhaustive `match`, but the type checker does not
+enforce that rule yet. There is no implicit numeric conversion, and there is no
+truthiness: a condition is a `Bool`.
 
 ## Trust — M6
 

@@ -196,8 +196,8 @@ checked 1 file: 0 errors and 0 warnings
 ```
 
 `nudo check` lexes, parses and resolves names. A clean run means "no lexical,
-syntax or name diagnostics", not "this program is correct": nothing is
-type-checked, and nothing runs.
+syntax or name diagnostics", not "this program is correct": the command does
+not invoke the partially implemented type checker, and nothing runs.
 
 ## Roadmap
 

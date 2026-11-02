@@ -136,15 +136,14 @@ gaps:
 
 ## Why the checker is not wired into `nudo check` yet
 
-`check` currently lexes, parses and resolves, and the checker runs beside it in
-its own tests and corpus but not inside it. Calls are checked now, so the
-question is live; what still argues for waiting is that structs, enums and the
-trust types type as unknown, and the examples in `examples/` are *about* those.
-Wiring it in today would add a `TYPE` stage that reports on primitives and calls
-and stays silent about the interesting half — so a clean run would mean less than
-a reader would assume. It is wired when the structural rules land, and the
-terminal layer gains its `TYPE` row at that moment, rendered from work actually
-done.
+`check` currently lexes, parses and resolves. The checker runs separately in
+its own tests, conformance corpus and robustness suite. It now covers calls,
+generic inference, nominal field access, numeric arithmetic and the accepted
+`Verified<T>` assignment rule, but M3.2 still has incomplete rules and
+unsupported forms are deliberately silent. Wiring the current slice into the
+CLI could make a clean `check` result look like a complete type check when it is
+not. The checker remains a separate stage until its supported coverage and the
+CLI's report make that limit clear to users.
 
 Until then the checker is exercised by its own tests and by the `typeck`
 conformance corpus, which is a corpus like any other: reviewed as a diff.

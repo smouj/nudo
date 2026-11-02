@@ -17,9 +17,8 @@ Syntax tree      compiler/nudo-syntax       ← implemented (M2)
 AST              compiler/nudo-ast          ← implemented (M2)
   ↓
 HIR              compiler/nudo-hir          ← implemented (M3)
-Typeck           compiler/nudo-typeck       ← implemented (M3.2, first slice; not wired into `check` yet)
   ↓
-Type checking    compiler/nudo-typeck       ← planned (M3)
+Type checking    compiler/nudo-typeck       ← partial implementation (M3.2; not wired into `check` yet)
   ↓
 Effect checking  compiler/nudo-effects      ← planned (M5)
   ↓
@@ -65,21 +64,24 @@ on and that no other front end can reuse.
 
 ## What exists today
 
-The implemented slice is deliberately small and complete:
+`nudo check` currently runs this path:
 
 ```text
-.nudo → SourceFile → Lexer → Tokens → Diagnostics
+.nudo → SourceFile → Lexer → Parser → Syntax tree → AST → HIR/name resolution
+          └────────────────────────── diagnostics ──────────────────────────┘
 ```
 
-* `crates/nudo-source` — a file, its identity and its line index.
-* `crates/nudo-span` — byte positions, spans, and 1-based character columns.
-* `compiler/nudo-lexer` — tokenisation with recovery, no panics, deterministic
-  output.
-* `compiler/nudo-diagnostics` — the code registry and the caret renderer.
-* `cli/nudo-cli` — `check`, argument handling and exit codes.
+The `nudo-typeck` crate consumes resolved HIR and implements part of M3.2:
+primitive and function types, calls, bounded generic inference, field access,
+numeric arithmetic and the accepted `Verified<T>` assignment rule. Its rules
+are exercised by unit tests, the type-checker conformance corpus and robustness
+tests. The CLI does not invoke it yet, so `nudo check` does not report type
+diagnostics.
 
-Everything else is an empty crate with a documented contract, in
-[`../../ARCHITECTURE.md`](../../ARCHITECTURE.md).
+The lexer, parser, syntax tree, AST and HIR/name resolver also have implemented
+crates and tests. Effect checking, MIR, code generation, the runtime and
+backends remain planned. See
+[`../../ARCHITECTURE.md`](../../ARCHITECTURE.md) for the status of every crate.
 
 ## Testing a stage
 
@@ -90,8 +92,9 @@ Everything else is an empty crate with a documented contract, in
 * **Conformance cases** (`../../tests/conformance`) pin language-visible
   behaviour that any implementation must reproduce.
 * **Robustness properties** cover what must never happen: a panic, a hang, a
-  span outside the source, a non-deterministic result. The lexer's are in
-  `compiler/nudo-lexer/tests/robustness.rs`.
+  span outside the source, a non-deterministic result. They cover the lexer in
+  `compiler/nudo-lexer/tests/robustness.rs` and type checking in
+  `compiler/nudo-typeck/tests/robustness.rs`.
 
 ## Measuring
 
