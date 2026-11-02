@@ -41,7 +41,7 @@ use nudo_typeck::check;
 const DEFAULT_ITERATIONS: usize = 200;
 /// Untimed iterations run before timing, to warm caches and the allocator.
 const DEFAULT_WARMUP: usize = 20;
-/// A median slower than the baseline by this percentage is a regression.
+/// Reporting threshold for a timing increase; not a statistical verdict.
 const DEFAULT_THRESHOLD_PERCENT: f64 = 10.0;
 
 fn main() -> ExitCode {
@@ -162,8 +162,8 @@ impl Options {
                     let parsed = raw
                         .parse::<f64>()
                         .map_err(|_| format!("`{raw}` is not a number"))?;
-                    if parsed <= 0.0 {
-                        return Err("`--threshold` must be positive".to_string());
+                    if !parsed.is_finite() || parsed <= 0.0 {
+                        return Err("`--threshold` must be finite and positive".to_string());
                     }
                     options.threshold_percent = parsed;
                 }
@@ -704,13 +704,23 @@ fn format_duration(nanos: u128) -> String {
 
 struct Baseline {
     metadata_commit: String,
-    medians: BTreeMap<(String, String), u128>,
+    measurements: BTreeMap<(String, String), BaselineMeasurement>,
+}
+
+struct BaselineMeasurement {
+    median_ns: u128,
+    bytes: usize,
+    units: usize,
+    unit: String,
 }
 
 impl Baseline {
     fn parse(text: &str) -> Result<Self, String> {
         let value = Json::parse(text)?;
         let root = value.as_object().ok_or("baseline is not a JSON object")?;
+        if root.get("schema").and_then(Json::as_str) != Some("nudo-bench/v1") {
+            return Err("baseline schema must be `nudo-bench/v1`".into());
+        }
         let metadata = root
             .get("metadata")
             .and_then(Json::as_object)
@@ -724,7 +734,7 @@ impl Baseline {
             .get("cases")
             .and_then(Json::as_array)
             .ok_or("baseline has no `cases` array")?;
-        let mut medians = BTreeMap::new();
+        let mut measurements = BTreeMap::new();
         for case in cases {
             let object = case.as_object().ok_or("a case is not an object")?;
             let name = object
@@ -739,17 +749,39 @@ impl Baseline {
                 .get("median_ns")
                 .and_then(Json::as_number)
                 .ok_or("a case has no median")?;
-            if median < 0.0 {
-                return Err("a median is negative".into());
+            if !median.is_finite() || median <= 0.0 {
+                return Err("a median must be finite and positive".into());
             }
-            medians.insert(
-                (stage.to_string(), name.to_string()),
-                median.round() as u128,
-            );
+            let bytes = object
+                .get("bytes")
+                .and_then(Json::as_usize)
+                .ok_or("a case has no valid `bytes` count")?;
+            let units = object
+                .get("units")
+                .and_then(Json::as_usize)
+                .ok_or("a case has no valid `units` count")?;
+            let unit = object
+                .get("unit")
+                .and_then(Json::as_str)
+                .ok_or("a case has no `unit`")?;
+            if measurements
+                .insert(
+                    (stage.to_string(), name.to_string()),
+                    BaselineMeasurement {
+                        median_ns: median.round() as u128,
+                        bytes,
+                        units,
+                        unit: unit.to_string(),
+                    },
+                )
+                .is_some()
+            {
+                return Err(format!("duplicate baseline case `{stage}` / `{name}`"));
+            }
         }
         Ok(Self {
             metadata_commit: commit,
-            medians,
+            measurements,
         })
     }
 }
@@ -768,10 +800,11 @@ struct Comparison {
     threshold_percent: f64,
     rows: Vec<ComparisonRow>,
     missing: Vec<(String, String)>,
+    incompatible: Vec<(String, String, String)>,
 }
 
 impl Comparison {
-    fn regressions(&self) -> usize {
+    fn above_threshold(&self) -> usize {
         self.rows
             .iter()
             .filter(|row| row.delta_percent > self.threshold_percent)
@@ -789,9 +822,9 @@ impl Comparison {
         out.push_str("| ----- | ---- | -------- | ------- | ----- |\n");
         for row in &self.rows {
             let verdict = if row.delta_percent > self.threshold_percent {
-                " **regression**"
+                " **above threshold**"
             } else if row.delta_percent < -self.threshold_percent {
-                " improvement"
+                " decrease above threshold"
             } else {
                 ""
             };
@@ -811,15 +844,23 @@ impl Comparison {
                 out.push_str(&format!("* `{stage}` / `{case}`\n"));
             }
         }
+        if !self.incompatible.is_empty() {
+            out.push_str("\nCases excluded from the timing comparison:\n\n");
+            for (stage, case, reason) in &self.incompatible {
+                out.push_str(&format!("* `{stage}` / `{case}`: {reason}\n"));
+            }
+        }
         out.push_str(&format!(
-            "\n{} regression(s) above the {:.1}% threshold.\n",
-            self.regressions(),
+            "\n{} case(s) with a timing increase above the {:.1}% threshold (not confirmed regressions).\n",
+            self.above_threshold(),
             self.threshold_percent
         ));
         out.push_str(
-            "\nA single comparison is not proof of a regression on shared hardware.\n\
-             Re-run both sides on the same machine before acting on a number near the\n\
-             threshold; this report does not fail CI by itself.\n",
+            "\nOnly equal-sized sources with matching reported work units are compared.\n\
+             Matching counts do not prove identical semantics or workload. A single\n\
+             comparison is not proof of a regression; re-run both revisions on\n\
+             the same machine and verify the compiler performs equivalent work.\n\
+             This report does not fail CI by itself.\n",
         );
         out
     }
@@ -828,21 +869,37 @@ impl Comparison {
 fn compare(report: &Report, baseline: &Baseline, threshold_percent: f64) -> Comparison {
     let mut rows = Vec::new();
     let mut missing = Vec::new();
+    let mut incompatible = Vec::new();
     for case in &report.cases {
         let key = (case.stage.as_str().to_string(), case.case.to_string());
-        match baseline.medians.get(&key) {
-            Some(base) if *base > 0 => {
-                let current = case.median_ns;
-                let delta_percent = ((current as f64 - *base as f64) / *base as f64) * 100.0;
-                rows.push(ComparisonRow {
-                    stage: key.0,
-                    case: key.1,
-                    baseline_ns: *base,
-                    current_ns: current,
-                    delta_percent,
-                });
+        match baseline.measurements.get(&key) {
+            Some(base) => {
+                let mut reasons = Vec::new();
+                if base.bytes != case.bytes {
+                    reasons.push("source byte count changed");
+                }
+                if base.unit != case.unit {
+                    reasons.push("output unit changed");
+                }
+                if base.units != case.units {
+                    reasons.push("output unit count changed");
+                }
+                if reasons.is_empty() {
+                    let current = case.median_ns;
+                    let delta_percent =
+                        ((current as f64 - base.median_ns as f64) / base.median_ns as f64) * 100.0;
+                    rows.push(ComparisonRow {
+                        stage: key.0,
+                        case: key.1,
+                        baseline_ns: base.median_ns,
+                        current_ns: current,
+                        delta_percent,
+                    });
+                } else {
+                    incompatible.push((key.0, key.1, reasons.join(", ")));
+                }
             }
-            _ => missing.push(key),
+            None => missing.push(key),
         }
     }
     Comparison {
@@ -851,6 +908,7 @@ fn compare(report: &Report, baseline: &Baseline, threshold_percent: f64) -> Comp
         threshold_percent,
         rows,
         missing,
+        incompatible,
     }
 }
 
@@ -911,6 +969,19 @@ impl Json {
         match self {
             Json::Number(number) => Some(*number),
             _ => None,
+        }
+    }
+
+    fn as_usize(&self) -> Option<usize> {
+        let number = self.as_number()?;
+        if number.is_finite()
+            && number >= 0.0
+            && number.fract() == 0.0
+            && number < usize::MAX as f64
+        {
+            Some(number as usize)
+        } else {
+            None
         }
     }
 }
@@ -1197,9 +1268,40 @@ mod tests {
         assert_eq!(baseline.metadata_commit, "deadbeef");
         assert_eq!(
             baseline
-                .medians
-                .get(&(String::from("typeck"), String::from("identity"))),
-            Some(&125)
+                .measurements
+                .get(&(String::from("typeck"), String::from("identity")))
+                .map(|measurement| measurement.median_ns),
+            Some(125)
         );
+        assert_eq!(compare(&report, &baseline, 10.0).rows.len(), 1);
+
+        let mut different_work = report;
+        different_work.cases[0].units += 1;
+        let comparison = compare(&different_work, &baseline, 10.0);
+        assert!(comparison.rows.is_empty());
+        assert_eq!(comparison.incompatible.len(), 1);
+        assert!(
+            comparison.incompatible[0]
+                .2
+                .contains("output unit count changed")
+        );
+        assert!(
+            Baseline::parse(
+                &different_work
+                    .to_json()
+                    .replace("nudo-bench/v1", "nudo-bench/v2")
+            )
+            .is_err()
+        );
+        different_work.cases[0].units -= 1;
+        different_work.cases[0].bytes += 1;
+        let comparison = compare(&different_work, &baseline, 10.0);
+        assert!(comparison.rows.is_empty());
+        assert!(
+            comparison.incompatible[0]
+                .2
+                .contains("source byte count changed")
+        );
+        assert!(Options::parse(["--threshold", "NaN"].into_iter().map(str::to_string)).is_err());
     }
 }

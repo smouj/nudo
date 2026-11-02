@@ -41,7 +41,10 @@ harness rather than the parser.
 
 Each case runs at every stage above, so the table has sixteen rows. Inputs are
 generated deterministically before timing, and a run reports each stage's
-observed output count as `units`.
+observed output count as `units`. The cases are a fixed synthetic workload,
+**not** a conformance corpus or a representative sample of all supported
+language features. In particular, they do not exercise the bounded generic
+inference, trust-type assignment or malformed-call paths introduced by PR #31.
 
 ## Metrics
 
@@ -52,10 +55,14 @@ observed output count as `units`.
 | `p95` | 95th percentile; shows the tail |
 | `mean` | Arithmetic mean; reported for completeness, not used for verdicts |
 | `throughput` | MiB/s of source text, from the median |
-| `units` | Tokens (lex), syntax nodes (parse), definitions (hir), or expression entries (typeck) observed |
+| `units` | Tokens (lex), syntax nodes (parse), definitions (hir), or expression-table slots (typeck) reported |
 
 The text report shows the count and its unit in separate columns. JSON stores
-the same values as `units` and `unit`.
+the same values as `units` and `unit`. For `typeck`, the implementation reports
+`expression_types.len()`: the number of allocated expression-table slots,
+**including untyped entries**. This is not a count of rules executed, errors
+reported or expressions successfully type-checked. Equal counts do not imply
+equal semantic work.
 
 Percentiles are nearest-rank. Memory and allocation counts are **not** reported:
 measuring them without a profiler would mean injecting an allocator into the
@@ -68,25 +75,62 @@ cargo run --release --package nudo-bench -- --format json --output results.json
 ```
 
 The schema is `nudo-bench/v1`. The file contains the metadata above and one
-object per case with all the metrics. It is meant to be committed, attached to a
-pull request or stored by a CI job, so that two commits can be compared months
-later without trusting a screenshot.
+object per case with all the metrics. It can be attached to a pull request or
+stored by a CI job so that measurements are traceable without screenshots.
+**No project-wide reference baseline is currently committed.** The
+`baseline.json` name below denotes a file generated from a real run, not a
+shipped reference or an accepted performance target.
 
 ## Comparing two runs
 
+On the **baseline revision**, record a clean, quiet run outside the working
+tree (the paths below are illustrative and must be adapted to the host):
+
 ```sh
-cargo run --release --package nudo-bench -- --compare baseline.json
+cargo run --release --package nudo-bench -- --format json --output /tmp/nudo-baseline.json
 ```
 
-That prints a Markdown table with the delta of every case and marks a case as a
-regression when its median is slower by more than the threshold (10% by default,
-`--threshold` to change it). Cases with no baseline are listed separately.
+On the **candidate revision**, using the baseline file from that first run:
+
+```sh
+cargo run --release --package nudo-bench -- --compare /tmp/nudo-baseline.json
+```
+
+The comparison accepts the `nudo-bench/v1` schema and uses the median. It
+compares matching stage/case pairs only when the source-byte count, output-unit
+name and reported unit count agree. Cases with different reported work are
+**excluded and listed separately**; cases absent from the baseline are listed
+as missing. An increase over the reporting threshold (10% by default,
+configurable with `--threshold`) is an **investigation signal**, not a proven
+regression. Matching counts are necessary checks, **not proof** of identical
+source contents, semantics, or executed operations.
+
+### Comparability after PR #31
+
+The `typeck` stage still measures `check()` on pre-built HIR, but PR #31 changed
+what that checker does: numeric operator checking, bounded generic inference,
+recursive checking of deferred expression children, named type-argument arity,
+trust-type assignment and malformed-call recovery. It can therefore do more
+work on the **same source** while reporting an unchanged expression-table length.
+A `typeck` delta from commit `1251cf7` to a post-PR #31 revision measures the
+cost of **different checker implementations and semantic coverage**. It must
+**not** be described as an equal-work performance regression or improvement.
+
+The `functions` case exercises arithmetic, while the other three cases mainly
+exercise bindings, literal expressions and comments. There is no claim that
+these four workloads cover new generic or trust-type paths. The `lex`, `parse`
+and `hir` rows retain their stage boundaries and input shapes, but interpretation
+still requires confirming that the work performed is comparable on both sides.
+
+Always check the full metadata (commit, dirty tree, Rust version, OS, CPU,
+architecture, iterations and warm-up). Rebuild both revisions with the same
+release profile and test them on the same quiet machine. An identical CPU label
+is not sufficient to prove identical load, frequency or environment.
 
 The comparison does **not** fail CI. Shared runners have enough variance that a
-single 12% swing proves nothing, and a pipeline that goes red on noise teaches
-people to ignore it. Use the report as evidence, then re-measure both sides on
-the same machine before acting. When a stable performance target exists, this is
-the point where a statistically justified threshold can become a gate.
+single timing swing proves nothing. Use the report as evidence, and re-measure
+both revisions before acting. The 10% threshold is not a statistical confidence
+interval and the suite has **no accepted performance target**.
 
 ## How to use it
 
