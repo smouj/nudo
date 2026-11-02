@@ -1280,16 +1280,28 @@ mod tests {
         let comparison = compare(&different_work, &baseline, 10.0);
         assert!(comparison.rows.is_empty());
         assert_eq!(comparison.incompatible.len(), 1);
-        assert!(comparison.incompatible[0].2.contains("output unit count changed"));
         assert!(
-            Baseline::parse(&different_work.to_json().replace("nudo-bench/v1", "nudo-bench/v2"))
-                .is_err()
+            comparison.incompatible[0]
+                .2
+                .contains("output unit count changed")
+        );
+        assert!(
+            Baseline::parse(
+                &different_work
+                    .to_json()
+                    .replace("nudo-bench/v1", "nudo-bench/v2")
+            )
+            .is_err()
         );
         different_work.cases[0].units -= 1;
         different_work.cases[0].bytes += 1;
         let comparison = compare(&different_work, &baseline, 10.0);
         assert!(comparison.rows.is_empty());
-        assert!(comparison.incompatible[0].2.contains("source byte count changed"));
+        assert!(
+            comparison.incompatible[0]
+                .2
+                .contains("source byte count changed")
+        );
         assert!(Options::parse(["--threshold", "NaN"].into_iter().map(str::to_string)).is_err());
     }
 }
