@@ -166,8 +166,9 @@ condition type reaches generic inference; the conditional result and branch
 agreement remain unspecified. Deferred expression forms also check their
 children for supported rules. Numeric arithmetic typing is in place. The next
 slices are a stable diagnostic for unresolved generic parameters, the remaining
-operator and index rules, match typing and exhaustiveness, nominal construction,
-and `Result<T, E>`. Until a rule exists, the checker stays silent rather than
+operator and index rules, match typing and exhaustiveness (NEP-0020; **Draft**;
+do not implement before acceptance), nominal construction and `Result<T, E>`.
+Until a rule exists, the checker stays silent rather than
 inventing semantics. See
 [`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
 
@@ -201,9 +202,12 @@ rules of their own.
 * [ ] A stable diagnostic for generic parameters that remain unresolved
       (NEP-0013)
 * [ ] `match` typing: variant validation, payload binding, arm type agreement
-      and exhaustiveness; HIR already records each arm's pattern
+      and exhaustiveness (NEP-0020; **Draft**; do not implement before
+      acceptance). Current HIR stores the head and a flat list of local
+      definitions, but not the complete ordered payload patterns or wildcard
+      spans; NEP-0020 proposes the required HIR representation.
 * [ ] `Result<T, E>` as an intrinsic type, using the same exhaustive `match`
-      rules as every other enum
+      rules as every other enum after NEP-0020 is accepted and implemented
 * [x] Function types and calls; no implicit numeric conversion
 * [x] `if` conditions are checked as `Bool`; branch expressions are checked
       recursively, with expected type propagated for generic inference
