@@ -50,8 +50,9 @@ Hir
 * **Spans are preserved everywhere.** Every `Def`, `Expr` and `Stmt` carries the
   span it came from, and every `Reference` carries the span of the name. A field
   access also retains the field-name span separately, so `NDO2007` can underline
-  the missing field identifier. A diagnostic written at M3 is still renderable
-  at M8.
+  the missing field identifier. Calls retain the argument-list span so
+  `NDO2005` can point at the arguments whose count is wrong. A diagnostic
+  written at M3 is still renderable at M8.
 * **A definition carries its structure.** A `struct`'s fields and an `enum`'s
   variants are recorded with their types, lowered in the declaration's own scope
   so that a declaration's type parameter is visible inside its own fields. The

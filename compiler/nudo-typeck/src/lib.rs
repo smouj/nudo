@@ -498,7 +498,11 @@ impl Checker<'_> {
                     None => Type::Unit,
                 }
             }
-            ExprKind::Call { callee, arguments } => self.type_of_call(callee, &arguments, expected),
+            ExprKind::Call {
+                callee,
+                arguments,
+                arguments_span,
+            } => self.type_of_call(callee, &arguments, arguments_span, expected),
             ExprKind::Field {
                 receiver,
                 name,
@@ -670,6 +674,7 @@ impl Checker<'_> {
         &mut self,
         callee: ExprId,
         arguments: &[ExprId],
+        arguments_span: Span,
         expected_result: Option<&Type>,
     ) -> Type {
         let callee_type = self.type_of_expression(callee);
@@ -694,7 +699,6 @@ impl Checker<'_> {
             } else {
                 "arguments"
             };
-            let span = self.hir.expr(callee).map_or_else(zero_span, |it| it.span);
             self.diagnostics.push(
                 Diagnostic::error(
                     codes::WRONG_ARGUMENT_COUNT,
@@ -704,7 +708,7 @@ impl Checker<'_> {
                         parameters.len()
                     ),
                 )
-                .with_location(self.source, span)
+                .with_location(self.source, arguments_span)
                 .with_note(format!("expected: {}", parameters.len()))
                 .with_note(format!("found: {}", arguments.len()))
                 .with_help("every call passes exactly what the signature takes"),
@@ -1529,6 +1533,24 @@ mod tests {
         let wrong_count =
             "fn add(a: Int, b: Int) -> Int {\n    a\n}\n\nfn main() {\n    let one = add(1);\n}\n";
         assert_eq!(codes_for(wrong_count), vec!["NDO2005".to_string()]);
+    }
+
+    #[test]
+    fn an_arity_diagnostic_points_at_the_argument_list() {
+        let program = "fn add(a: Int, b: Int) -> Int { a }\n\
+                       fn main() {\n\
+                           let one = add(1);\n\
+                       }\n";
+        let (sources, id, result) = checked(program);
+        let diagnostic = result
+            .diagnostics
+            .as_slice()
+            .iter()
+            .find(|diagnostic| diagnostic.code().id() == "NDO2005")
+            .expect("the call has the wrong number of arguments");
+        let file = sources.get(id).expect("just added");
+        let span = diagnostic.span().expect("the argument list has a span");
+        assert_eq!(file.span_text(span), Some("(1)"));
     }
 
     #[test]

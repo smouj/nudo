@@ -1,8 +1,8 @@
 # nudo-diagnostics v1
-error NDO2005 12:19
+error NDO2005 12:22
 error NDO2004 12:23
-error NDO2005 13:17
+error NDO2005 13:20
 error NDO2004 13:24
-error NDO2005 14:19
+error NDO2005 14:23
 error NDO2004 14:27
 error NDO2006 14:33
