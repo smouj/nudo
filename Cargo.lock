@@ -28,8 +28,12 @@ version = "0.0.1"
 name = "nudo-bench"
 version = "0.0.1"
 dependencies = [
+ "nudo-hir",
  "nudo-lexer",
+ "nudo-parser",
  "nudo-source",
+ "nudo-syntax",
+ "nudo-typeck",
 ]
 
 [[package]]

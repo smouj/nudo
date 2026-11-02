@@ -14,8 +14,12 @@ name = "nudo-bench"
 path = "src/main.rs"
 
 [dependencies]
+nudo-hir.workspace = true
 nudo-lexer.workspace = true
+nudo-parser.workspace = true
 nudo-source.workspace = true
+nudo-syntax.workspace = true
+nudo-typeck.workspace = true
 
 [lints]
 workspace = true
