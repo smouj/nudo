@@ -9,7 +9,7 @@
 | Supersedes | — |
 | Superseded by | — |
 | Specification chapters | [`spec/declarations.md`](../spec/declarations.md), [`spec/expressions.md`](../spec/expressions.md), [`spec/grammar.md`](../spec/grammar.md), [`spec/errors.md`](../spec/errors.md) |
-| Related NEPs | NEP-0006, NEP-0008, NEP-0010, NEP-0013, NEP-0014, NEP-0015, NEP-0019 |
+| Related NEPs | NEP-0006, NEP-0008, NEP-0010, NEP-0013, NEP-0014 |
 
 ## Summary
 
@@ -82,22 +82,57 @@ keeping inference independent of arm order.
 
 ## Reference-level explanation
 
+### Proposed grammar delta
+
+`match-expression` is unchanged. Replace the enum and pattern productions with
+the following forms; the non-empty enum production rejects declarations with no
+variants, and the flat payload production rejects nested patterns and literals:
+
+```ebnf
+enum-decl        = "enum", identifier, [ generic-parameter-list ],
+                   "{", variant, { variant }, "}" ;
+variant          = pattern-identifier,
+                   [ "(", [ field, { ",", field } ], ")" ] ;
+match-arm        = match-pattern, "=>", expression ;
+match-pattern    = "_" | variant-pattern ;
+variant-pattern  = pattern-identifier,
+                   [ "(", [ payload-pattern, { ",", payload-pattern } ], ")" ] ;
+payload-pattern  = pattern-identifier | "_" ;
+pattern-identifier = ? an `identifier` token whose spelling is not exactly "_" ? ;
+```
+
+`pattern-identifier` is a parser-level restriction on the existing lexical
+`identifier` token; it adds no lexer token. The exact spelling `_` is reserved
+for wildcard patterns, so an enum variant cannot be named `_` and a payload
+binding spelled `_` is always a wildcard. Such a variant declaration is rejected
+by the parser with `NDO1001`. A bare variant name and an empty parenthesized
+pattern both represent a zero-payload variant; payload arity is checked against
+the resolved variant by the type checker.
+
 ### Scrutinee and patterns
 
 * The scrutinee must have a resolved enum type. User-declared enums and intrinsic
   `Result<T, E>` qualify; primitives, structs and unresolved generic parameters
-  do not. An already erroneous scrutinee does not cause a second match-type
-  diagnostic.
-* A top-level pattern is one unqualified identifier or `_`. An identifier must
-  name a variant of the scrutinee's enum. An unknown or qualified name is an
-  invalid pattern, not a new binding. This deliberately leaves module-qualified
-  patterns for the module design.
+  do not. A known non-enum scrutinee produces one `NDO2011`; variant names are
+  not checked against a type that is not an enum. An already erroneous
+  scrutinee does not cause a second match-type diagnostic.
+* Pattern dispatch examines the scrutinee's resolved type as written. It does
+  not implicitly unwrap `Verified<Enum>` or `Generated<Enum>`; the accepted
+  `Verified<T>`-to-`T` relation applies when a context expects `T`, not when
+  choosing an enum from a match scrutinee.
+* At the top level, the grammar accepts `_` or one unqualified
+  `pattern-identifier`. That identifier must name a variant of the scrutinee's
+  enum. An unknown name is an invalid pattern, not a new binding. Qualified
+  paths are outside this edition and are rejected by the parser with `NDO1001`;
+  module-qualified patterns are left for the module design.
 * `_` is a wildcard and introduces no binding. It matches any remaining
   variants, is allowed at most once, and makes every later arm unreachable.
 * A variant with no payload may be written as `Ready` or `Ready()`; both mean the
   same zero-field pattern. A variant with payload must provide exactly one
-  sub-pattern per field. Each sub-pattern is a binding identifier or `_`.
-  Nested variant patterns and literal patterns are not part of this edition.
+  sub-pattern per field. Each sub-pattern is either a binding name (a
+  `pattern-identifier`) or `_`.
+  Nested variant patterns, literal patterns and payloads on `_` are rejected by
+  the parser with `NDO1001` and are not part of this edition.
 * Payload bindings are immutable locals in that arm's scope. They receive the
   corresponding field type in declaration order, after substituting the
   scrutinee's generic arguments. Repeated binding names in one arm remain
@@ -117,29 +152,41 @@ keeping inference independent of arm order.
 * If the surrounding context already requires type `R`, each arm body is
   checked against `R`. Its ordinary assignment rules apply, including the
   top-level `Verified<T>`-to-`T` relation. A valid match has type `R`.
-* Without an expected type, all arm bodies must have the same resolved type,
-  including invariant generic arguments. The checker does not choose a common
-  supertype or infer one arm from another. Each arm whose type differs from the
-  first arm's type gets a diagnostic. If the first arm has type `Error`, the
-  match also has type `Error`; otherwise `Error` in a later arm participates in
-  recovery without creating another mismatch.
+* Without an expected type, all non-error arm bodies must have the same resolved
+  type, including invariant generic arguments. The first non-error arm is only
+  the `NDO2016` expected/found diagnostic baseline; each later non-error arm
+  with a different type gets a diagnostic. It does not coerce arms or establish
+  the match type. The checker does not choose a common supertype or infer one
+  arm from another.
 * Calls inside arms may still infer their own generic arguments from their call
   arguments. When an expected match type exists, NEP-0013 permits that type to
   reach each arm's result expression.
 
+### Error recovery
+
+The checker continues through every arm after a pattern, coverage or type
+error, so independent diagnostics remain visible. An already erroneous
+scrutinee or arm does not cause a second diagnostic solely because its type is
+`Error`. If this match reports a pattern, coverage or arm-compatibility
+diagnostic, or its scrutinee or an arm already has type `Error`, the match
+itself has type `Error`; otherwise it has the expected type `R`, or the common
+arm type when there is no expected type. The recovered match type does not
+depend on arm order; `NDO2016` expected/found orientation uses the first
+non-error arm as its diagnostic baseline.
+
 ### Proposed diagnostics
 
-These codes are proposed for the registry; none is allocated or emitted before
-acceptance:
+These codes and primary locations are proposed for the registry; none is
+allocated or emitted before acceptance:
 
-| Code | Name | Use |
-| ---- | ---- | --- |
-| `NDO2011` | `MATCH_REQUIRES_ENUM` | The scrutinee has a known non-enum type |
-| `NDO2012` | `INVALID_MATCH_PATTERN` | An unknown or qualified variant path, nested variant pattern, or payload on `_` |
-| `NDO2013` | `WRONG_VARIANT_PATTERN_ARITY` | A variant pattern has the wrong number of payload sub-patterns |
-| `NDO2014` | `NON_EXHAUSTIVE_MATCH` | One or more variants are uncovered; list them in declaration order |
-| `NDO2015` | `UNREACHABLE_MATCH_ARM` | A duplicate variant arm or an arm after `_` |
-| `NDO2016` | `MATCH_ARM_TYPE_MISMATCH` | Arm bodies disagree when no expected result type exists |
+| Code | Name | Use and primary location |
+| ---- | ---- | ------------------------ |
+| `NDO2011` | `MATCH_REQUIRES_ENUM` | The scrutinee has a known non-enum type; underline the scrutinee expression |
+| `NDO2012` | `INVALID_MATCH_PATTERN` | A syntactically valid variant identifier is not a variant of the resolved enum; underline that identifier |
+| `NDO2013` | `WRONG_VARIANT_PATTERN_ARITY` | A variant pattern has the wrong number of payload sub-patterns; underline the first excess sub-pattern, or the whole variant pattern when fields are missing |
+| `NDO2014` | `NON_EXHAUSTIVE_MATCH` | One or more variants are uncovered; underline the whole match and list missing variants in declaration order |
+| `NDO2015` | `UNREACHABLE_MATCH_ARM` | A duplicate variant arm or an arm after `_`; underline the unreachable arm's pattern head |
+| `NDO2016` | `MATCH_ARM_TYPE_MISMATCH` | Arm bodies disagree without an expected result type; underline the mismatching body and include structured expected/found types |
 
 When an expected result type exists, a body that does not satisfy it uses the
 ordinary `NDO2004` diagnostic. Pattern and coverage errors do not prevent the
@@ -170,12 +217,12 @@ checker from checking other arm bodies for independent errors.
 | Area | Effect |
 | ---- | ------ |
 | Specification | Defines enum `match` in declarations, expressions, grammar and errors |
-| Grammar | Requires at least one enum variant; narrows match patterns to one variant head with binding or wildcard payloads |
+| Grammar | Requires at least one enum variant; reserves exact `_` for wildcard patterns and narrows match patterns to one variant head with binding or wildcard payloads |
 | Compiler | `nudo-hir` must preserve wildcard and payload positions; `nudo-typeck` resolves variants, substitutes payload types, checks coverage and arm types |
 | Conformance | Adds valid, non-enum, unknown-variant, wrong-payload-count, non-exhaustive, unreachable, generic payload and arm-type cases |
 | Tooling | Parser and HIR dumps must display the accepted pattern shape; formatter and LSP can follow later |
 | Security | Explicit wildcard and static exhaustiveness make omitted `Result` and enum cases reviewable; no trust-specific bypass is introduced |
-| Compatibility | Existing syntax is pre-alpha; nested patterns and empty enums would be rejected by the accepted grammar |
+| Compatibility | Existing syntax is pre-alpha; nested patterns, empty enums and enum variants named exactly `_` would be rejected by the accepted grammar |
 | Performance | Coverage can use a bit set indexed by declaration-order variant IDs, O(V + A) time and O(V) temporary space for V variants and A arms; benchmark large enums before stabilisation |
 
 ## Open questions
