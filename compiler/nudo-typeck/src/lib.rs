@@ -1635,7 +1635,41 @@ mod tests {
     #[test]
     fn calling_something_that_is_not_a_function_is_reported() {
         let program = "let number = 1;\n\nfn main() {\n    number();\n}\n";
-        assert_eq!(codes_for(program), vec!["NDO2006".to_string()]);
+        let (sources, id, result) = checked(program);
+        let diagnostic = &result.diagnostics.as_slice()[0];
+        assert_eq!(diagnostic.code().id(), "NDO2006");
+        assert_eq!(diagnostic.message(), "this value is not a function");
+        assert!(
+            diagnostic.notes().join(" | ").contains("found: `Int`"),
+            "{:?}",
+            diagnostic.notes()
+        );
+        assert_eq!(
+            diagnostic.help(),
+            Some("only a function type can be called")
+        );
+        let file = sources.get(id).expect("just added");
+        let span = diagnostic.span().expect("the callee has a span");
+        assert_eq!(file.span_text(span), Some("number"));
+    }
+
+    #[test]
+    fn a_verified_non_callable_value_keeps_its_source_type_in_the_diagnostic() {
+        let program = "fn main(value: Verified<Int>) {\n    value();\n}\n";
+        let (sources, id, result) = checked(program);
+        let diagnostic = &result.diagnostics.as_slice()[0];
+        assert_eq!(diagnostic.code().id(), "NDO2006");
+        assert!(
+            diagnostic
+                .notes()
+                .join(" | ")
+                .contains("found: `Verified<Int>`"),
+            "{:?}",
+            diagnostic.notes()
+        );
+        let file = sources.get(id).expect("just added");
+        let span = diagnostic.span().expect("the callee has a span");
+        assert_eq!(file.span_text(span), Some("value"));
     }
 
     #[test]
