@@ -11,64 +11,70 @@ a semantic promise are different kinds of evidence.
 
 ## How to read the status column
 
-Every NUDO row carries one of four labels:
+Feature rows use one of six status labels:
 
 | Label | Meaning |
 | ----- | ------- |
 | **Implemented** | Exists in the compiler and is covered by tests or conformance cases |
 | **Partial** | Exists, but the coverage is visibly incomplete |
-| **Specified** | Decided formally in `spec/` or an accepted NEP, not implemented |
-| **Planned** | On the roadmap, not yet decided in detail |
+| **Specified** | Decided in an accepted NEP, but not yet implemented |
+| **Proposed** | Described in a chapter marked Proposed or a NEP still in Draft |
+| **Planned** | Listed on the roadmap, with design details still open |
+| **Undecided** | No accepted decision, active proposal or roadmap commitment exists |
 
 For the other languages the question is different: their features exist, and the
 honest comparison is *how* they provide them — in the language, in the standard
-library, or through an ecosystem convention.
+library, or through an ecosystem convention. Production readiness and ecosystem
+size are current facts, so those rows state them directly.
 
 ## Language-level comparison
 
 | Concern | NUDO | Python | Rust | Go | TypeScript |
 | ------- | ---- | ------ | ---- | -- | ---------- |
-| Static typing | **Partial** — primitives, calls, fields, name resolution; generics and match typing pending | Dynamic, optional annotations | Full, with inference and traits | Static, structural interfaces | Static, erased at runtime |
-| Memory model | **Specified** — no garbage collector decision yet; no borrow checker (NEP-0009) | Reference counting + cycle collector | Ownership and borrowing | Garbage collected | Garbage collected (engine) |
-| Nullability | **Specified** — no null; absence is an explicit type | `None` everywhere | `Option<T>` | Nil pointers for some types | `strictNullChecks` |
+| Static typing | **Partial** — primitives, calls, fields and name resolution work; generic instantiation and enum-match typing are incomplete | Dynamic, optional annotations | Full, with inference and traits | Static, structural interfaces | Static, erased at runtime |
+| Memory model | **Undecided** — no garbage-collection or runtime allocation model is specified; NEP-0009 rules out a borrow checker | Reference counting + cycle collector | Ownership and borrowing | Garbage collected | Garbage collected (engine) |
+| Nullability | **Proposed** — absence is written as `T?`; the types chapter is still proposed | `None` everywhere | `Option<T>` | Nil pointers for some types | `strictNullChecks` |
 | Error handling | **Specified** — `Result<T, E>` intrinsic, no `?`, traps distinct from failures (NEP-0008) | Exceptions | `Result` + `?` | `error` returns | Exceptions, or `Result` conventions |
-| Generics | **Specified** — declaration-site, bounded inference (NEP-0010, NEP-0013) | Duck typing / `typing` | Generics + traits | Generics since 1.18 | Generics, erased |
-| Pattern matching | **Partial** — parsed and recorded in HIR; typing and exhaustiveness in progress | `match` since 3.10 | `match`, exhaustive | Limited `switch`, no destructuring | Discriminated unions by convention |
+| Generics | **Partial** — syntax is accepted and parsed; type-checker instantiation and inference remain incomplete (NEP-0010, NEP-0013) | Duck typing / `typing` | Generics + traits | Generics since 1.18 | Generics, erased |
+| Pattern matching | **Partial** — `match` syntax and HIR are implemented; enum-variant typing remains undecided and is not implemented | `match` since 3.10 | `match`, exhaustive | Limited `switch`, no destructuring | Discriminated unions by convention |
 | Immutability | **Specified** — bindings immutable by rule, no `mut` (NEP-0009) | No | Opt-in `let` / `mut` | No | `const` only |
-| Effects | **Specified** — effect system chapter, not implemented | No | No (traits approximate) | No | No |
-| Capabilities / permissions | **Specified** — `capability` declarations checked before a call (NEP-0003) | Library or OS | Library or OS | Library or OS | Library or OS |
-| Provenance of generated values | **Specified** — `Generated<T>` and `Verified<T>` as distinct types (NEP-0002, NEP-0014) | Convention | Convention | Convention | Convention |
-| First-class agents, tools, models | **Specified** — keywords and type forms exist in the grammar; no runtime | Libraries (LangChain, etc.) | Libraries | Libraries | Libraries |
-| Deterministic verification of model output | **Specified** — `verify` yields `Result<Verified<T>, VerificationError>` | Custom code | Custom code | Custom code | Custom code |
+| Effects | **Proposed** — the effects chapter and NEP-0004 are not accepted; checking is planned for M5 | No | No (traits approximate) | No | No |
+| Capabilities / permissions | **Proposed** — the capability chapter is proposed and NEP-0003 is Draft; no call checks exist | Library or OS | Library or OS | Library or OS | Library or OS |
+| Trust types | **Specified** — `Generated<T>` and `Verified<T>` are distinct (NEP-0002, NEP-0014); implementation is pending | Convention | Convention | Convention | Convention |
+| Provenance | **Proposed** — the provenance chapter is proposed; runtime records are planned for M6 | Convention | Convention | Convention | Convention |
+| First-class agents, tools, models | **Proposed** — syntax is parsed, but declaration meaning and runtime chapters remain proposed | Libraries (LangChain, etc.) | Libraries | Libraries | Libraries |
+| Verification of generated values | **Specified** — accepted NEP-0002 requires a named deterministic verifier and a `Result`; model calls cannot act as verifiers | Custom code | Custom code | Custom code | Custom code |
 | Tooling | **Partial** — `nudo check` only; no formatter, LSP or REPL yet | Mature | Mature | Mature | Mature |
-| Package management | **Planned** | pip / uv | Cargo | modules | npm |
+| Package management | **Proposed** — the modules chapter is proposed; no package manager exists | pip / uv | Cargo | modules | npm |
 | Execution | **Planned** — interpreter is M4 | Interpreter | Native | Native | Engine |
 | Compilation targets | **Planned** — WASM backend is a planned milestone | CPython, PyPy | Native, WASM | Native, WASM | JavaScript |
 | Self-hosting | **Planned** — Rust is the bootstrap language by decision | No | Yes | Yes | No |
 | Production readiness | **No** — pre-alpha, explicitly not fit for production | Yes | Yes | Yes | Yes |
 | Ecosystem size | Tiny: this repository | Very large | Large | Large | Very large |
 
-## What NUDO proposes that the others do not put in the language
+## What NUDO intends to put in the language
 
-These are **specified, not implemented**. They are the reason the language
-exists, and they are also the reason it cannot yet be compared on equal terms.
+These ideas explain why the language exists, but their design status differs.
+Some rules have been accepted; other chapters and NEPs remain proposals. None
+of these features is fully implemented.
 
-1. **Trust as a type.** `Generated<T>` and `Verified<T>` are distinct, with no
-   conversion between them, and `verify` is the only operation that produces the
-   second. In Python, Rust, Go and TypeScript this is a naming convention plus a
-   reviewer. NUDO's claim is that a compiler can reject the mistake, not that its
-   authors are more careful.
-2. **Capabilities checked before a call.** A function that needs a capability
-   declares it, and the checker refuses a call without it. The other four can do
-   this with a library, an OS sandbox or a framework; the difference is whether
-   the build can prove it.
-3. **Budgets, memory and traces as language concepts.** A task can carry a token
-   budget and a trace identifier that the type system and the runtime know about.
-   In the other languages these live in configuration and dashboards.
+1. **Trust as a type — Specified.** `Generated<T>` and `Verified<T>` are distinct,
+   with no conversion between them, and `verify` is the only operation that
+   produces the second. In Python, Rust, Go and TypeScript this is a naming
+   convention plus a reviewer. NUDO's design specifies a compiler-checkable rule;
+   the checker does not implement it yet.
+2. **Capabilities checked before a call — Proposed.** A function that needs a
+   capability declares it, and the checker refuses a call without it. The other
+   four can do this with a library, an OS sandbox or a framework; the difference
+   would be whether the build can prove it.
+3. **Budgets, memory and traces as language concepts — Proposed.** A task can
+   carry a token budget and a trace identifier that the type system and the
+   runtime know about. In the other languages these live in configuration and
+   dashboards.
 
-None of these is unique as an *idea*. They are unique as a *language-level
-commitment*, and that commitment is what M3.3 and M4 must turn into something a
-build can demonstrate.
+None of these is unique as an *idea*. The accepted decisions and open proposals
+show which parts of the language-level design are settled and which still need
+review before a build can demonstrate them.
 
 ## What the others already do better, today
 
@@ -108,14 +114,13 @@ end, with the methodology in [`benchmarks/README.md`](../../benchmarks/README.md
 A language that has not run a program cannot be called safe. It can only be
 called explicit about what it intends to guarantee.
 
-## Bottom line
+## Where NUDO stands
 
-NUDO is not a better Python, Rust, Go or TypeScript today. It is a research
-language with a written specification, a working lexer, parser, HIR and a first
-type-checking slice. Its differentiator is a design commitment: treat agents,
-tools, models, permissions, budgets and provenance as things the language
-understands, and make the compiler able to prove what it claims.
+NUDO is not a better Python, Rust, Go or TypeScript today. It is a pre-alpha
+language project with a written specification, a working lexer, parser, HIR and
+a first type-checking slice. Its intended direction is to treat agents, tools,
+models, permissions, budgets and provenance as language concepts, then make the
+compiler able to prove the guarantees that become accepted rules.
 
-That commitment becomes testable at M3.3 (trust types) and demonstrable at M4
-(the first program that runs end to end). Until then, this page exists to keep
-the claims smaller than the evidence.
+The accepted trust rules become testable at M3.3, and a running program is
+planned for M4. Until then, this page keeps claims smaller than the evidence.
