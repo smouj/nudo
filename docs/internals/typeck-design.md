@@ -90,7 +90,7 @@ fill in cases instead of redesigning the centre:
 | Function types | `Fn(A, B) -> C` annotations keep parameter and result types as a function type, so function-valued parameters can be called and participate in structural comparison and bounded inference |
 | Generic calls | Argument-driven inference in source order, then inference from a known expected result type; substitutions recurse through nested named and function types |
 | Numeric arithmetic | On `Int` or `Float` values (including `Verified<T>` values assignable to those primitives), `+`, `-`, `*` and `/` require matching types; `%` is `Int`-only; unary `-` preserves the primitive result type; mismatches report `NDO2004` |
-| Trust assignment | The resolved built-in `Verified<T>` is usable where `T` is expected; `Generated<T>` is not, and the relation does not widen nested generic arguments |
+| Trust assignment | The resolved built-in `Verified<T>` is usable where `T` is expected, including supported field access and calls through its inner type; `Generated<T>` is not, and the relation does not widen nested generic arguments |
 | One diagnostic shape | `expected` and `found` as structure, never as prose to re-parse |
 
 The diagnostic points at the **value**, not at the name it was bound to: the

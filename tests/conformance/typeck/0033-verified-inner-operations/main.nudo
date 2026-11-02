@@ -1,0 +1,11 @@
+struct Article {
+    title: Text
+}
+
+fn headline(article: Verified<Article>) -> Text {
+    article.title
+}
+
+fn apply(operation: Verified<Fn(Int) -> Int>, value: Int) -> Int {
+    operation(value)
+}

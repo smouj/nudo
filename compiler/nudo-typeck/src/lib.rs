@@ -678,8 +678,9 @@ impl Checker<'_> {
         expected_result: Option<&Type>,
     ) -> Type {
         let callee_type = self.type_of_expression(callee);
-        let Type::Function { parameters, result } = callee_type.clone() else {
-            if !callee_type.is_error() {
+        let callable_type = self.assignable_view(&callee_type).clone();
+        let Type::Function { parameters, result } = callable_type.clone() else {
+            if !callable_type.is_error() {
                 let span = self.hir.expr(callee).map_or_else(zero_span, |it| it.span);
                 self.diagnostics.push(
                     Diagnostic::error(codes::NOT_CALLABLE, "this value is not a function")
@@ -817,6 +818,7 @@ impl Checker<'_> {
     /// slice: saying nothing beats inventing a rule for reaching into a variant.
     fn type_of_field(&mut self, receiver: ExprId, name: &str, name_span: Span) -> Type {
         let receiver_type = self.type_of_expression(receiver);
+        let receiver_type = self.assignable_view(&receiver_type).clone();
         if receiver_type.is_error() {
             return Type::Error;
         }
@@ -1150,30 +1152,30 @@ impl Checker<'_> {
     /// resolved definition identities prevents a type parameter with the same
     /// spelling from acquiring this privilege.
     fn is_assignable(&self, found: &Type, expected: &Type) -> bool {
-        if found.is_compatible_with(expected) {
-            return true;
-        }
-        let mut candidate = found;
+        found.is_compatible_with(expected)
+            || self.assignable_view(found).is_compatible_with(expected)
+    }
+
+    /// Returns the type a value can be used as after applying the accepted
+    /// `Verified<T>`-to-`T` relation. The relation is transparent in supported
+    /// use positions such as numeric operations, field access and calls; it does
+    /// not recurse into generic arguments or function components.
+    fn assignable_view<'a>(&self, ty: &'a Type) -> &'a Type {
+        let mut candidate = ty;
         loop {
-            if candidate.is_compatible_with(expected) {
-                return true;
-            }
             let Type::Named {
                 definition,
                 arguments,
                 ..
             } = candidate
             else {
-                return false;
+                return candidate;
             };
-            if arguments.len() != 1 {
-                return false;
-            }
             let is_builtin_verified = self
                 .builtin_verified
                 .is_some_and(|builtin| definition.resolved() == Some(builtin));
-            if !is_builtin_verified {
-                return false;
+            if !is_builtin_verified || arguments.len() != 1 {
+                return candidate;
             }
             candidate = &arguments[0];
         }
@@ -1714,6 +1716,32 @@ mod tests {
     fn generic_struct_fields_use_the_receiver_type_arguments() {
         let program = "struct Box<T> {\n    value: T\n}\n\nstruct Wrap<U> {\n    inner: Box<U>\n}\n\nfn get<T>(wrap: Wrap<T>) -> T {\n    wrap.inner.value\n}\n\nfn get_int(box: Box<Int>) -> Int {\n    box.value\n}\n";
         assert_eq!(codes_for(program), Vec::<String>::new());
+    }
+
+    #[test]
+    fn verified_values_use_their_inner_type_for_fields_and_calls() {
+        let program = "struct Article {\n    title: Text\n}\n\
+                       fn headline(article: Verified<Article>) -> Text {\n\
+                           article.title\n\
+                       }\n\
+                       fn apply(operation: Verified<Fn(Int) -> Int>, value: Int) -> Int {\n\
+                           operation(value)\n\
+                       }\n";
+        let (_, _, hir, result) = checked_with_hir(program);
+        assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+
+        for (name, expected) in [("headline", Type::Text), ("apply", Type::Int)] {
+            let definition = hir
+                .defs()
+                .iter()
+                .find(|definition| definition.name == name)
+                .unwrap_or_else(|| panic!("missing function `{name}`"));
+            assert_eq!(
+                result.type_of_expr(definition.value.expect("function has a body")),
+                Some(&expected),
+                "the body of `{name}` should have its declared result type"
+            );
+        }
     }
 
     #[test]
