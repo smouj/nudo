@@ -15,8 +15,8 @@
 //!
 //! | Stage | Timed region | Isolated? |
 //! | ----- | ------------ | --------- |
-//! | `lex` | `tokenize` on a registered source | yes |
-//! | `parse` | `tokenize` + `parse` | no: parsing needs a token stream |
+//! | `lex` | `tokenize` on a pre-registered source | yes |
+//! | `parse` | `tokenize` + `parse` on a pre-registered source | no: parsing needs a token stream |
 //! | `hir` | `lower` on a pre-built syntax tree | yes |
 //! | `typeck` | `check` on a pre-built HIR | yes |
 //!
@@ -34,7 +34,7 @@ use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 use nudo_hir::lower;
 use nudo_parser::parse;
-use nudo_source::SourceMap;
+use nudo_source::{SourceId, SourceMap};
 use nudo_typeck::check;
 
 /// Timed iterations per case unless overridden on the command line.
@@ -346,10 +346,12 @@ fn percentile(sorted: &[u128], percentile: f64) -> u128 {
 /// The per-case setup that must happen *outside* the timed region.
 enum Prepared {
     Lex {
-        source: String,
+        sources: SourceMap,
+        source_id: SourceId,
     },
     Parse {
-        source: String,
+        sources: SourceMap,
+        source_id: SourceId,
     },
     Hir {
         source_id: nudo_source::SourceId,
@@ -364,22 +366,22 @@ enum Prepared {
 impl Prepared {
     fn new(case: &Case) -> Self {
         match case.stage {
-            Stage::Lex => Self::Lex {
-                source: case.source.clone(),
-            },
-            Stage::Parse => Self::Parse {
-                source: case.source.clone(),
-            },
+            Stage::Lex => {
+                let (sources, source_id) = register_source(&case.source);
+                Self::Lex { sources, source_id }
+            }
+            Stage::Parse => {
+                let (sources, source_id) = register_source(&case.source);
+                Self::Parse { sources, source_id }
+            }
             Stage::Hir => {
-                let mut sources = SourceMap::new();
-                let source_id = sources.add("nudo-bench.nudo", case.source.as_str());
+                let (sources, source_id) = register_source(&case.source);
                 let file = sources.get(source_id).expect("just added");
                 let tree = parse(file).into_parts().0;
                 Self::Hir { source_id, tree }
             }
             Stage::Typeck => {
-                let mut sources = SourceMap::new();
-                let source_id = sources.add("nudo-bench.nudo", case.source.as_str());
+                let (sources, source_id) = register_source(&case.source);
                 let file = sources.get(source_id).expect("just added");
                 let tree = parse(file).into_parts().0;
                 let hir = lower(&tree, source_id).hir;
@@ -390,24 +392,22 @@ impl Prepared {
 
     const fn unit(&self) -> &'static str {
         match self {
-            Self::Lex { .. } | Self::Parse { .. } => "tokens",
-            Self::Hir { .. } | Self::Typeck { .. } => "definitions",
+            Self::Lex { .. } => "tokens",
+            Self::Parse { .. } => "syntax nodes",
+            Self::Hir { .. } => "definitions",
+            Self::Typeck { .. } => "expression entries",
         }
     }
 
     /// Runs the timed region and returns the unit count it observed.
     fn run(&self) -> usize {
         match self {
-            Self::Lex { source } => {
-                let mut sources = SourceMap::new();
-                let id = sources.add("nudo-bench.nudo", source.as_str());
-                let file = sources.get(id).expect("just added");
+            Self::Lex { sources, source_id } => {
+                let file = sources.get(*source_id).expect("registered in setup");
                 black_box(nudo_lexer::tokenize(file).tokens().len())
             }
-            Self::Parse { source } => {
-                let mut sources = SourceMap::new();
-                let id = sources.add("nudo-bench.nudo", source.as_str());
-                let file = sources.get(id).expect("just added");
+            Self::Parse { sources, source_id } => {
+                let file = sources.get(*source_id).expect("registered in setup");
                 let parsed = parse(file);
                 black_box(parsed.tree().node_count())
             }
@@ -421,6 +421,13 @@ impl Prepared {
             }
         }
     }
+}
+
+/// Registers a source before the timed region starts.
+fn register_source(source: &str) -> (SourceMap, SourceId) {
+    let mut sources = SourceMap::new();
+    let source_id = sources.add("nudo-bench.nudo", source);
+    (sources, source_id)
 }
 
 // ------------------------------------------------------------- generators ---
@@ -520,16 +527,33 @@ fn command(program: &str, args: &[&str]) -> Option<String> {
 }
 
 fn cpu_description() -> String {
+    #[cfg(target_os = "linux")]
     if let Ok(text) = std::fs::read_to_string("/proc/cpuinfo") {
         for line in text.lines() {
-            if let Some(model) = line.strip_prefix("model name") {
-                return model
-                    .trim_start_matches(|c: char| c == ':' || c.is_whitespace())
-                    .to_string();
+            if let Some((key, value)) = line.split_once(':') {
+                if matches!(key.trim(), "model name" | "Hardware" | "Processor") {
+                    let model = value.trim();
+                    if !model.is_empty() {
+                        return model.to_string();
+                    }
+                }
             }
         }
     }
-    std::env::consts::ARCH.to_string()
+
+    #[cfg(target_os = "macos")]
+    if let Some(model) = command("sysctl", &["-n", "machdep.cpu.brand_string"]) {
+        return model;
+    }
+
+    #[cfg(target_os = "windows")]
+    if let Ok(model) = std::env::var("PROCESSOR_IDENTIFIER") {
+        if !model.trim().is_empty() {
+            return model;
+        }
+    }
+
+    "unknown".to_string()
 }
 
 impl Report {
@@ -643,16 +667,17 @@ fn print_text(report: &Report) {
         report.metadata.iterations, report.metadata.warmup
     );
     println!(
-        "{:<6} {:<16} {:>9} {:>9} {:>10} {:>10} {:>10} {:>12}",
-        "stage", "case", "bytes", "units", "min", "median", "p95", "throughput"
+        "{:<6} {:<16} {:>9} {:>9} {:<18} {:>10} {:>10} {:>10} {:>12}",
+        "stage", "case", "bytes", "count", "unit", "min", "median", "p95", "throughput"
     );
     for case in &report.cases {
         println!(
-            "{:<6} {:<16} {:>9} {:>9} {:>10} {:>10} {:>10} {:>12}",
+            "{:<6} {:<16} {:>9} {:>9} {:<18} {:>10} {:>10} {:>10} {:>12}",
             case.stage.as_str(),
             case.case,
             case.bytes,
             case.units,
+            case.unit,
             format_duration(case.min_ns),
             format_duration(case.median_ns),
             format_duration(case.p95_ns),
@@ -1104,5 +1129,77 @@ const fn utf8_width(first: u8) -> usize {
         3
     } else {
         4
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn stages_report_the_units_they_count() {
+        let source = "fn identity(value: Int) -> Int { value }\n";
+        let expected = [
+            (Stage::Lex, "tokens"),
+            (Stage::Parse, "syntax nodes"),
+            (Stage::Hir, "definitions"),
+            (Stage::Typeck, "expression entries"),
+        ];
+
+        for (stage, unit) in expected {
+            let case = Case {
+                case: "test",
+                stage,
+                source: source.to_string(),
+            };
+            let prepared = Prepared::new(&case);
+            assert_eq!(prepared.unit(), unit);
+            assert!(prepared.run() > 0, "{} produced no {unit}", stage.as_str());
+        }
+    }
+
+    #[test]
+    fn cpu_metadata_has_an_explicit_fallback() {
+        assert!(!cpu_description().trim().is_empty());
+    }
+
+    #[test]
+    fn emitted_json_can_be_read_back_as_a_comparison_baseline() {
+        let report = Report {
+            metadata: Metadata {
+                commit: "deadbeef".to_string(),
+                dirty: false,
+                rustc: "rustc 1.85.0".to_string(),
+                os: "test-os".to_string(),
+                arch: "test-arch".to_string(),
+                cpu: "test-cpu".to_string(),
+                iterations: 1,
+                warmup: 0,
+                timestamp_unix: 1,
+                label: None,
+            },
+            cases: vec![CaseResult {
+                case: "identity",
+                stage: Stage::Typeck,
+                bytes: 32,
+                units: 4,
+                unit: "expression entries",
+                min_ns: 125,
+                median_ns: 125,
+                p95_ns: 125,
+                mean_ns: 125,
+                throughput_mib_s: 0.25,
+                iterations: 1,
+            }],
+        };
+
+        let baseline = Baseline::parse(&report.to_json()).expect("emitted JSON is valid");
+        assert_eq!(baseline.metadata_commit, "deadbeef");
+        assert_eq!(
+            baseline
+                .medians
+                .get(&(String::from("typeck"), String::from("identity"))),
+            Some(&125)
+        );
     }
 }

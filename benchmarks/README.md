@@ -9,8 +9,9 @@ cargo run --release --package nudo-bench -- --iterations 1000 --warmup 100
 ```
 
 Every run records the commit, whether the tree was dirty, the Rust version, the
-operating system, the architecture, the CPU model and the iteration counts. A
-number without that context is not a measurement, it is an anecdote.
+operating system, the architecture, the CPU model when the host exposes it (or
+`unknown`), and the iteration counts. A number without that context is not a
+measurement, it is an anecdote.
 
 ## What it measures
 
@@ -18,8 +19,8 @@ The suite separates stages that can be isolated and says plainly when it cannot:
 
 | Stage | Timed region | Isolated? |
 | ----- | ------------ | --------- |
-| `lex` | `tokenize` on a registered source | yes |
-| `parse` | `tokenize` + `parse` | no: a parser needs a token stream |
+| `lex` | `tokenize` on a pre-registered source | yes |
+| `parse` | `tokenize` + `parse` on a pre-registered source | no: a parser needs a token stream |
 | `hir` | `lower` on a pre-built syntax tree | yes |
 | `typeck` | `check` on a pre-built HIR | yes |
 
@@ -39,8 +40,8 @@ harness rather than the parser.
 | `comments` | 2 000 comment-heavy blocks, line and block |
 
 Each case runs at every stage above, so the table has sixteen rows. Inputs are
-generated deterministically before timing, and a run reports the number of
-tokens or definitions it observed as `units`.
+generated deterministically before timing, and a run reports each stage's
+observed output count as `units`.
 
 ## Metrics
 
@@ -51,7 +52,10 @@ tokens or definitions it observed as `units`.
 | `p95` | 95th percentile; shows the tail |
 | `mean` | Arithmetic mean; reported for completeness, not used for verdicts |
 | `throughput` | MiB/s of source text, from the median |
-| `units` | Tokens (lex, parse) or definitions (hir, typeck) observed |
+| `units` | Tokens (lex), syntax nodes (parse), definitions (hir), or expression entries (typeck) observed |
+
+The text report shows the count and its unit in separate columns. JSON stores
+the same values as `units` and `unit`.
 
 Percentiles are nearest-rank. Memory and allocation counts are **not** reported:
 measuring them without a profiler would mean injecting an allocator into the
