@@ -1,0 +1,8 @@
+# nudo-typeck v1
+def 0009 struct `Box` 1:8: <unknown>
+def 0010 struct `Wrap` 5:8: <unknown>
+def 0011 function `get` 9:4: Fn(Wrap<T>) -> T
+def 0012 type-parameter `T` 1:12: <unknown>
+def 0013 type-parameter `U` 5:13: <unknown>
+def 0014 type-parameter `T` 9:8: <unknown>
+def 0015 parameter `wrap` 9:11: Wrap<T>

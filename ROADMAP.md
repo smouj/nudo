@@ -156,12 +156,19 @@ work rather than left as a surprise.
 `nudo-typeck` is implemented and growing by vertical slices. It types
 primitives and literals, compares annotations, types paths from resolution, and
 reports `NDO2004` with structured `expected` and `found`. Calls are checked
-for arity (`NDO2005`), argument types and callability (`NDO2006`). Nominal
-declarations now carry their structure in HIR, field access is typed with
-`NDO2007`, and match arms carry the pattern information the checker needs.
-Generic instantiation, match typing and exhaustiveness, nominal construction and
-`Result<T, E>` are the next slices. Until a rule exists, the checker stays
-silent rather than inventing semantics. See
+for arity (`NDO2005`), argument types (`NDO2004`) and callability (`NDO2006`);
+malformed calls still check matched arguments and nested errors in excess arguments.
+Nominal declarations now carry their structure in HIR; field access is typed
+with `NDO2007`, and generic calls use argument- and context-driven inference, with
+generic field types substituted from the receiver. `if` conditions are checked
+as `Bool`, branch expressions are checked recursively, and the expected
+condition type reaches generic inference; the conditional result and branch
+agreement remain unspecified. Deferred expression forms also check their
+children for supported rules. Numeric arithmetic typing is in place. The next
+slices are a stable diagnostic for unresolved generic parameters, the remaining
+operator and index rules, match typing and exhaustiveness, nominal construction,
+and `Result<T, E>`. Until a rule exists, the checker stays silent rather than
+inventing semantics. See
 [`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
 
 Two gates are taken before this one is written, so that the checker is written
@@ -171,33 +178,90 @@ the arguments and the expected type, and
 rules of their own.
 
 * [x] Primitive types: `Int` (with NEP-0007's rules), `Float`, `Bool`, `Text`,
-      `Unit` — typed in the first slice; `Int`'s arithmetic rules arrive with
-      expression typing
+      `Unit` — typed in the first slice; numeric operator typing is now part of
+      M3.2, while evaluation and literal range checking remain later work
 * [x] Arity checking: a call passes exactly what the signature takes
 * [x] Nominal structure and field access: HIR records a `struct`'s fields and an
-      `enum`'s variants, and `article.title` is typed, with `NDO2007` when the
-      field does not exist
+      `enum`'s variants; generic field types are instantiated from the receiver,
+      and `article.title` reports `NDO2007` when the field does not exist
 * [ ] **Construction of a nominal value.** Nothing in the grammar builds one:
       there is no `struct-expression`, no `enum-literal` and no field initialiser,
       so a program can hold a nominal value (a parameter, a return) but cannot
       make one. It needs a NEP - the syntax is a language decision, not a parser
       gap - and it is recorded here rather than invented in the checker.
-* [ ] Generic instantiation and bounded inference, following accepted
+* [x] Generic inference from call arguments and already-known expected result
+      types, left to right and through nested named and function types, following
       [NEP-0013](neps/0013-generic-inference.md)
+* [x] Type-argument arity for user types, type parameters and intrinsic types;
+      `NDO2017` points at the invalid type use, including fields and enum payloads
+* [x] Numeric arithmetic typing: matching numeric `Int` or `Float` operands
+      preserve their type for `+`, `-`, `*` and `/`; `%` is `Int`-only, and
+      unary `-` preserves its numeric operand type
+* [ ] Logical negation, logical/equality/comparison operators and index typing
+* [ ] A stable diagnostic for generic parameters that remain unresolved
+      (NEP-0013)
 * [ ] `match` typing: variant validation, payload binding, arm type agreement
       and exhaustiveness; HIR already records each arm's pattern
 * [ ] `Result<T, E>` as an intrinsic type, using the same exhaustive `match`
       rules as every other enum
 * [x] Function types and calls; no implicit numeric conversion
+* [x] `if` conditions are checked as `Bool`; branch expressions are checked
+      recursively, with expected type propagated for generic inference
+* [x] Deferred expression forms recursively check child expressions for
+      supported rules while their own typing rules remain pending
 * [ ] Agent, task and tool type declarations
 * [ ] Type errors with stable `NDO2xxx` codes
 
+#### M3.2 readiness audit
+
+The implemented rules above have accepted semantics and conformance coverage.
+For the remaining work, a language rule is ready only when its semantic and
+diagnostic contracts are accepted; a Draft NEP is not an implementation target.
+
+**READY — semantics-preserving work:**
+
+* Audit and improve tests, diagnostics, robustness and measured performance for
+  the rules already implemented, without changing which programs those rules
+  accept.
+
+**BLOCKED_BY_SPEC — do not implement until the named decision is accepted:**
+
+* **Integer literal range checking:** NEP-0007 accepts signed 64-bit `Int` and
+  requires out-of-range literals to fail. NEP-0019 (Draft) decides whether the
+  `2^63` magnitude is valid under unary minus and proposes the stable diagnostic
+  `NDO2010`; do not implement boundary diagnostics until that contract is
+  accepted.
+* **Boolean operators:** typing and short-circuit evaluation for `!`, `&&` and
+  `||` are proposed in NEP-0017 (Draft).
+* **Uninferable generic parameters:** stable diagnostics and recovery are
+  proposed in NEP-0015 (Draft).
+* **Omitted function result types:** the current rules conflict; NEP-0016 is
+  Draft.
+* **`match` and `Result<T, E>`:** variant resolution, payload binding, arm
+  agreement and exhaustiveness are proposed in NEP-0020 (Draft); `Result`
+  checking depends on those rules.
+* **Equality, ordering and indexing:** complete operand, result and runtime
+  rules have not been accepted.
+* **Conditional result agreement:** the checker verifies `if` conditions and
+  visits branches, but no accepted rule defines the conditional's result type.
+* **Nominal construction:** the grammar has no struct or enum construction
+  syntax; a NEP must decide it before implementation.
+* **Agent, task and tool types:** their declaration semantics remain proposed
+  in the agent chapters; NEP-0001 (Draft) covers agent types.
+
 ### M3.3 — The trust types
 
-* [ ] `Generated<T>` and `Verified<T>` as distinct types, with no conversion
-      between them
-* [ ] `verify` yielding `Result<Verified<T>, VerificationError>`
-* [ ] Conformance cases: conversion rejection, verification failure, provenance
+* [x] `Generated<T>` and `Verified<T>` are distinct types with no conversion
+      between them; conformance pins both accepted same-type flow and rejection
+      in each direction
+* [x] The resolved built-in `Verified<T>` is usable where `T` is expected, as
+      specified by NEP-0002 and NEP-0014; generic arguments stay invariant
+* [ ] `verify` yields `Result<Verified<T>, VerificationError>` after the
+      verifier declaration and deterministic contract are statically checkable
+      (NEP-0018; **Draft**)
+* [x] Conformance cases: trust-type identity, rejected implicit conversions,
+      shadowed built-in names, and invariant generic arguments
+* [ ] Conformance cases: verification failure and provenance
 
 **Exit criteria for M3:** the program below is *rejected*, and the one after it is
 accepted, both pinned by conformance cases:
@@ -273,7 +337,10 @@ error, with a diagnostic that names the effect and the path that introduced it.
 
 ## M6 — `Generated<T>` and `Verified<T>` — **planned**
 
-* [ ] Verifier protocol, and `verify` in the grammar
+* [x] Restricted `verify value with Verifier` syntax and HIR representation
+      (M2/M3.1)
+* [ ] Statically checkable verifier declaration and deterministic contract
+      (NEP-0018; **Draft**)
 * [ ] Provenance records attached to verified values (`nudo-provenance`)
 * [ ] Execution traces (`nudo-trace`)
 * [ ] `nudo trace`

@@ -111,7 +111,9 @@ struct Pair<A, B> {
 
 ## Implementation status
 
-**Not implemented.** The grammar in [`grammar/nudo.ebnf`](../grammar/nudo.ebnf)
-gains the production with this NEP; `nudo-parser` accepts it in M3.1, and the
-checker's instantiation rules are M3.2. Until then, `examples/04-results` remains
-a preview and says so.
+**Partially implemented.** The parser and HIR accept declaration-site
+parameters; `nudo-typeck` checks type-argument arity for user types, type
+parameters and intrinsic types with `NDO2017`, and implements bounded inference
+for generic calls and fields. Generic matching, `Result` handling and the
+remaining M3.2 rules are still pending, so `examples/04-results` remains a
+preview.

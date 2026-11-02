@@ -1,0 +1,15 @@
+struct Box<T> {
+    value: T
+}
+
+fn empty<T>() -> Box<T> {
+    empty()
+}
+
+fn make_text() -> Box<Text> {
+    empty()
+}
+
+fn main() {
+    let answer: Box<Text> = empty();
+}

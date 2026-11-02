@@ -158,6 +158,7 @@ The token set of the pre-alpha toolchain:
 | `Arrow` | `->` | `Star` | `*` |
 | `FatArrow` | `=>` | `Slash` | `/` |
 | `Equals` | `=` | `Semi` | `;` |
+| `Percent` | `%` |  |  |
 
 Longest match wins: `==` is one token, `=` and `=` are two. `->` and `=>` are
 single tokens, and there is no shift operator, so `>>` is two `Gt` tokens — which
@@ -165,7 +166,8 @@ is what makes `Result<Result<Int, Text>, Text>` close properly.
 
 `&` and `|` on their own are not tokens: they are reported as `NDO1002`, because
 NUDO has no bitwise operators. `/` is a comment only when followed by `/` or
-`*`; otherwise it is `Slash`.
+`*`; otherwise it is `Slash`. `%` is the integer remainder operator
+([NEP-0007](../neps/0007-integer-semantics.md)).
 
 ## Unknown characters
 

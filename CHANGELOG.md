@@ -17,6 +17,23 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **M3.3: trust types follow their accepted assignment rule.** The resolved
+  built-in `Verified<T>` can be used where `T` is expected, including function
+  arguments, return values and numeric operations. `Generated<T>` remains
+  separate, generic arguments remain invariant, and type parameters named `Int`
+  or `Verified` do not gain built-in behavior. Conformance covers accepted flow,
+  rejected conversions and invariant nested arguments; `verify` and provenance
+  remain pending.
+
+* **Type checking continues through malformed calls.** Wrong argument counts
+  (`NDO2005`) and non-callable callees (`NDO2006`) no longer hide mismatches in
+  arguments that have a matching parameter or independent nested errors in
+  excess arguments.
+
+* **Type-checker type trees share immutable child storage.** Cloning a named or
+  function type shares its argument or parameter types instead of copying those
+  arrays.
+
 * **HIR records what a `match` arm matches.** An arm now carries its pattern's
   head as written, the definitions the pattern introduces and its body. It is
   recorded rather than decided on purpose: whether a head is a variant of the
@@ -127,6 +144,17 @@ would be a promise the project cannot keep.
   tests.
 
 ### Fixed
+
+* **Named type-argument arity is checked.** Structs, enums, type parameters and
+  intrinsic types now require their exact arity; `NDO2017` points to the invalid
+  type use, including annotations on fields and enum payloads. Invalid type
+  references recover as `Error` and do not create follow-up mismatches.
+
+* **Function type annotations keep their callable shape.** A function-valued
+  parameter such as `Fn(T) -> T` can be called in its body, accepts a matching
+  function value, and participates in bounded generic inference. HIR now records
+  composite type forms explicitly instead of encoding function types as an
+  unresolved display-name string.
 
 * **The documentation gate reads repository content, not the working tree.**
   `scripts/check-docs.py` walked every directory except a hand-written list of

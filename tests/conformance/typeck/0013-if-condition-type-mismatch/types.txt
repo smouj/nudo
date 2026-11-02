@@ -1,0 +1,2 @@
+# nudo-typeck v1
+def 0009 function `main` 1:4: Fn() -> Unit

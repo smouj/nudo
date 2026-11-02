@@ -1,0 +1,8 @@
+# nudo-typeck v1
+def 0009 function `apply` 1:4: Fn(Fn(T) -> T, T) -> T
+def 0010 function `increment` 5:4: Fn(Int) -> Int
+def 0011 function `run` 9:4: Fn() -> Int
+def 0012 type-parameter `T` 1:10: <unknown>
+def 0013 parameter `operation` 1:13: Fn(T) -> T
+def 0014 parameter `value` 1:38: T
+def 0015 parameter `value` 5:14: Int

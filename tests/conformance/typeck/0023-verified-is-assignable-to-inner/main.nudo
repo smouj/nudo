@@ -1,0 +1,12 @@
+fn accept_int(value: Int) {}
+
+fn return_int(value: Verified<Int>) -> Int { value }
+fn return_generic<T>(value: Verified<T>) -> T { value }
+
+fn main(verified: Verified<Int>) {
+    accept_int(verified);
+    let direct: Int = verified;
+    let computed: Int = verified + 1;
+    let negated: Int = -verified;
+    let remainder: Int = verified % 2;
+}

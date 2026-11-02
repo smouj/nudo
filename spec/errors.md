@@ -46,6 +46,7 @@ program.
 | `NDO2005` | `WRONG_ARGUMENT_COUNT` | error | **implemented** (type checker, M3.2) |
 | `NDO2006` | `NOT_CALLABLE` | error | **implemented** (type checker, M3.2) |
 | `NDO2007` | `UNKNOWN_FIELD` | error | **implemented** (type checker, M3.2) |
+| `NDO2017` | `WRONG_TYPE_ARGUMENT_COUNT` | error | **implemented** (type checker, M3.2) |
 | `NDO1002` | `UNKNOWN_CHARACTER` | error | **implemented** |
 | `NDO1003` | `UNTERMINATED_STRING` | error | **implemented** |
 | `NDO1004` | `UNTERMINATED_BLOCK_COMMENT` | error | **implemented** |

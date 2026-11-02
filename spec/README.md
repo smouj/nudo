@@ -36,8 +36,8 @@ test pass is forbidden — see [`../AGENTS.md`](../AGENTS.md).
 | [`grammar.md`](grammar.md) | Where the grammar lives and how to read it | **Implemented** (M2) |
 | [`declarations.md`](declarations.md) | Items: functions, structs, enums, agents, tasks, tools | Syntax implemented (M2); meaning proposed |
 | [`expressions.md`](expressions.md) | Expressions, statements, control flow | Syntax implemented (M2); agentic forms provisional |
-| [`types.md`](types.md) | The type system, including trust types | Proposed |
-| [`generics.md`](generics.md) | Generic parameters, bounds and inference | Syntax implemented (M2); the rest open |
+| [`types.md`](types.md) | The type system, including trust types | Partly decided; checking in progress (M3.2–M3.3) |
+| [`generics.md`](generics.md) | Generic parameters, bounds and inference | Rules accepted; type-checker implementation partial (M3.2) |
 | [`modules.md`](modules.md) | Modules, packages, manifests, visibility | Proposed |
 | [`errors.md`](errors.md) | Diagnostic model and the stable `NDO` code registry | **Registry in use** (M1–M2) |
 | [`effects.md`](effects.md) | Effects and how they are checked | Proposed |

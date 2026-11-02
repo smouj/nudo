@@ -42,7 +42,7 @@ comparison          <  >  <=  >=                none: a < b < c is an error
   │
 additive            +  -                        left
   │
-multiplicative      *  /                        left
+multiplicative      *  /  %                     left
   │
 unary-expression    -x  !x                      prefix, right
   │
@@ -61,6 +61,8 @@ Rules that follow, and are normative:
   `(a < b) < c`. Comparisons combine with `&&`.
 * **No implicit numeric conversion.** An `Int`/`Float` mismatch is a type error,
   not a coercion.
+* **Remainder is integer-only.** `%` takes and returns `Int`; its sign and
+  division behavior are fixed by [NEP-0007](../neps/0007-integer-semantics.md).
 * **No truthiness.** A condition is a `Bool`.
 
 **There is no assignment expression.** An assignment needs a mutable binding, and

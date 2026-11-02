@@ -1,9 +1,11 @@
-# Type checker design (M3.2)
+# Type checker design (M3.2–M3.3)
 
-**Status: first slice implemented.** `nudo-typeck` exists and is exercised by
-unit tests and by `tests/conformance/typeck`. This document records what it
-checks, what it deliberately does not, and the one architectural rule that makes
-"is HIR enough?" a question with a test.
+**Status: first slice, bounded generic inference, and the M3.3 trust-type
+assignment rule implemented.**
+`nudo-typeck` is exercised by unit tests and by `tests/conformance/typeck`.
+Diagnostics for unresolved type parameters remain pending. This document records
+what the checker does and the one
+architectural rule that makes "is HIR enough?" a question with a test.
 
 Read [`hir-design.md`](hir-design.md) first; this layer consumes what that one
 produces.
@@ -52,6 +54,10 @@ Type
 └── Error                                 already reported; compatible with everything
 ```
 
+Named-type arguments and function components live in immutable shared storage.
+Cloning a type therefore shares its nested type tree rather than allocating and
+copying each generic argument or function parameter at every use site.
+
 Three decisions are visible in that shape, and each is there so that later slices
 fill in cases instead of redesigning the centre:
 
@@ -61,9 +67,9 @@ fill in cases instead of redesigning the centre:
   are the same type when they mean the same definition. Structural comparison —
   fields, variants — is a later slice; identity is already the right answer for
   everything that exists today, and it is the answer that cannot be wrong.
-* **There is no type variable.** Inference is bounded and local (NEP-0013), and
-  until generic instantiation exists there is nothing to solve. A type variable
-  here would be a placeholder pretending to be a decision.
+* **There is no type variable.** Call-local inference (NEP-0013) substitutes
+  declaration parameters directly from argument types. A variable would add
+  machinery the bounded rule does not need.
 
 ## What the first slice checks
 
@@ -71,11 +77,17 @@ fill in cases instead of redesigning the centre:
 | ---- | ------- |
 | Literal typing | `1` is `Int`, `1.5` is `Float`, `true` is `Bool`, `"nudo"` is `Text` |
 | Annotations | `let x: Int = 1;` types both sides and compares them |
+| Named type arity | Resolved structs, enums, type parameters and intrinsic types require their declared type-argument count; `NDO2017` points at the type use |
 | Blocks | a block's type is its final expression's, or `Unit` when it has none |
 | Names | a path takes the type of the definition it resolved to |
 | Functions | a body is compared with the written return type; with none written, the body's type *is* the result type |
-| Field access | `article.title` takes the field's type; a field the type does not have is `NDO2007`, naming the field and listing what the type does have |
-| Calls | arity (`NDO2005`), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`) |
+| `if` | the condition is checked as `Bool`; branches are checked recursively, and the expected condition type drives generic call inference |
+| Field access | `article.title` takes the field's type after substituting the receiver's generic arguments; a missing field is `NDO2007` |
+| Calls | arity (`NDO2005`), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`); malformed calls still check matched arguments against their parameters and excess argument expressions for nested errors |
+| Function types | `Fn(A, B) -> C` annotations keep parameter and result types as a function type, so function-valued parameters can be called and participate in structural comparison and bounded inference |
+| Generic calls | Argument-driven inference in source order, then inference from a known expected result type; substitutions recurse through nested named and function types |
+| Numeric arithmetic | On `Int` or `Float` values (including `Verified<T>` values assignable to those primitives), `+`, `-`, `*` and `/` require matching types; `%` is `Int`-only; unary `-` preserves the primitive result type; mismatches report `NDO2004` |
+| Trust assignment | The resolved built-in `Verified<T>` is usable where `T` is expected; `Generated<T>` is not, and the relation does not widen nested generic arguments |
 | One diagnostic shape | `expected` and `found` as structure, never as prose to re-parse |
 
 The diagnostic points at the **value**, not at the name it was bound to: the
@@ -91,25 +103,33 @@ note: found: `Bool`
 ## What it deliberately does not check
 
 Every omission is a named next step, and each one is **silent** rather than
-wrong: those expressions type as `Error`, and `Error` reports nothing.
+wrong: unsupported expression results type as `Error`, and `Error` reports
+nothing. An `if` condition and the expressions inside its branches are checked,
+while the conditional result is still unknown until the language specifies how
+its branch values agree. Unchecked operators, indexing, `match`, and agentic
+expressions still recursively check their child expressions, so a supported call
+or annotation error inside them is not hidden.
 
 | Not yet | Arrives with |
 | ------- | ------------ |
-| Generic instantiation and bounded inference (NEP-0013) — a call to a generic function is typed as unknown and says nothing, because comparing an argument against `T` would invent a rule | next slice |
+| The result type of `if`, including agreement between branch values | a specification decision |
+| Other operator operand domains, logical negation, logical operators, equality, comparisons and indexing | their complete operand and result rules are not specified yet |
+| Integer literal range checking and arithmetic evaluation | the interpreter and compile-time literal checking; arithmetic behavior is in NEP-0007 |
+| A stable diagnostic for a generic parameter that remains unresolved (NEP-0013) | diagnostic NEP and implementation |
 | Reading an enum's payload: needs `match`, which is the next slice | after enums |
 | Building a nominal value: **the grammar has no construction syntax at all**, so it needs a NEP before it can be implemented | when the language decides |
 | `Result<T, E>` and exhaustiveness of `match` (NEP-0014) | after enums |
 | Effects | M5 |
-| `Generated<T>` / `Verified<T>` as distinct types with no conversion (NEP-0002) | M3.3 |
+| `verify`, provenance tracking, and `Result<T, E>` exhaustiveness for trust values | M3.3 and later slices |
 
 Two rules are worth stating as *absences*, because they are decisions rather than
 gaps:
 
 * **No implicit numeric conversion.** `let x: Float = 1;` is `NDO2004`. NEP-0007
   says the conversion is written down, and this is what "written down" means.
-* **No special rule for the trust types** (NEP-0014). When they arrive they will
-  be ordinary `Named` types with ordinary rules, and their conformance cases must
-  not assert an error that is about anything else.
+* **No `Result`-specific rule for the trust types** (NEP-0014). They are
+  ordinary `Named` types; the accepted `Verified<T>`-to-`T` assignment relation
+  is checked by resolved built-in identity, and generic arguments stay invariant.
 
 ## Why the checker is not wired into `nudo check` yet
 

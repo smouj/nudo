@@ -1,0 +1,7 @@
+fn main() {
+    if true {
+        let first: Int = true;
+    } else if false {
+        let second: Text = 2;
+    };
+}

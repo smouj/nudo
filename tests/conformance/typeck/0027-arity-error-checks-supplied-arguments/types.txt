@@ -1,0 +1,6 @@
+# nudo-typeck v1
+def 0009 function `takes` 1:4: Fn(Int) -> Unit
+def 0010 binding `number` 2:5: Int
+def 0011 function `main` 4:4: Fn() -> Unit
+def 0012 parameter `value` 1:10: Int
+def 0013 binding `result` 5:9: Unit

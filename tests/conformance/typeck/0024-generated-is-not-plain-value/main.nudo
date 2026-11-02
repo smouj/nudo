@@ -1,0 +1,6 @@
+fn accept_int(value: Int) {}
+
+fn main(generated: Generated<Int>) {
+    accept_int(generated);
+    let rejected: Int = generated;
+}

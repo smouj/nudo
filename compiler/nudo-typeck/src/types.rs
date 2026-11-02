@@ -1,11 +1,10 @@
 //! The type the checker assigns to something.
 //!
-//! One enum, and the whole point of it is what it is *ready* for. This first
-//! slice types primitives and nothing else, but the shape already carries the
-//! things M3.2 and M3.3 will need — a named type with arguments, a function
-//! type, and an error type that keeps a bad definition from becoming a cascade —
-//! so that adding `Struct`, `Enum`, `Result<T, E>`, `Generated<T>` and
-//! `Verified<T>` is filling in cases rather than redesigning the centre.
+//! One enum, and the whole point of it is what it is *ready* for. The checker
+//! types primitives and functions, and carries named types with arguments plus
+//! an error type that keeps a bad definition from becoming a cascade. Adding
+//! `Struct`, `Enum`, `Result<T, E>`, `Generated<T>` and `Verified<T>` fills in
+//! cases rather than redesigning the centre.
 //!
 //! Two deliberate omissions, both visible rather than hidden:
 //!
@@ -13,11 +12,15 @@
 //!   compatible when they resolve to the same definition. Field and variant
 //!   checking is the next slice; identity is already the right answer for the
 //!   cases that exist today, and it is the answer that cannot be wrong.
-//! * **There is no type variable.** Inference (NEP-0013) is bounded and local,
-//!   and until generic instantiation exists there is nothing to solve, so a type
-//!   variable here would be a placeholder pretending to be a decision.
+//! * **There is no type variable.** Call-local inference (NEP-0013) substitutes
+//!   declaration parameters directly from argument types. A variable would add
+//!   machinery the bounded rule does not need.
+//!
+//! Composite type children use immutable shared storage. Cloning a named or
+//! function type shares its children instead of allocating and copying each
+//! nested type at every use site.
 
-use std::fmt;
+use std::{fmt, sync::Arc};
 
 use nudo_hir::Resolution;
 
@@ -40,15 +43,15 @@ pub enum Type {
         name: String,
         /// Its definition, when the name resolved.
         definition: Resolution,
-        /// Its type arguments, in source order.
-        arguments: Vec<Type>,
+        /// Its type arguments, in source order, shared across clones.
+        arguments: Arc<[Type]>,
     },
     /// `Fn(A, B) -> C`.
     Function {
-        /// The parameter types, in order.
-        parameters: Vec<Type>,
-        /// The result type.
-        result: Box<Type>,
+        /// The parameter types, in order, shared across clones.
+        parameters: Arc<[Type]>,
+        /// The result type, shared across clones.
+        result: Arc<Type>,
     },
     /// A type error already reported. Compatible with everything, so that one
     /// mistake is one diagnostic instead of a cascade.
@@ -92,7 +95,7 @@ impl Type {
                     && actual_arguments.len() == expected_arguments.len()
                     && actual_arguments
                         .iter()
-                        .zip(expected_arguments)
+                        .zip(expected_arguments.iter())
                         .all(|(actual, expected)| actual.is_compatible_with(expected))
             }
             (
@@ -108,7 +111,7 @@ impl Type {
                 actual.len() == expected.len()
                     && actual
                         .iter()
-                        .zip(expected)
+                        .zip(expected.iter())
                         .all(|(actual, expected)| actual.is_compatible_with(expected))
                     && actual_result.is_compatible_with(expected_result)
             }
@@ -210,7 +213,7 @@ mod tests {
         let named = |name: &str| Type::Named {
             name: name.to_string(),
             definition: Resolution::Unresolved,
-            arguments: Vec::new(),
+            arguments: Vec::new().into(),
         };
         assert!(named("Article").is_compatible_with(&named("Article")));
     }
@@ -220,7 +223,7 @@ mod tests {
         let generated = |argument: Type| Type::Named {
             name: "Generated".to_string(),
             definition: Resolution::Unresolved,
-            arguments: vec![argument],
+            arguments: vec![argument].into(),
         };
         assert!(generated(Type::Int).is_compatible_with(&generated(Type::Int)));
         assert!(!generated(Type::Int).is_compatible_with(&generated(Type::Bool)));
@@ -229,8 +232,8 @@ mod tests {
     #[test]
     fn a_function_type_compares_its_parts() {
         let function = |parameters: Vec<Type>, result: Type| Type::Function {
-            parameters,
-            result: Box::new(result),
+            parameters: parameters.into(),
+            result: Arc::new(result),
         };
         assert!(
             function(vec![Type::Int], Type::Bool)
@@ -253,15 +256,15 @@ mod tests {
             Type::Named {
                 name: "Result".to_string(),
                 definition: Resolution::Unresolved,
-                arguments: vec![Type::Int],
+                arguments: vec![Type::Int].into(),
             }
             .to_string(),
             "Result<Int>"
         );
         assert_eq!(
             Type::Function {
-                parameters: vec![Type::Int],
-                result: Box::new(Type::Text),
+                parameters: vec![Type::Int].into(),
+                result: Arc::new(Type::Text),
             }
             .to_string(),
             "Fn(Int) -> Text"
@@ -273,8 +276,9 @@ mod tests {
                 arguments: vec![Type::Named {
                     name: "Article".to_string(),
                     definition: Resolution::Unresolved,
-                    arguments: Vec::new(),
-                }],
+                    arguments: Vec::new().into(),
+                }]
+                .into(),
             }
             .to_string(),
             "Verified<Article>"

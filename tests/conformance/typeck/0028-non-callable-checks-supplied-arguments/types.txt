@@ -1,0 +1,5 @@
+# nudo-typeck v1
+def 0009 binding `number` 1:5: Int
+def 0010 function `main` 3:4: Fn() -> Unit
+def 0011 binding `result` 4:9: <error>
+def 0012 binding `tainted` 5:9: <error>

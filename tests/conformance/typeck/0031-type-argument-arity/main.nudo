@@ -1,0 +1,31 @@
+struct Pair<A, B> {
+    first: A
+    second: B
+}
+
+struct InvalidField {
+    pair: Pair<Int>
+}
+
+enum InvalidPayload {
+    Wrapped(value: Pair<Int, Text, Bool>)
+}
+
+fn invalid<T>(
+    missing: Pair<Int>,
+    extra: Pair<Int, Text, Bool>,
+    result: Result<Int>,
+    generated: Generated<Int, Text>,
+    verified: Verified,
+    primitive: Int<Text>,
+    type_parameter: T<Int>
+) {
+    let local: Pair<Int> = 1;
+}
+
+fn valid(
+    pair: Pair<Int, Text>,
+    result: Result<Int, Text>,
+    generated: Generated<Int>,
+    verified: Verified<Int>
+) {}

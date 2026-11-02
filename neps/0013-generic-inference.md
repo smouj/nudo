@@ -96,6 +96,10 @@ layer down. So inference is kept where it removes noise and nowhere else.
 
 ## Implementation status
 
-**Not implemented.** This NEP is the gate M3.2 opens with; the inference rules
-above are what `nudo-typeck` will implement, in one pass, and what the M3.2
-conformance cases will pin.
+**Partially implemented.** `nudo-typeck` infers type parameters from call
+arguments in source order and then from an already-known expected result type,
+including through nested named and function types. The `typeck` conformance
+corpus pins argument inference, contextual inference, and a repeated-parameter
+mismatch. A stable diagnostic for a parameter that remains unresolved is still
+pending. The full NEP is not complete until that rule is implemented and
+covered by conformance cases.

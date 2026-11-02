@@ -52,10 +52,16 @@ Hir
   diagnostic written at M3 is still renderable at M8.
 * **A definition carries its structure.** A `struct`'s fields and an `enum`'s
   variants are recorded with their types, lowered in the declaration's own scope
-  so that a declaration's type parameter is visible inside its own fields. They
-  are records, not definitions: a field is reached through a value
+  so that a declaration's type parameter is visible inside its own fields. The
+  owner also records its type-parameter `DefId`s in declaration order, so later
+  stages can instantiate those field types against a receiver. Fields are
+  records, not definitions: a field is reached through a value
   (`article.title`), never on its own, so it belongs to its owner rather than to
   a scope.
+* **A type reference keeps its form.** Named types, sequences, optionals and
+  function types retain their child types in source order. In particular, a
+  function type is represented as parameter types followed by its result, not as
+  an unresolved named type whose display text happens to start with `Fn`.
 * **A `match` arm carries its pattern.** The head as written, the definitions
   the pattern introduces, and its body — because whether that head is a variant of
   the scrutinee's enum or a new binding is a question only the scrutinee's *type*
@@ -80,8 +86,9 @@ Hir
 
 ## What it deliberately does not do
 
-* **No types.** `Int` resolves to a built-in definition and is not checked;
-  nothing is inferred; arity is not checked. That is M3.2. Nine built-in names
+* **No type checking.** `Int` resolves to a built-in definition, and HIR does
+  not decide whether the referenced type is well-formed. `nudo-typeck` checks
+  named type-argument arity in M3.2. Nine built-in names
   (`Int`, `Float`, `Bool`, `Text`, `Unit`, `Result`, `Generated`, `Verified`,
   `Fn`) are predeclared in the file scope so a program can name them without a
   declaration, and a program cannot redefine them by accident.
@@ -132,7 +139,9 @@ mistake rather than hiding it.
 ## Where this document goes next
 
 M3.2 adds the type layer: a type arena, `TypeId`, instantiation of generic
-declarations, `Result<T, E>` as an intrinsic type, exhaustiveness of `match`, and
-the arity and namespace checks that need types. The shape above is designed for
-that — a type arena beside the expression arena, and `DefId` as the thing types
-attach to — and if it is wrong, this document is the place to record why.
+declarations, `Result<T, E>` as an intrinsic type and exhaustiveness of `match`.
+The checker now validates named type-argument arity from the resolved
+declarations and intrinsic arities; other structural checks remain in M3.2. The
+shape above is designed for that — a type arena beside the expression arena, and
+`DefId` as the thing types attach to — and if it is wrong, this document is the
+place to record why.

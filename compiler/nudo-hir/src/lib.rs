@@ -270,6 +270,8 @@ pub struct Def {
     pub value: Option<ExprId>,
     /// Its parameters, in source order, for anything callable.
     pub parameters: Vec<DefId>,
+    /// Its type parameters, in declaration order, for generic instantiation.
+    pub type_parameters: Vec<DefId>,
     /// Its fields, for a `struct`.
     pub fields: Vec<Field>,
     /// Its variants, for an `enum`.
@@ -475,14 +477,29 @@ pub struct Stmt {
     pub span: Span,
 }
 
-/// A type reference: resolved as far as names go, and no further.
+/// The syntactic form preserved for a type reference.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TypeRefKind {
+    /// A path, optionally with generic arguments.
+    Named,
+    /// A sequence type, such as `[Text]`.
+    Sequence,
+    /// An optional type, such as `Text?`.
+    Optional,
+    /// A function type, such as `Fn(Int) -> Text`.
+    Function,
+}
+
+/// A type reference: names are resolved, and composite forms keep their shape.
 #[derive(Debug, Clone)]
 pub struct TypeRef {
-    /// The name as written.
+    /// The form this reference takes.
+    pub kind: TypeRefKind,
+    /// The path as written, or a display name for a composite form.
     pub name: String,
-    /// What it resolved to.
+    /// What a named type resolved to; composite forms remain unresolved here.
     pub target: Resolution,
-    /// Its type arguments, in source order.
+    /// Generic arguments or component types, in source order.
     pub arguments: Vec<TypeRef>,
     /// Where it is written.
     pub span: Span,
@@ -768,20 +785,22 @@ impl Lowerer {
         self.scope = self.push_scope(outer, "declaration");
         // A declaration's own type parameters and parameters are visible inside
         // it, and nowhere else.
+        let mut type_parameters = Vec::new();
         for list in node.children_of_kind(SyntaxKind::GenericParameterList) {
             for token in list
                 .child_tokens()
                 .into_iter()
                 .filter(|token| token.kind() == SyntaxKind::Ident)
             {
-                self.declare(
+                type_parameters.push(self.declare(
                     token.text().to_string(),
                     DefKind::TypeParameter,
                     token.span(),
                     None,
-                );
+                ));
             }
         }
+        self.defs[def_id.index() as usize].type_parameters = type_parameters;
         // A declaration's parameters belong to the declaration, not to the
         // file: they are declared here, in its own scope, with their
         // annotations lowered where its type parameters are already visible.
@@ -905,6 +924,7 @@ impl Lowerer {
                     .map_or_else(String::new, |path| path_text(&path));
                 let target = self.resolve(&name, Namespace::Type, span);
                 TypeRef {
+                    kind: TypeRefKind::Named,
                     name,
                     target,
                     arguments,
@@ -920,6 +940,7 @@ impl Lowerer {
                     Some(inner) => {
                         let inner = self.lower_type(inner);
                         TypeRef {
+                            kind: TypeRefKind::Sequence,
                             name: format!("[{}]", inner.name),
                             target: Resolution::Unresolved,
                             arguments: vec![inner],
@@ -927,6 +948,7 @@ impl Lowerer {
                         }
                     }
                     None => TypeRef {
+                        kind: TypeRefKind::Sequence,
                         name: "[]".to_string(),
                         target: Resolution::Unresolved,
                         arguments: Vec::new(),
@@ -942,12 +964,14 @@ impl Lowerer {
                     .map(|child| self.lower_type(child));
                 match inner {
                     Some(inner) => TypeRef {
+                        kind: TypeRefKind::Optional,
                         name: format!("{}?", inner.name),
                         target: Resolution::Unresolved,
                         arguments: vec![inner],
                         span,
                     },
                     None => TypeRef {
+                        kind: TypeRefKind::Optional,
                         name: "?".to_string(),
                         target: Resolution::Unresolved,
                         arguments: Vec::new(),
@@ -972,13 +996,35 @@ impl Lowerer {
                     arguments.push(result);
                 }
                 TypeRef {
+                    kind: TypeRefKind::Function,
                     name: format!("Fn(…) -> {result_name}"),
                     target: Resolution::Unresolved,
                     arguments,
                     span,
                 }
             }
+            SyntaxKind::ParenthesizedType => {
+                let inner = node
+                    .child_nodes()
+                    .into_iter()
+                    .find(|child| is_type(child.kind()));
+                match inner {
+                    Some(inner) => {
+                        let mut inner = self.lower_type(inner);
+                        inner.span = span;
+                        inner
+                    }
+                    None => TypeRef {
+                        kind: TypeRefKind::Named,
+                        name: node.text().trim().to_string(),
+                        target: Resolution::Unresolved,
+                        arguments: Vec::new(),
+                        span,
+                    },
+                }
+            }
             _ => TypeRef {
+                kind: TypeRefKind::Named,
                 name: node.text().trim().to_string(),
                 target: Resolution::Unresolved,
                 arguments: Vec::new(),
@@ -1313,6 +1359,7 @@ impl Lowerer {
             ty,
             value: None,
             parameters: Vec::new(),
+            type_parameters: Vec::new(),
             fields: Vec::new(),
             variants: Vec::new(),
         });
@@ -1714,6 +1761,20 @@ mod tests {
                 .iter()
                 .any(|def| def.name == "T" && def.kind == DefKind::TypeParameter)
         );
+        let identity = parsed_then_hir
+            .1
+            .hir
+            .defs()
+            .iter()
+            .find(|definition| definition.name == "identity")
+            .expect("identity is declared");
+        let parameter_names = identity
+            .type_parameters
+            .iter()
+            .filter_map(|parameter| parsed_then_hir.1.hir.def(*parameter))
+            .map(|parameter| parameter.name.as_str())
+            .collect::<Vec<_>>();
+        assert_eq!(parameter_names, ["T"]);
     }
 
     #[test]

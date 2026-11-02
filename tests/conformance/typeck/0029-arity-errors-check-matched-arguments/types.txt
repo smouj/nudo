@@ -1,0 +1,13 @@
+# nudo-typeck v1
+def 0009 function `add` 1:4: Fn(Int, Int) -> Int
+def 0010 function `same` 5:4: Fn(T, T) -> T
+def 0011 binding `scalar` 9:5: Int
+def 0012 function `main` 11:4: Fn() -> Unit
+def 0013 parameter `left` 1:8: Int
+def 0014 parameter `right` 1:19: Int
+def 0015 type-parameter `T` 5:9: <unknown>
+def 0016 parameter `first` 5:12: T
+def 0017 parameter `second` 5:22: T
+def 0018 binding `missing` 12:9: Int
+def 0019 binding `extra` 13:9: Int
+def 0020 binding `generic` 14:9: <error>

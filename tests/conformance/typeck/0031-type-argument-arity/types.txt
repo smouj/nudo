@@ -1,0 +1,21 @@
+# nudo-typeck v1
+def 0009 struct `Pair` 1:8: <unknown>
+def 0010 struct `InvalidField` 6:8: <unknown>
+def 0011 enum `InvalidPayload` 10:6: <unknown>
+def 0012 function `invalid` 14:4: Fn(<error>, <error>, <error>, <error>, <error>, <error>, <error>) -> Unit
+def 0013 function `valid` 26:4: Fn(Pair<Int, Text>, Result<Int, Text>, Generated<Int>, Verified<Int>) -> Unit
+def 0014 type-parameter `A` 1:13: <unknown>
+def 0015 type-parameter `B` 1:16: <unknown>
+def 0016 type-parameter `T` 14:12: <unknown>
+def 0017 parameter `missing` 15:5: <error>
+def 0018 parameter `extra` 16:5: <error>
+def 0019 parameter `result` 17:5: <error>
+def 0020 parameter `generated` 18:5: <error>
+def 0021 parameter `verified` 19:5: <error>
+def 0022 parameter `primitive` 20:5: <error>
+def 0023 parameter `type_parameter` 21:5: <error>
+def 0024 binding `local` 23:9: <error>
+def 0025 parameter `pair` 27:5: Pair<Int, Text>
+def 0026 parameter `result` 28:5: Result<Int, Text>
+def 0027 parameter `generated` 29:5: Generated<Int>
+def 0028 parameter `verified` 30:5: Verified<Int>

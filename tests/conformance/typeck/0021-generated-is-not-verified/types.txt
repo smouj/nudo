@@ -1,0 +1,5 @@
+# nudo-typeck v1
+def 0009 function `accept_verified` 1:4: Fn(Verified<Int>) -> Unit
+def 0010 function `main` 3:4: Fn(Generated<Int>) -> Unit
+def 0011 parameter `value` 1:20: Verified<Int>
+def 0012 parameter `generated` 3:9: Generated<Int>
