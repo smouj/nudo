@@ -1,14 +1,14 @@
 # Estado de la traducción — Español (`es`)
 
-> **Status:** En curso (edición completa)
-> **Summary:** Esta edición española traduce la edición inglesa canónica del libro. El inglés sigue siendo la fuente de verdad: si esta traducción y el original discrepan, prevalece el original.
+> **Status:** Desfasada; actualización pendiente
+> **Summary:** La edición inglesa es la fuente canónica y contiene cambios recientes que aún no están reflejados en esta traducción.
 
 | Campo | Valor |
 | ----- | ----- |
 | Idioma | Español (`es`) |
 | Directorio | `book/i18n/es/src` |
-| Edición inglesa de origen | revisión actual de `book/src` tras el hito M2 (parser y árbol sintáctico sin pérdidas), registrada capítulo a capítulo en `translation.json` |
-| Alcance | 33 archivos: `index.md`, `SUMMARY.md` y los 31 capítulos |
+| Edición inglesa de origen | Revisión anterior a las actualizaciones de estado, compilador, tipos, benchmarks y roadmap de noviembre de 2026 |
+| Alcance | 33 de 34 archivos; falta traducir el capítulo de benchmarks |
 | Manifiesto de hashes | `book/i18n/es/translation.json` |
 
 La revisión de origen se registra capítulo a capítulo con

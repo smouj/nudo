@@ -2,15 +2,15 @@
 
 **Sprache:** Deutsch (`de`)
 **Englische Revision, aus der übersetzt wurde:** `66774d2`
-**Stand:** 2026-09-17
-**Umfang:** 33 von 33 Dateien (31 Kapitel, `index.md`, `SUMMARY.md`)
+**Stand:** 2026-11-02 — diese Übersetzung ist gegenüber der englischen Quelle veraltet.
+**Umfang:** 33 von 34 Dateien; das Benchmark-Kapitel fehlt.
 
 Der englische Quelltext wurde beim Lesen als Arbeitsbaum über `c28fc0c` gelesen; die
 fünf geänderten Kapitel (`index.md`, `03-compiler/pipeline.md`,
 `04-type-system/generated-verified.md`, `05-agents-and-ai/tasks-tools-models.md`,
 `06-security/capabilities-effects.md`) und die Diagramme sind inzwischen als
 `66774d2` festgeschrieben, und es ist genau dieser Inhalt, der hier übersetzt wurde.
-`book/scripts/check_translations.py` meldet die Ausgabe als *complete and current*.
+Die englische Ausgabe ist für aktuelle Aussagen zu Projektstatus und Verhalten maßgeblich.
 
 Diese Ausgabe ist eine Übersetzung von [`../../src`](../../src). Englisch ist kanonisch:
 Wenn diese Übersetzung und der englische Quelltext sich widersprechen, ist die

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 380" role="img" aria-labelledby="bench-title bench-desc">
+<title id="bench-title">Factors that shape a NUDO benchmark measurement</title>
+<desc id="bench-desc">A timing result depends on source workload, compiler revision and flags, Rust toolchain, CPU and memory, operating system, and machine load. To estimate another machine, run the same benchmark there instead of scaling from clock rate alone.</desc>
+<style>
+  .box { fill: none; stroke: currentColor; stroke-width: 1.3; rx: 8; }
+  .host { fill: none; stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; rx: 8; }
+  .label { font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; }
+  .sub { font: 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .66; }
+  .flow { stroke: currentColor; stroke-width: 1.3; fill: none; opacity: .55; }
+  .accent { stroke: var(--nudo-accent, #3F85FF); stroke-width: 1.8; fill: none; }
+  .badge { font: 700 10px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--nudo-accent, #3F85FF); letter-spacing: .04em; }
+</style>
+<text class="label" x="24" y="28">A TIMING DESCRIBES A COMPLETE SETUP</text>
+<rect class="box" x="24" y="54" width="250" height="58" rx="8"/>
+<text class="label" x="42" y="78">Workload</text><text class="sub" x="42" y="98">commit, source bytes, stage, iterations</text>
+<rect class="box" x="24" y="130" width="250" height="58" rx="8"/>
+<text class="label" x="42" y="154">Compiler toolchain</text><text class="sub" x="42" y="174">Rust version, release flags, dependencies</text>
+<rect class="box" x="24" y="206" width="250" height="58" rx="8"/>
+<text class="label" x="42" y="230">Machine hardware</text><text class="sub" x="42" y="250">CPU architecture, cache and memory</text>
+<rect class="box" x="24" y="282" width="250" height="58" rx="8"/>
+<text class="label" x="42" y="306">Operating conditions</text><text class="sub" x="42" y="326">OS scheduler, power and background load</text>
+<path class="flow" d="M274 83 C 320 83, 320 150, 364 150"/>
+<path class="flow" d="M274 159 L364 159"/>
+<path class="flow" d="M274 235 C 320 235, 320 168, 364 168"/>
+<path class="flow" d="M274 311 C 320 311, 320 177, 364 177"/>
+<rect class="host" x="364" y="112" width="220" height="92" rx="10"/>
+<text class="label" x="386" y="146">Observed timing</text>
+<text class="sub" x="386" y="168">median, spread and recorded metadata</text>
+<text class="sub" x="386" y="186">describes this host and workload</text>
+<path class="accent" d="M584 158 L638 158"/>
+<path class="flow" d="M638 158 L676 158" stroke-dasharray="5 4"/>
+<rect class="box" x="676" y="72" width="220" height="74" rx="8"/>
+<text class="badge" x="696" y="96">TARGET HARDWARE</text>
+<text class="label" x="696" y="118">Run the same benchmark there</text>
+<text class="sub" x="696" y="136">record its own toolchain and load</text>
+<rect class="box" x="676" y="178" width="220" height="74" rx="8"/>
+<text class="label" x="696" y="204">Repeat each revision</text>
+<text class="sub" x="696" y="224">compare medians and variability</text>
+<text class="sub" x="696" y="242">under similar conditions</text>
+<text class="sub" x="364" y="282">Clock rate and core count alone do not provide a reliable conversion.</text>
+<text class="sub" x="364" y="304">Do not combine timings from different machines into one regression claim.</text>
+</svg>

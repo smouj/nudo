@@ -1,55 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" role="img" aria-labelledby="status-title">
-<title id="status-title">What exists in NUDO today, what is specified, and what is only planned</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 590" role="img" aria-labelledby="status-title status-desc">
+<title id="status-title">NUDO milestone status through M5</title>
+<desc id="status-desc">M0 through M3.1 are complete. M3.2 and M3.3 are in progress. M4 and M5 are planned. M5 requires accepted effect semantics and completion of earlier milestones.</desc>
 <style>
-.head { font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; letter-spacing: .04em; }
-.row  { font: 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; }
-.sub  { font: 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .6; }
-.legend { font: 11.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; }
-.done { fill: var(--nudo-accent, #3F85FF); }
-.spec { fill: currentColor; opacity: .55; }
-.plan { fill: currentColor; opacity: .22; }
-.rule { stroke: currentColor; stroke-width: 1; opacity: .18; }
-.frame { fill: none; stroke: currentColor; stroke-width: 1.5; opacity: .35; rx: 8; }
+  .head { font: 700 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; letter-spacing: .05em; }
+  .row { font: 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; }
+  .sub { font: 11.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .68; }
+  .state { font: 600 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; }
+  .frame { fill: none; stroke: currentColor; stroke-width: 1.2; opacity: .28; rx: 10; }
+  .rule { stroke: currentColor; stroke-width: 1; opacity: .14; }
+  .done { fill: var(--nudo-accent, #3F85FF); }
+  .active { fill: none; stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; }
+  .planned { fill: currentColor; opacity: .18; }
+  .doneText { fill: var(--nudo-accent, #3F85FF); }
+  .muted { opacity: .62; }
 </style>
-<text class="head" x="24" y="30">WHAT EXISTS TODAY</text>
-<text class="sub" x="24" y="50">Accent means the toolchain really does it. Nothing below is a promise.</text>
-<rect class="frame" x="18" y="66" width="684" height="286"/>
-<line class="rule" x1="18" y1="96" x2="702" y2="96"/>
-<text class="head" x="34" y="87">AREA</text>
-<text class="head" x="300" y="87">STATE</text>
-<text class="head" x="470" y="87">MILESTONE</text>
-<text class="row" x="34" y="124">Source model, spans, positions</text>
-<rect class="done" x="300" y="112" width="14" height="14" rx="3"/>
-<text class="row" x="324" y="124">implemented</text>
-<text class="sub" x="470" y="124">M1 — done</text>
-<text class="row" x="34" y="156">Lexer, tokens, lexical diagnostics</text>
-<rect class="done" x="300" y="144" width="14" height="14" rx="3"/>
-<text class="row" x="324" y="156">implemented</text>
-<text class="sub" x="470" y="156">M1 — done</text>
-<text class="row" x="34" y="188">nudo check, nudo --version, nudo --help</text>
-<rect class="done" x="300" y="176" width="14" height="14" rx="3"/>
-<text class="row" x="324" y="188">implemented</text>
-<text class="sub" x="470" y="188">M1 — done</text>
-<text class="row" x="34" y="220">Grammar: no left recursion, stated precedence</text>
-<rect class="done" x="300" y="208" width="14" height="14" rx="3"/>
-<text class="row" x="324" y="220">frozen</text>
-<text class="sub" x="470" y="220">M2.0 — done</text>
-<text class="row" x="34" y="252">Parser, lossless tree, AST</text>
-<rect class="spec" x="300" y="240" width="14" height="14" rx="3"/>
-<text class="row" x="324" y="252">specified</text>
-<text class="sub" x="470" y="252">M2 — next</text>
-<text class="row" x="34" y="284">Types, HIR, type checking</text>
-<rect class="plan" x="300" y="272" width="14" height="14" rx="3"/>
-<text class="row" x="324" y="284">specified</text>
-<text class="sub" x="470" y="284">M3</text>
-<text class="row" x="34" y="316">Interpreter, effects, trust types</text>
-<rect class="plan" x="300" y="304" width="14" height="14" rx="3"/>
-<text class="row" x="324" y="316">planned</text>
-<text class="sub" x="470" y="316">M4–M6</text>
-<text class="row" x="34" y="348">Agents, capabilities, policies, MCP, WASM</text>
-<rect class="plan" x="300" y="336" width="14" height="14" rx="3"/>
-<text class="row" x="324" y="348">planned</text>
-<text class="sub" x="470" y="348">M8–M12</text>
-<text class="legend" x="24" y="384">The same table is maintained by hand in ROADMAP.md. If the two ever disagree, ROADMAP.md is right.</text>
-<text class="legend" x="24" y="402">NUDO is pre-alpha: nothing here is fit for production use.</text>
+<text class="head" x="28" y="30">MILESTONE STATUS · IMPLEMENTATION EVIDENCE</text>
+<text class="sub" x="28" y="50">The roadmap marks a milestone complete only when its exit criteria and conformance evidence pass.</text>
+<rect class="frame" x="18" y="68" width="864" height="458"/>
+<text class="head" x="38" y="96">MILESTONE</text>
+<text class="head" x="185" y="96">SCOPE</text>
+<text class="head" x="748" y="96">STATE</text>
+<line class="rule" x1="28" y1="108" x2="872" y2="108"/>
+<g>
+  <text class="row doneText" x="38" y="136">M0</text><text class="row" x="185" y="136">Repository foundation</text><rect class="done" x="748" y="124" width="12" height="12" rx="3"/><text class="state doneText" x="770" y="136">complete</text>
+  <text class="row doneText" x="38" y="176">M1</text><text class="row" x="185" y="176">Source model and lexer</text><rect class="done" x="748" y="164" width="12" height="12" rx="3"/><text class="state doneText" x="770" y="176">complete</text>
+  <text class="row doneText" x="38" y="216">M2</text><text class="row" x="185" y="216">Parser, lossless tree and AST</text><rect class="done" x="748" y="204" width="12" height="12" rx="3"/><text class="state doneText" x="770" y="216">complete</text>
+  <text class="row doneText" x="38" y="256">M3.0</text><text class="row" x="185" y="256">Accepted semantic gates</text><rect class="done" x="748" y="244" width="12" height="12" rx="3"/><text class="state doneText" x="770" y="256">complete</text>
+  <text class="row doneText" x="38" y="296">M3.1</text><text class="row" x="185" y="296">HIR and name resolution</text><rect class="done" x="748" y="284" width="12" height="12" rx="3"/><text class="state doneText" x="770" y="296">complete</text>
+  <text class="row" x="38" y="336">M3.2</text><text class="row" x="185" y="336">Partial type checker; not wired into CLI</text><rect class="active" x="748" y="324" width="12" height="12" rx="3"/><text class="state doneText" x="770" y="336">in progress</text>
+  <text class="row" x="38" y="376">M3.3</text><text class="row" x="185" y="376">Trust-type assignment; verify and provenance pending</text><rect class="active" x="748" y="364" width="12" height="12" rx="3"/><text class="state doneText" x="770" y="376">partial</text>
+  <text class="row muted" x="38" y="416">M4</text><text class="row muted" x="185" y="416">First executable program and nudo run</text><rect class="planned" x="748" y="404" width="12" height="12" rx="3"/><text class="state muted" x="770" y="416">planned</text>
+  <text class="row muted" x="38" y="456">M5</text><text class="row muted" x="185" y="456">Effect inference, checking and diagnostics</text><rect class="planned" x="748" y="444" width="12" height="12" rx="3"/><text class="state muted" x="770" y="456">planned</text>
+</g>
+<line class="rule" x1="28" y1="478" x2="872" y2="478"/>
+<text class="sub" x="38" y="500">M5 follows the remaining M3 work and M4. Its effect-system contract is still a Draft proposal.</text>
+<text class="sub" x="28" y="556">Accent = complete or active implementation · muted = planned · see ROADMAP.md for exit criteria.</text>
 </svg>

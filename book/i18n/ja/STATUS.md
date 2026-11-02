@@ -2,7 +2,8 @@
 
 **Language:** Japanese (日本語), code `ja`.
 **Canonical source:** `book/src` (English).
-**English revision translated from:** `c28fc0c` (`git rev-parse --short HEAD`, NUDO repository).
+**English revision translated from:** `c28fc0c`; this translation is behind the current canonical source.
+**Status:** 33 of 34 files translated; the benchmark chapter is missing.
 **Translation tree:** `book/i18n/ja/src/`, one file per English source file, at the identical relative path.
 
 > **Working-tree note.** At translation time the English working tree was not

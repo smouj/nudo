@@ -1,40 +1,32 @@
 # 03.1 — 编译器流水线
 
-> **状态（Status）：** 已实现 / 规范已定义（IMPLEMENTED / SPECIFIED）  
-> **概述（Summary）：** NUDO 被组织为显式的编译器阶段，使每一次变换都有一项可测试的职责。
-
+> **状态（Status）：** 已实现 / 计划中（IMPLEMENTED / PLANNED）
+>
+> **概述（Summary）：** NUDO 前端被划分为显式阶段；HIR 和名称解析已实现，后续检查与执行阶段仍在推进中。
 
 {{#include ../diagrams/pipeline.svg}}
 
-*流水线，其中强调色标记的是今天已经存在的部分：源加载、词法分析器、无损语法树、
-解析器、带类型的 AST 以及诊断。*
+*强调色标记当前 CLI 使用的前端工作。类型检查只有部分实现，并单独通过测试；
+效果检查、MIR 和执行仍在计划中。*
 
-```text
-SourceFile
-   ↓
-Lexer → Tokens + lexical diagnostics
-   ↓
-Lossless Syntax Tree
-   ↓
-Typed AST
-   ↓
-HIR + name resolution
-   ↓
-Type checking
-   ↓
-Effect checking
-   ↓
-MIR
-   ↓
-Interpreter / code generation
-```
+~~~text
+SourceFile → Lexer → Lossless syntax tree → AST → HIR / name resolution
+                                                        ↓
+                                     partial type checker (not in nudo check)
+                                                        ↓
+                                    effects → MIR → interpreter / backend
+~~~
 
-前四个阶段已经实现，并由一致性用例覆盖：词法分析、无损语法树、解析以及带类型的 AST。
-`nudo check` 会运行它们全部，这正是为什么一次干净的运行现在意味着“它能通过词法分析，
-也能通过语法分析”。
+CLI 命令 <code>nudo check</code> 会进行源文件加载、词法分析、解析以及 HIR 降低/名称解析。
+它可以导出记号、语法树和名称解析结果。它不会调用 <code>nudo-typeck</code>，
+也不会执行源码。
 
-清晰的阶段边界改善调试，并让格式化器、语言服务器和文档工具共享稳定的表示，
-而不是带着各自的假设去重新解析文本。
+<code>nudo-hir</code> crate 将带类型的 AST 降低为标识符和已解析定义。
+<code>nudo-typeck</code> crate 消费 HIR，并实现一部分已接受的类型规则。
+单元测试和 typeck 一致性语料会直接测试它；其余规则必须先确定规范语义，才能实现。
 
-在 pre-alpha 期间，架构应当保持灵活。占位（placeholder）crate 不是
-在实现教会项目正确边界之前就冻结 API 的理由。
+计划中的效果检查器、MIR、解释器和 WebAssembly 后端目前都不是可用能力。
+图中的方框表示预期架构和路线图，不代表程序今天已经可以通过这些阶段。
+
+显式的阶段边界让每次变换都可测试，并使未来工具可以共享表示，而不必使用各自的假设重复解析源码。
+在 pre-alpha 阶段，随着实现积累证据，crate 边界仍可能调整。
