@@ -162,8 +162,8 @@ impl Options {
                     let parsed = raw
                         .parse::<f64>()
                         .map_err(|_| format!("`{raw}` is not a number"))?;
-                    if parsed <= 0.0 {
-                        return Err("`--threshold` must be positive".to_string());
+                    if !parsed.is_finite() || parsed <= 0.0 {
+                        return Err("`--threshold` must be finite and positive".to_string());
                     }
                     options.threshold_percent = parsed;
                 }
@@ -974,7 +974,11 @@ impl Json {
 
     fn as_usize(&self) -> Option<usize> {
         let number = self.as_number()?;
-        if number.is_finite() && number >= 0.0 && number.fract() == 0.0 && number < usize::MAX as f64 {
+        if number.is_finite()
+            && number >= 0.0
+            && number.fract() == 0.0
+            && number < usize::MAX as f64
+        {
             Some(number as usize)
         } else {
             None
@@ -1277,9 +1281,15 @@ mod tests {
         assert!(comparison.rows.is_empty());
         assert_eq!(comparison.incompatible.len(), 1);
         assert!(comparison.incompatible[0].2.contains("output unit count changed"));
-        assert!(Baseline::parse(
-            &different_work.to_json().replace("nudo-bench/v1", "nudo-bench/v2")
-        )
-        .is_err());
+        assert!(
+            Baseline::parse(&different_work.to_json().replace("nudo-bench/v1", "nudo-bench/v2"))
+                .is_err()
+        );
+        different_work.cases[0].units -= 1;
+        different_work.cases[0].bytes += 1;
+        let comparison = compare(&different_work, &baseline, 10.0);
+        assert!(comparison.rows.is_empty());
+        assert!(comparison.incompatible[0].2.contains("source byte count changed"));
+        assert!(Options::parse(["--threshold", "NaN"].into_iter().map(str::to_string)).is_err());
     }
 }
