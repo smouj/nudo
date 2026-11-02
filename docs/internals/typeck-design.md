@@ -3,6 +3,9 @@
 **Status: first slice, bounded generic inference, and the M3.3 trust-type
 assignment rule implemented.**
 `nudo-typeck` is exercised by unit tests and by `tests/conformance/typeck`.
+Deterministic robustness tests also pass recovered syntax trees through HIR and
+typeck, checking that diagnostic spans stay within the source and repeated
+checks produce the same result.
 Diagnostics for unresolved type parameters remain pending. This document records
 what the checker does and the one
 architectural rule that makes "is HIR enough?" a question with a test.
