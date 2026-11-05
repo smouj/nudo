@@ -8,9 +8,10 @@
 //
 //     fn fetch(url: Text) -> Text with Network { ... }
 //
-// That clause is not implemented (M5), so it does not appear here.
+// The parser accepts effect clauses, but the compiler does not check them yet
+// (M5), so this example remains effect-free.
 
-fn main() {
+fn main() -> Unit {
     let total = add(1, 2);
     let scaled = scale(total, 10);
     let nothing_here = nothing();
@@ -24,4 +25,4 @@ fn scale(value: Int, factor: Int) -> Int {
     value * factor
 }
 
-fn nothing() {}
+fn nothing() -> Unit {}
