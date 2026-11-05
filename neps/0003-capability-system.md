@@ -43,16 +43,24 @@ agent Researcher {
 }
 ```
 
-A program has `Network` only when an authority boundary grants it. If a call
-chain does not declare the required effect, the compiler reports an error and
-the path that introduced it. At run time, the effect boundary still checks the
-grant before reaching the network.
+For the M4 slice, the proposed `print(Int) -> Unit with Console` writes the
+integer in base ten followed by a newline to standard output. The host grants
+that capability explicitly:
+
+```text
+nudo run --allow Console main.nudo
+```
+
+A program has `Network` or `Console` only when an authority boundary grants it.
+If a call chain does not declare the required effect, the compiler reports an
+error and the path that introduced it. At run time, the effect boundary still
+checks the grant before performing the external action.
 
 ## Reference-level explanation
 
-* Capabilities are a **closed set**, named in the specification: `Network`,
-  `Filesystem`, `Shell`, `Git`, `Secrets`, `Model`, `Human`. Growing the set is a
-  NEP.
+* This proposal's **closed set** is `Network`, `Filesystem`, `Shell`, `Git`,
+  `Secrets`, `Model`, `Human`, and `Console`. `Console` grants writing to
+  standard output only. Growing the accepted set is a NEP.
 * The default is deny. There is no ambient authority anywhere, including in
   `std`.
 * A capability grant comes from an authority boundary, such as an agent's
@@ -66,8 +74,13 @@ grant before reaching the network.
 * The compiler checks the declared effect path. At runtime, the effect boundary
   checks the grant in force before an external action. These checks answer
   different questions; neither replaces the other.
+* A root program receives only grants named by its host invocation. In M4,
+  `nudo run --allow Console` grants `Console`; the function's `with Console`
+  clause declares the effect but does not grant it.
 * Denials are diagnosed before the effect, with the capability and the call site
   named.
+* If an effect is declared but the host did not grant its capability, execution
+  fails before the effect with `NDO5001 CAPABILITY_NOT_GRANTED`.
 * A capability the runtime cannot enforce may not be declared. A promise the
   implementation cannot keep is worse than a missing feature.
 
@@ -110,9 +123,10 @@ grant before reaching the network.
 * How grants are represented in the language. NEP-0004 proposes that callable
   signatures declare effects while grants come from a program or agent boundary;
   whether a grant is represented as a type or value remains open.
-* How a root program receives its runtime grant, including the minimal grant
-  needed for M4's `print`. The current capability set has no console/output
-  capability, so this must be decided before that effect is implemented.
+* How hosts other than the M4 CLI supply a root program's runtime grant. For
+  M4, this proposal uses the explicit `nudo run --allow Console` flag.
+* How a failed stdout write is represented under NEP-0008's distinction between
+  a `Result` and a runtime trap.
 * Revocation during a run, and what a task does when a grant disappears.
 * How a capability is presented to a person before approval, briefly enough that
   they read it.
