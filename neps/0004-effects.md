@@ -62,6 +62,25 @@ clause performs no external effect, and the compiler proves it.
   effect; effects describe what code touches, not what went wrong.
 * Effects, not exceptions: no unwinding semantics, no hidden control flow.
 
+### Static effects and runtime grants
+
+An effect clause such as `with Network` declares what a function may attempt
+and what callers must account for. It is not itself a capability grant. The
+compiler checks the function body and its transitive calls against the declared
+effect set, and reports the path that introduced an undeclared effect.
+
+The authority to perform that effect comes separately from the grant in force
+for the program or agent. Before an external action, the runtime checks that
+grant at the effect boundary. Static checking makes the code's effect path
+visible; runtime enforcement checks the authority available in this particular
+run. Runtime checks do not replace static checking, and a function signature
+does not grant ambient authority.
+
+M5 covers the static checker. Every external effect also needs a runtime grant
+check before it can execute. The minimal grant boundary required by M4's `print`
+must be specified before that vertical slice can pass; M8 generalizes the
+capability and policy machinery to agents and tools.
+
 ## What this makes impossible
 
 * Calling an effectful function from an effect-free one, "just this once". This
@@ -103,6 +122,6 @@ clause performs no external effect, and the compiler proves it.
 * Whether effects can be *subtracted* (a function that requires the network to be
   unavailable), which is occasionally useful and hard to specify.
 * How a runtime-supplied tool set, whose effects are not known at compile time,
-  is expressed.
+  is expressed. It must not be silently treated as effect-free.
 * Whether `with` is the right connective, or whether effects belong in the return
   type as `Fn(…) -> T effect Network`.

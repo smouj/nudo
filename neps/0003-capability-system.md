@@ -43,9 +43,10 @@ agent Researcher {
 }
 ```
 
-A program holds `Network` because something said so. Every attempt to reach the
-network from code that does not hold it is a compile error, and the error names
-the capability and the call site.
+A program has `Network` only when an authority boundary grants it. If a call
+chain does not declare the required effect, the compiler reports an error and
+the path that introduced it. At run time, the effect boundary still checks the
+grant before reaching the network.
 
 ## Reference-level explanation
 
@@ -54,12 +55,17 @@ the capability and the call site.
   NEP.
 * The default is deny. There is no ambient authority anywhere, including in
   `std`.
-* A capability is granted by a declaration: an agent's `allow`, a tool's effect
-  clause, or a function's effect clause ([NEP-0004](0004-effects.md)).
+* A capability grant comes from an authority boundary, such as an agent's
+  `allow` declaration or a host grant for a root program. A function or tool
+  effect clause declares what the code may attempt; it does not create or widen
+  a grant ([NEP-0004](0004-effects.md)).
 * Code may receive a grant, pass a **subset** onward, and drop it. It may not
   create one.
 * Delegation narrows; never widens
   ([`spec/agents/delegation.md`](../spec/agents/delegation.md)).
+* The compiler checks the declared effect path. At runtime, the effect boundary
+  checks the grant in force before an external action. These checks answer
+  different questions; neither replaces the other.
 * Denials are diagnosed before the effect, with the capability and the call site
   named.
 * A capability the runtime cannot enforce may not be declared. A promise the
@@ -101,8 +107,12 @@ the capability and the call site.
 
 * Scoped capabilities: how `Filesystem` expresses "this directory" when the
   directory is only known at run time.
-* Whether capabilities are types, effects, or both, given NEP-0004 tracks effects
-  separately. Two mechanisms for one question is the risk.
+* How grants are represented in the language. NEP-0004 proposes that callable
+  signatures declare effects while grants come from a program or agent boundary;
+  whether a grant is represented as a type or value remains open.
+* How a root program receives its runtime grant, including the minimal grant
+  needed for M4's `print`. The current capability set has no console/output
+  capability, so this must be decided before that effect is implemented.
 * Revocation during a run, and what a task does when a grant disappears.
 * How a capability is presented to a person before approval, briefly enough that
   they read it.

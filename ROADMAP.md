@@ -316,7 +316,9 @@ Everything that requires, and nothing beyond it:
 * [ ] MIR lowering for the above, and a tree-walking interpreter
 * [ ] `print`, which is the first `std` API and the first effect — so the
       pre-alpha standard library is one function behind one capability, not a
-      directory tree
+      directory tree. Its effect declaration and runtime grant boundary depend
+      on accepted NEP-0003 and NEP-0004 semantics; a minimal runtime grant check
+      is required in M4, before the broader capability and policy work in M8.
 * [ ] `nudo run`, and the runtime diagnostics that a real program needs
       (`NDO6xxx`)
 * [ ] Runtime startup benchmark
@@ -328,12 +330,18 @@ is accepted.
 
 ## M5 — Effect system — **planned**
 
-* [ ] Effect inference and checking (`nudo-effects`)
-* [ ] Effects reported in signatures and callable through explicit handlers
-* [ ] `NDO3xxx` codes
+* [ ] Static effect inference and checking (`nudo-effects`), using the effect
+      declarations preserved in HIR
+* [ ] `NDO3xxx` diagnostics with the call path that introduced an undeclared
+      effect
 
 **Exit criteria:** an effectful call from an effect-free function is a compile
 error, with a diagnostic that names the effect and the path that introduced it.
+
+M5 checks effects at compile time. Each executable external effect also needs
+runtime grant enforcement: M4 defines the minimum boundary for `print`, and M8
+generalizes it to capabilities, policies and tools. Explicit effect handlers
+need a separate accepted design and are not an M5 requirement.
 
 ## M6 — `Generated<T>` and `Verified<T>` — **planned**
 

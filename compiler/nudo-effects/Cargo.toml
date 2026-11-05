@@ -1,6 +1,6 @@
 [package]
 name = "nudo-effects"
-description = "Effect and capability checking."
+description = "Static effect inference and checking."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
