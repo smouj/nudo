@@ -17,6 +17,10 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **Draft proposal NEP-0019: integer literal boundary.** It defines how to
+  express `Int::MIN` without admitting out-of-range values; the specification
+  and compiler behavior do not change before acceptance.
+
 * **M3.3: trust types follow their accepted assignment rule.** The resolved
   built-in `Verified<T>` can be used where `T` is expected, including function
   arguments, return values and numeric operations. `Generated<T>` remains
