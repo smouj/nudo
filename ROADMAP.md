@@ -319,8 +319,9 @@ Everything that requires, and nothing beyond it:
       directory tree. It declares `with Console`; M4 requires the explicit host
       grant `nudo run --allow Console`, enforced before writing to stdout under
       the proposed NEP-0003 and NEP-0004 rules.
-* [ ] `nudo run`, and the runtime diagnostics that a real program needs
-      (`NDO6xxx`)
+* [ ] `nudo run`, with the proposed M4 runtime trap diagnostics in
+      [NEP-0021](neps/0021-runtime-traps.md): integer overflow, zero divisors
+      and failed stdout writes
 * [ ] Runtime startup benchmark
 
 **Exit criteria:** running the program above with the explicit `Console` grant

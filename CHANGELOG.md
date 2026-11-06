@@ -17,6 +17,11 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **Draft proposal NEP-0021: runtime trap diagnostics for M4.** It assigns
+  stable codes and source spans for integer traps and the proposed Console
+  write boundary; neither the specification nor runtime behavior changes before
+  acceptance.
+
 * **M3.3: trust types follow their accepted assignment rule.** The resolved
   built-in `Verified<T>` can be used where `T` is expected, including function
   arguments, return values and numeric operations. `Generated<T>` remains
