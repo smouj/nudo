@@ -28,6 +28,10 @@ would be a promise the project cannot keep.
   type explicitly. No compiler or specification behavior changes before
   acceptance.
 
+* **Draft proposal NEP-0018: statically checkable verifiers.** It identifies the
+  declaration, input and determinism decisions that must be resolved before
+  `verify` can be type-checked. Verification behavior remains unimplemented.
+
 * **M3.3: trust types follow their accepted assignment rule.** The resolved
   built-in `Verified<T>` can be used where `T` is expected, including function
   arguments, return values and numeric operations. `Generated<T>` remains
