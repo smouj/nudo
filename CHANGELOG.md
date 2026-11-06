@@ -22,6 +22,12 @@ would be a promise the project cannot keep.
   function parameter that cannot appear in its callable signature. The codes
   remain proposed until acceptance.
 
+* **Draft proposal NEP-0016: omitted function result types.** It resolves the
+  conflict between the explicit-signature rule and inferred body results by
+  making an omitted result `Unit`; value-returning functions write their result
+  type explicitly. No compiler or specification behavior changes before
+  acceptance.
+
 * **M3.3: trust types follow their accepted assignment rule.** The resolved
   built-in `Verified<T>` can be used where `T` is expected, including function
   arguments, return values and numeric operations. `Generated<T>` remains
