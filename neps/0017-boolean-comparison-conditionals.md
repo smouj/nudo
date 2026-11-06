@@ -9,7 +9,7 @@
 | Supersedes | — |
 | Superseded by | — |
 | Specification chapters | [`spec/expressions.md`](../spec/expressions.md), [`spec/types.md`](../spec/types.md), [`spec/errors.md`](../spec/errors.md) |
-| Related NEPs | NEP-0007, NEP-0008, NEP-0013, NEP-0014 |
+| Related NEPs | NEP-0007, NEP-0008, NEP-0013, NEP-0014, NEP-0015 |
 
 ## Summary
 
@@ -101,10 +101,15 @@ This proposal assigns two type-diagnostic codes:
 
 | Code | Name | Meaning |
 | ---- | ---- | ------- |
-| `NDO2008` | `INVALID_OPERATOR_TYPES` | An operator receives operand types outside its defined domain. |
-| `NDO2009` | `IF_BRANCH_TYPE_MISMATCH` | Branch types differ when no expected type is available. |
+| `NDO2018` | `INVALID_OPERATOR_TYPES` | An operator receives operand types outside its defined domain. |
+| `NDO2019` | `IF_BRANCH_TYPE_MISMATCH` | Branch types differ when no expected type is available. |
 
-The primary span for `NDO2008` is the operator token. The diagnostic includes
+`NDO2008` and `NDO2009` are proposed by NEP-0015 for generic inference
+diagnostics. `NDO2010`–`NDO2017` are assigned to the integer-literal,
+enum-matching and type-argument rules. This proposal therefore uses the next
+available pair, `NDO2018` and `NDO2019`.
+
+The primary span for `NDO2018` is the operator token. The diagnostic includes
 both operand types when there are two. A condition that is not `Bool` uses the
 ordinary `NDO2004 TYPE_MISMATCH` at the condition. A branch that fails an
 expected type also uses `NDO2004` at that branch. Without an `else`, a non-`Unit`
@@ -134,7 +139,7 @@ expected type also uses `NDO2004` at that branch. Without an `else`, a non-`Unit
 
 | Area | Effect |
 | ---- | ------ |
-| Specification | Defines Boolean operators, primitive comparisons and conditional result types in `spec/expressions.md` and `spec/types.md`; registers `NDO2008` and `NDO2009` in `spec/errors.md` |
+| Specification | Defines Boolean operators, primitive comparisons and conditional result types in `spec/expressions.md` and `spec/types.md`; registers `NDO2018` and `NDO2019` in `spec/errors.md` |
 | Grammar | No grammar change; the forms already parse and comparison chaining is already rejected |
 | Compiler | Completes operand/result checking in `nudo-typeck`; MIR and interpreter implement the specified evaluation order in M4 |
 | Conformance | Adds accepted and rejected operand pairs, NaN behavior, short-circuit cases, expected-type branches, mismatched branches and no-`else` cases |
