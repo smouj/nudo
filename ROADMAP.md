@@ -302,7 +302,7 @@ fn add(a: Int, b: Int) -> Int {
     a + b
 }
 
-fn main() {
+fn main() -> Unit with Console {
     let result = add(20, 22);
     print(result);
 }
@@ -311,29 +311,38 @@ fn main() {
 Everything that requires, and nothing beyond it:
 
 * [ ] Functions: parameters, return values, calls
-* [ ] `let`, `Int`, `Bool`, `Text`
+* [ ] `let`, `Int`, `Float`, `Bool`, `Text`, `Unit`
 * [ ] Arithmetic and comparison operators, `if`
 * [ ] MIR lowering for the above, and a tree-walking interpreter
-* [ ] `print`, which is the first `std` API and the first effect — so the
+* [ ] `print(Int)`, which is the first `std` API and the first effect — so the
       pre-alpha standard library is one function behind one capability, not a
-      directory tree
+      directory tree. It declares `with Console`; M4 requires the explicit host
+      grant `nudo run --allow Console`, enforced before writing to stdout under
+      the proposed NEP-0003 and NEP-0004 rules.
 * [ ] `nudo run`, and the runtime diagnostics that a real program needs
       (`NDO6xxx`)
 * [ ] Runtime startup benchmark
 
-**Exit criteria:** the program above prints `42`, and the examples in
+**Exit criteria:** running the program above with the explicit `Console` grant
+prints `42`, and the examples in
 `examples/00-` through `examples/02-` run and produce their documented output.
 The later examples are design previews and are excluded until the syntax they use
 is accepted.
 
 ## M5 — Effect system — **planned**
 
-* [ ] Effect inference and checking (`nudo-effects`)
-* [ ] Effects reported in signatures and callable through explicit handlers
-* [ ] `NDO3xxx` codes
+* [ ] Static effect inference and checking (`nudo-effects`), using the effect
+      declarations preserved in HIR
+* [ ] `NDO3xxx` diagnostics with the call path that introduced an undeclared
+      effect
 
 **Exit criteria:** an effectful call from an effect-free function is a compile
 error, with a diagnostic that names the effect and the path that introduced it.
+
+M5 checks effects at compile time. Each executable external effect also needs
+runtime grant enforcement: M4 defines the minimum boundary for `print`, and M8
+generalizes it to capabilities, policies and tools. Explicit effect handlers
+need a separate accepted design and are not an M5 requirement.
 
 ## M6 — `Generated<T>` and `Verified<T>` — **planned**
 
