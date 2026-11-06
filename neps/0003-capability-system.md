@@ -7,7 +7,7 @@
 | Supersedes | — |
 | Superseded by | — |
 | Specification chapters | [`spec/trust/capabilities.md`](../spec/trust/capabilities.md), [`spec/agents/agent.md`](../spec/agents/agent.md) |
-| Related NEPs | NEP-0001, NEP-0004 |
+| Related NEPs | NEP-0001, NEP-0004, NEP-0008 |
 
 ## Summary
 
@@ -44,8 +44,8 @@ agent Researcher {
 ```
 
 For the M4 slice, the proposed `print(Int) -> Unit with Console` writes the
-integer in base ten followed by a newline to standard output. The host grants
-that capability explicitly:
+integer's ASCII decimal representation followed by one LF byte (`\n`) to
+standard output. The host grants that capability explicitly:
 
 ```text
 nudo run --allow Console main.nudo
@@ -81,6 +81,13 @@ checks the grant before performing the external action.
   named.
 * If an effect is declared but the host did not grant its capability, execution
   fails before the effect with `NDO5001 CAPABILITY_NOT_GRANTED`.
+* `print` checks the grant before writing any bytes. If the host then fails to
+  write stdout, the call traps with the proposed `NDO6003 CONSOLE_WRITE_FAILED`
+  at the call site. Any bytes already accepted by the host remain written; the
+  runtime cannot roll them back. The diagnostic does not expose host-specific
+  error text. This narrow boundary failure is not a `Result`: M4 has one fixed
+  stdout sink, and the language has no retry or alternate-sink handler. A later
+  API for choosing or retrying a writer must expose that failure as a `Result`.
 * A capability the runtime cannot enforce may not be declared. A promise the
   implementation cannot keep is worse than a missing feature.
 
@@ -102,6 +109,7 @@ checks the grant before performing the external action.
 | Ambient authority with optional audit logging | Audit after the fact does not prevent exfiltration; it documents it |
 | Per-tool permissions without a named capability vocabulary | Tool-specific permission names do not compose, and every new tool invents its own |
 | OS-level sandboxing only | Necessary and insufficient: it cannot express "this function, at this call site" |
+| Return `Result` from the fixed M4 `print` sink | M4 has no retry or alternate sink; this would add result plumbing without a recovery action. A future configurable writer API must return `Result`. |
 
 ## Impact
 
@@ -123,10 +131,8 @@ checks the grant before performing the external action.
 * How grants are represented in the language. NEP-0004 proposes that callable
   signatures declare effects while grants come from a program or agent boundary;
   whether a grant is represented as a type or value remains open.
-* How hosts other than the M4 CLI supply a root program's runtime grant. For
-  M4, this proposal uses the explicit `nudo run --allow Console` flag.
-* How a failed stdout write is represented under NEP-0008's distinction between
-  a `Result` and a runtime trap.
+* How hosts other than the M4 CLI supply a root program's runtime grant. This
+  proposal defines the M4 CLI boundary only; other hosts need a later decision.
 * Revocation during a run, and what a task does when a grant disappears.
 * How a capability is presented to a person before approval, briefly enough that
   they read it.
