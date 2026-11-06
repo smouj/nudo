@@ -43,6 +43,7 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 | [0014](0014-trust-types-obey-the-rules.md) | Trust types obey the ordinary rules | Accepted |
 | [0015](0015-uninferable-generic-parameters.md) | Uninferable generic parameters | Draft |
 | [0016](0016-omitted-function-result-types.md) | Omitted function result types | Draft |
+| [0018](0018-statically-checkable-verifiers.md) | Statically checkable verifiers | Draft |
 
 NEPs 0002 and 0007–0011 are the **semantic gates of M3**, taken together and
 before `nudo-typeck` exists, so that the checker is written against decided
