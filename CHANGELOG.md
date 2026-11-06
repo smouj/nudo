@@ -17,6 +17,11 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **Draft proposal NEP-0015: uninferable generic parameters.** It assigns
+  distinct diagnostics for a call that lacks enough inference information and a
+  function parameter that cannot appear in its callable signature. The codes
+  remain proposed until acceptance.
+
 * **M3.3: trust types follow their accepted assignment rule.** The resolved
   built-in `Verified<T>` can be used where `T` is expected, including function
   arguments, return values and numeric operations. `Generated<T>` remains
