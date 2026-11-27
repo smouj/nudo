@@ -41,6 +41,7 @@
 
 # 08 — Tooling
 - [Toolchain and CLI](08-tooling/cli.md)
+- [Benchmarking the front end](08-tooling/benchmarks.md)
 
 # 09 — Interoperability
 - [MCP, A2A and WebAssembly](09-interoperability/mcp-a2a-wasm.md)

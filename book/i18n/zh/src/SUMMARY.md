@@ -41,6 +41,7 @@
 
 # 08 — 工具链
 - [工具链与 CLI](08-tooling/cli.md)
+- [前端基准测试](08-tooling/benchmarks.md)
 
 # 09 — 互操作性
 - [MCP、A2A 与 WebAssembly](09-interoperability/mcp-a2a-wasm.md)

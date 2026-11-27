@@ -3,6 +3,8 @@
 > **Status:** Historisch / Lebend  
 > **Summary:** Eine strukturierte Erklärung dessen, was NUDO ist, warum es existiert und wie Compiler, Vertrauensmodell und agentenorientierte Laufzeit zusammenwirken sollen.
 
+> **Übersetzungshinweis:** Diese Ausgabe enthält noch nicht die neuesten Änderungen der englischen Quelle. Für den aktuellen Projektstatus und das aktuelle Verhalten nutze das [kanonische englische Handbuch](../index.html) und dessen [Benchmark-Kapitel](../08-tooling/benchmarks.html).
+
 <div class="status-key">
 DOKUMENT: NUDO-BOOK-001 · AUSGABE: ENGINEERING PAPER · REVISION: R0 · STATUS: LEBEND
 </div>

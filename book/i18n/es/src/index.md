@@ -3,6 +3,8 @@
 > **Status:** Histórico / Vivo (HISTORICAL / LIVING)  
 > **Summary:** Una explicación estructurada de qué es NUDO, por qué existe y cómo se pretende que encajen su compilador, su modelo de confianza y su runtime orientado a agentes.
 
+> **Aviso de traducción:** Esta edición no refleja todavía los cambios recientes de la fuente inglesa. Para consultar el estado y el comportamiento actuales, usa el [libro canónico en inglés](../index.html) y su [capítulo de benchmarks](../08-tooling/benchmarks.html).
+
 <div class="status-key">
 DOCUMENT: NUDO-BOOK-001 · EDITION: ENGINEERING PAPER · REVISION: R0 · STATUS: LIVING
 </div>

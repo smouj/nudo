@@ -1,73 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 470" role="img" aria-labelledby="pipeline-title">
-  <title id="pipeline-title">The NUDO compiler pipeline, showing which stages exist today and which are planned</title>
-  <style>
-    .box   { fill: none; stroke: currentColor; stroke-width: 1.5; rx: 6; }
-    .done  { stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; }
-    .label { font: 600 14px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; }
-    .sub   { font: 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .65; }
-    .stage { font: 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .5; letter-spacing: .04em; }
-    .flow  { stroke: currentColor; stroke-width: 1.5; fill: none; opacity: .55; }
-    .mark  { font: 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .04em; }
-    .yes   { fill: var(--nudo-accent, #3F85FF); }
-    .no    { fill: currentColor; opacity: .45; }
-  </style>
-  <g>
-    <rect class="box done" x="24" y="18" width="216" height="46"/>
-    <text class="label" x="40" y="40">Source</text>
-    <text class="sub"   x="40" y="56">source file, spans, line index</text>
-    <text class="mark yes" x="196" y="40">M1</text>
-    <rect class="box done" x="24" y="88" width="216" height="46"/>
-    <text class="label" x="40" y="110">Lexer</text>
-    <text class="sub"   x="40" y="126">tokens + lexical diagnostics</text>
-    <text class="mark yes" x="196" y="110">M1</text>
-    <rect class="box" x="24" y="158" width="216" height="46"/>
-    <text class="label" x="40" y="180">Parser</text>
-    <text class="sub"   x="40" y="196">lossless syntax tree, recovery</text>
-    <text class="mark no" x="196" y="180">M2</text>
-    <rect class="box" x="24" y="228" width="216" height="46"/>
-    <text class="label" x="40" y="250">AST</text>
-    <text class="sub"   x="40" y="266">typed nodes over the tree</text>
-    <text class="mark no" x="196" y="250">M2</text>
-    <rect class="box" x="24" y="298" width="216" height="46"/>
-    <text class="label" x="40" y="320">HIR</text>
-    <text class="sub"   x="40" y="336">names resolved, desugared</text>
-    <text class="mark no" x="196" y="320">M3</text>
-    <rect class="box" x="24" y="368" width="216" height="46"/>
-    <text class="label" x="40" y="390">Types / effects</text>
-    <text class="sub"   x="40" y="406">including Generated / Verified</text>
-    <text class="mark no" x="196" y="390">M3–M6</text>
-    <rect class="box" x="480" y="158" width="216" height="46"/>
-    <text class="label" x="496" y="180">MIR</text>
-    <text class="sub"   x="496" y="196">control flow made explicit</text>
-    <text class="mark no" x="652" y="180">M4</text>
-    <rect class="box" x="480" y="228" width="216" height="46"/>
-    <text class="label" x="496" y="250">Interpreter</text>
-    <text class="sub"   x="496" y="266">first execution strategy</text>
-    <text class="mark no" x="652" y="250">M4</text>
-    <rect class="box" x="480" y="298" width="216" height="46"/>
-    <text class="label" x="496" y="320">WebAssembly</text>
-    <text class="sub"   x="496" y="336">WASI, capability preserved</text>
-    <text class="mark no" x="652" y="320">M12</text>
-    <rect class="box" x="480" y="18" width="216" height="46"/>
-    <text class="label" x="496" y="40">Diagnostics</text>
-    <text class="sub"   x="496" y="56">stable codes, shown at every stage</text>
-    <text class="mark yes" x="652" y="40">M1</text>
-  </g>
-  <g class="flow">
-    <path d="M132 64 L132 88" marker-end="url(#arrow)"/>
-    <path d="M132 134 L132 158" marker-end="url(#arrow)"/>
-    <path d="M132 204 L132 228" marker-end="url(#arrow)"/>
-    <path d="M132 274 L132 298" marker-end="url(#arrow)"/>
-    <path d="M132 344 L132 368" marker-end="url(#arrow)"/>
-    <path d="M240 391 C 420 391, 380 181, 480 181" marker-end="url(#arrow)"/>
-    <path d="M588 204 L588 228" marker-end="url(#arrow)"/>
-    <path d="M548 250 C 520 250, 520 320, 480 320" marker-end="url(#arrow)"/>
-    <path d="M348 41 C 420 41, 430 41, 480 41" stroke-dasharray="4 4"/>
-  </g>
-  <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity=".55"/>
-    </marker>
-  </defs>
-  <text class="stage" x="24" y="444">ACCENT = IMPLEMENTED TODAY · GREY = SPECIFIED, NOT BUILT</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 610" role="img" aria-labelledby="pipeline-title pipeline-desc">
+<title id="pipeline-title">NUDO compiler pipeline and current CLI boundary</title>
+<desc id="pipeline-desc">Source loading, lexing, parsing, AST construction, HIR and name resolution are implemented. Type checking is partial and separate from the CLI. Effects, MIR, interpreter and WebAssembly are planned.</desc>
+<style>
+  .box { fill: none; stroke: currentColor; stroke-width: 1.4; rx: 7; }
+  .done { stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; }
+  .partial { stroke: var(--nudo-accent, #3F85FF); stroke-width: 1.7; stroke-dasharray: 5 3; }
+  .future { stroke: currentColor; stroke-width: 1.3; stroke-dasharray: 4 4; opacity: .48; }
+  .label { font: 600 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; }
+  .sub { font: 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .66; }
+  .tag { font: 600 10px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--nudo-accent, #3F85FF); }
+  .muted { opacity: .56; }
+  .flow { stroke: currentColor; stroke-width: 1.4; fill: none; opacity: .52; }
+  .live { stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; fill: none; }
+  .panel { fill: none; stroke: currentColor; stroke-width: 1.2; opacity: .25; rx: 9; }
+</style>
+<text class="label" x="28" y="32">SOURCE-TO-CHECK PIPELINE</text>
+<text class="sub" x="28" y="50">Solid accent marks stages used by the current CLI; dashed outlines mark partial or planned work.</text>
+<g>
+  <rect class="box done" x="28" y="72" width="520" height="46" rx="7"/>
+  <text class="label" x="46" y="92">SourceFile</text><text class="sub" x="46" y="108">file identity, UTF-8 text, spans and line index · M1</text>
+  <rect class="box done" x="28" y="136" width="520" height="46" rx="7"/>
+  <text class="label" x="46" y="156">Lexer</text><text class="sub" x="46" y="172">tokens, lexical diagnostics and recovery · M1</text>
+  <rect class="box done" x="28" y="200" width="520" height="46" rx="7"/>
+  <text class="label" x="46" y="220">Parser, lossless syntax tree and AST</text><text class="sub" x="46" y="236">syntax diagnostics and recovery · M2</text>
+  <rect class="box done" x="28" y="264" width="520" height="46" rx="7"/>
+  <text class="label" x="46" y="284">HIR and name resolution</text><text class="sub" x="46" y="300">definitions, scopes and resolved paths · M3.1</text>
+  <rect class="box partial" x="28" y="328" width="520" height="46" rx="7"/>
+  <text class="label" x="46" y="348">Type checker</text><text class="sub" x="46" y="364">partial accepted rules; exercised by tests and conformance · M3.2</text>
+  <rect class="box future" x="28" y="392" width="520" height="46" rx="7"/>
+  <text class="label muted" x="46" y="412">Effect checking</text><text class="sub muted" x="46" y="428">proposed semantics; planned milestone M5</text>
+  <rect class="box future" x="28" y="456" width="520" height="46" rx="7"/>
+  <text class="label muted" x="46" y="476">MIR and tree-walking interpreter</text><text class="sub muted" x="46" y="492">first executable vertical slice · M4</text>
+  <rect class="box future" x="28" y="520" width="520" height="46" rx="7"/>
+  <text class="label muted" x="46" y="540">WebAssembly backend</text><text class="sub muted" x="46" y="556">planned portable target · M11</text>
+</g>
+<g>
+  <path class="live" d="M288 118 L288 136"/>
+  <path class="live" d="M288 182 L288 200"/>
+  <path class="live" d="M288 246 L288 264"/>
+  <path class="flow" d="M288 310 L288 328" stroke-dasharray="4 4"/>
+  <path class="flow" d="M288 374 L288 392" stroke-dasharray="4 4"/>
+  <path class="flow" d="M288 438 L288 456" stroke-dasharray="4 4"/>
+  <path class="flow" d="M288 502 L288 520" stroke-dasharray="4 4"/>
+</g>
+<rect class="panel" x="610" y="112" width="340" height="226" rx="9"/>
+<text class="label" x="632" y="142">What nudo check does today</text>
+<text class="sub" x="632" y="174">1. Loads each .nudo source file</text>
+<text class="sub" x="632" y="198">2. Lexes and parses the source</text>
+<text class="sub" x="632" y="222">3. Lowers accepted syntax to HIR</text>
+<text class="sub" x="632" y="246">4. Resolves names and reports diagnostics</text>
+<line class="flow" x1="632" y1="264" x2="924" y2="264"/>
+<text class="tag" x="632" y="288">CLI STOPS BEFORE TYPE CHECKING</text>
+<text class="sub" x="632" y="310">No NUDO program is executed.</text>
+<path class="flow" d="M548 287 C 580 287, 580 300, 610 300" stroke-dasharray="4 4"/>
+<text class="sub" x="28" y="590">Stages are roadmap boundaries as well as code boundaries; a planned box is not an available command.</text>
 </svg>

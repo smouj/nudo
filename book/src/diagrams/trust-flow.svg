@@ -1,47 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-labelledby="trust-title">
-  <title id="trust-title">How an unchecked model output becomes a verified value</title>
-  <style>
-    .box    { fill: none; stroke: currentColor; stroke-width: 1.5; rx: 8; }
-    .plain  { fill: none; stroke: currentColor; stroke-width: 1.5; opacity: .45; rx: 8; }
-    .gate   { fill: none; stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; rx: 8; }
-    .type   { font: 600 14px ui-monospace, SFMono-Regular, Menlo, monospace; fill: currentColor; }
-    .label  { font: 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .65; }
-    .flow   { stroke: currentColor; stroke-width: 1.5; fill: none; opacity: .55; }
-    .gateflow { stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; fill: none; }
-    .no     { stroke: currentColor; stroke-width: 1.5; fill: none; opacity: .5; stroke-dasharray: 5 4; }
-    .cap    { font: 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .6; }
-    .badge  { font: 600 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--nudo-accent, #3F85FF); }
-  </style>
-  <rect class="box" x="16" y="96" width="150" height="72"/>
-  <text class="type"  x="32" y="126">Generated&lt;T&gt;</text>
-  <text class="label" x="32" y="148">a model produced it</text>
-  <rect class="gate" x="222" y="96" width="158" height="72"/>
-  <text class="type"  x="238" y="126">verify … with V</text>
-  <text class="label" x="238" y="148">explicit, fallible, recorded</text>
-  <rect class="box" x="436" y="96" width="158" height="72"/>
-  <text class="type"  x="452" y="126">Verified&lt;T&gt;</text>
-  <text class="label" x="452" y="148">passed stated criteria</text>
-  <rect class="plain" x="436" y="204" width="158" height="60"/>
-  <text class="type"  x="452" y="230" opacity=".7">T</text>
-  <text class="label" x="452" y="250">usable without ceremony</text>
-  <path class="gateflow" d="M166 132 L222 132" marker-end="url(#a2)"/>
-  <path class="gateflow" d="M380 132 L436 132" marker-end="url(#a2)"/>
-  <path class="flow"     d="M515 168 L515 204" marker-end="url(#a1)"/>
-  <path class="no" d="M91 168 L91 236 L436 236"/>
-  <text class="cap" x="104" y="230">no implicit conversion: this path is a compile error</text>
-  <rect class="plain" x="222" y="204" width="158" height="60"/>
-  <text class="type"  x="238" y="228">Provenance</text>
-  <text class="label" x="238" y="248">which model, which verifier, which inputs</text>
-  <path class="flow" d="M301 96 L301 96" />
-  <path class="flow" d="M380 168 C 400 186, 340 186, 301 204" marker-end="url(#a1)"/>
-  <text class="badge" x="16" y="40">GENERATED ≠ VERIFIED</text>
-  <text class="label" x="16" y="60">Different types. Nothing converts between them implicitly, in either direction.</text>
-  <defs>
-    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity=".55"/>
-    </marker>
-    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--nudo-accent, #3F85FF)"/>
-    </marker>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 360" role="img" aria-labelledby="trust-title trust-desc">
+<title id="trust-title">Implemented trust-type rules and planned verification flow</title>
+<desc id="trust-desc">Generated and Verified are distinct invariant types. The checker allows the built-in Verified inner type where supported. Executing verify and recording provenance are not implemented.</desc>
+<style>
+  .box { fill: none; stroke: currentColor; stroke-width: 1.4; rx: 8; }
+  .implemented { fill: none; stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; rx: 8; }
+  .planned { fill: none; stroke: currentColor; stroke-width: 1.4; stroke-dasharray: 5 4; opacity: .55; rx: 8; }
+  .type { font: 600 14px ui-monospace, SFMono-Regular, Menlo, monospace; fill: currentColor; }
+  .label { font: 11.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .67; }
+  .flow { stroke: currentColor; stroke-width: 1.5; fill: none; opacity: .55; }
+  .live { stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; fill: none; }
+  .badge { font: 700 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--nudo-accent, #3F85FF); letter-spacing: .04em; }
+  .future { font: 600 10px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: currentColor; opacity: .56; }
+</style>
+<text class="badge" x="22" y="28">STATIC TYPE DISTINCTION IMPLEMENTED</text>
+<text class="label" x="22" y="48">Generated and Verified are different types; generic arguments remain invariant.</text>
+<rect class="implemented" x="24" y="78" width="198" height="66" rx="8"/>
+<text class="type" x="42" y="106">Generated&lt;T&gt;</text>
+<text class="label" x="42" y="128">design type; runtime absent</text>
+<rect class="implemented" x="302" y="78" width="198" height="66" rx="8"/>
+<text class="type" x="320" y="106">Verified&lt;T&gt;</text>
+<text class="label" x="320" y="128">distinct, invariant type</text>
+<path class="flow" d="M222 111 L302 111"/>
+<path class="flow" d="M250 98 L274 124 M274 98 L250 124"/>
+<text class="future" x="226" y="162">no implicit conversion between them</text>
+<rect class="box" x="582" y="78" width="190" height="66" rx="8"/>
+<text class="type" x="600" y="106">T</text>
+<text class="label" x="600" y="128">supported inner-type positions</text>
+<path class="live" d="M500 111 L582 111"/>
+<text class="badge" x="520" y="92">ALLOWED</text>
+<text class="future" x="22" y="202">PROPOSED EXECUTION PATH — NOT IMPLEMENTED</text>
+<rect class="planned" x="24" y="222" width="218" height="62" rx="8"/>
+<text class="type" x="40" y="248">verify value with V</text>
+<text class="label" x="40" y="270">Draft verifier contract</text>
+<rect class="planned" x="344" y="222" width="248" height="62" rx="8"/>
+<text class="type" x="360" y="248">Result&lt;Verified&lt;T&gt;, E&gt;</text>
+<text class="label" x="360" y="270">fallible result shape</text>
+<rect class="planned" x="694" y="222" width="190" height="62" rx="8"/>
+<text class="type" x="710" y="248">Provenance</text>
+<text class="label" x="710" y="270">record inputs and checks</text>
+<path class="flow" d="M242 253 L344 253" stroke-dasharray="5 4"/>
+<path class="flow" d="M592 253 L694 253" stroke-dasharray="5 4"/>
+<text class="label" x="24" y="326">The type checker covers identity and assignment rules; verify execution, failure handling and provenance remain future work.</text>
 </svg>
