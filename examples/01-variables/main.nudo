@@ -4,13 +4,13 @@
 //
 //     nudo check examples/01-variables/main.nudo
 //
-// Immutability is the default. Whether NUDO has mutable bindings at all, and
-// what they are spelled, is an open question (see DESIGN.md).
+// `let` bindings are immutable. Assignment is not part of the language
+// (NEP-0009).
 
-let count = 3;
+let quantity = 3.0;
 let unit_price = 1_999.95;
 let label = "unit price";
-let total = count * unit_price;
+let total = quantity * unit_price;
 let grouped = 1_000_000;
-let nested = (((count)));
+let nested = (((quantity)));
 let text = "escapes: \n \t \\ \" \0";
