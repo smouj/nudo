@@ -28,7 +28,7 @@
 
 检查器尚未定义 <code>if</code> 的结果类型与分支值一致性，也没有实现所有运算符、
 索引、名义值构造、<code>match</code> 或 <code>Result&lt;T, E&gt;</code> 模式匹配。
-泛型参数仍未解析时的稳定诊断也尚未完成。该检查器尚未实现整数字面量范围检查、
+泛型参数仍未解析时的稳定诊断也尚未完成。[NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) 提出了诊断契约，但目前仍是 Draft，尚未被接受或实现。该检查器尚未实现整数字面量范围检查、
 智能体、任务和工具类型。
 
 这些遗漏是有意的。只有语义和诊断契约已经接受，规则才能实现。

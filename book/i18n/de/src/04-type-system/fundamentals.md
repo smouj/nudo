@@ -23,7 +23,7 @@ Die generische Inferenz ist bewusst begrenzt. Sie löst keine Typen für das ges
 
 ## Noch unvollständige Regeln
 
-Der Typechecker definiert noch keinen Ergebnistyp für <code>if</code>, keine Übereinstimmung zwischen Zweigwerten, nicht alle Operatoren, keine Indizierung, nominale Konstruktion, <code>match</code> oder <code>Result&lt;T, E&gt;</code>-Matching. Auch eine stabile Diagnose für einen ungelösten generischen Parameter steht noch aus. Ganzzahl-Literalbereiche sowie Agenten, Tasks und Tools werden in diesem Typechecker noch nicht implementiert.
+Der Typechecker definiert noch keinen Ergebnistyp für <code>if</code>, keine Übereinstimmung zwischen Zweigwerten, nicht alle Operatoren, keine Indizierung, nominale Konstruktion, <code>match</code> oder <code>Result&lt;T, E&gt;</code>-Matching. Auch eine stabile Diagnose für einen ungelösten generischen Parameter steht noch aus. [NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) schlägt diesen Diagnosevertrag vor; die NEP ist jedoch noch ein Draft und weder angenommen noch implementiert. Ganzzahl-Literalbereiche sowie Agenten, Tasks und Tools werden in diesem Typechecker noch nicht implementiert.
 
 Diese Lücken sind beabsichtigt. Eine Regel gilt erst dann als implementiert, wenn ihr semantischer und diagnostischer Vertrag angenommen wurde. Roadmap und Spezifikation halten fest, welche Arbeit bereit ist und welche Entscheidungen noch offen sind.
 

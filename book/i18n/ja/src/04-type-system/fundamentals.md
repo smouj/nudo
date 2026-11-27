@@ -23,7 +23,7 @@
 
 ## 未完成の規則
 
-チェッカーはまだ <code>if</code> の戻り値型や分岐値の一致を定義しておらず、すべての演算子、indexing、nominal construction、<code>match</code>、<code>Result&lt;T, E&gt;</code> の match にも対応していません。未解決のジェネリックパラメーターに対する安定した診断も未対応です。整数リテラルの範囲、エージェント、タスク、ツールもこのチェッカーには実装されていません。
+チェッカーはまだ <code>if</code> の戻り値型や分岐値の一致を定義しておらず、すべての演算子、indexing、nominal construction、<code>match</code>、<code>Result&lt;T, E&gt;</code> の match にも対応していません。未解決のジェネリックパラメーターに対する安定した診断も未対応です。[NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) が診断契約を提案していますが、まだ Draft であり、採用も実装もされていません。整数リテラルの範囲、エージェント、タスク、ツールもこのチェッカーには実装されていません。
 
 これらの不足は意図的です。意味論と診断の契約が採用されて初めて、その規則を実装済みとします。ロードマップと仕様は、準備できた作業と未解決の判断を記録します。
 
