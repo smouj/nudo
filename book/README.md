@@ -26,36 +26,33 @@ book.
 
 ## Status labels are mandatory
 
-A polished manual about a pre-alpha language is a machine for misleading people.
-Every chapter therefore carries a status line, and a chapter that describes
-proposed behaviour must say so in the chapter, not only in a global disclaimer.
+A polished manual about a pre-alpha language can mislead readers. Every chapter
+therefore states whether it describes implemented behavior, accepted
+specification, a proposal, planned work, an open question or historical context.
+The vocabulary is defined in [EDITORIAL.md](EDITORIAL.md).
 
-The label vocabulary is the repository's:
-**IMPLEMENTED**, **SPECIFIED**, **PLANNED**, **PROPOSED** — used alone or in
-pairs, optionally with a short descriptor such as `Implemented foundation`. The
-rank word stays uppercase English in every language so that it remains
-machine-checkable; see [`i18n/README.md`](i18n/README.md).
+The English status rank stays uppercase in every translation so its meaning
+remains machine-checkable. Translations may localize the label, but preserve the
+rank token in parentheses; see [i18n/README.md](i18n/README.md).
 
-[`src/00-introduction/status.md`](src/00-introduction/status.md) is the
-chapter that states the real state of the toolchain, and it is the one chapter
-that must never drift: it says the lexer and `nudo check` work, and that the
-parser, type checker, interpreter, effect checker, agent runtime and WASM backend
-are design work.
-
+[The current project status](src/00-introduction/status.md) reflects the
+toolchain today: the lexer, parser, typed AST, HIR and name resolution are
+implemented. The type-checking crate implements a partial set of accepted rules
+with its own tests, but the CLI does not call it yet. The interpreter, effect
+checker, agent runtime and WebAssembly backend are not available.
 ## Layout
 
 | Path | Contents |
 | ---- | -------- |
-| `src/` | The canonical Markdown source. `SUMMARY.md` is the table of contents |
-| `theme/` | The web visual system: tokens, book CSS, print CSS, one small script |
-| `typst/` | The PDF typesetting layer |
-| `adr/` | Architecture decision records for the book system itself |
-| `templates/` | Chapter and ADR templates |
-| `quality/` | Editor configuration: markdownlint, Vale, lychee |
-| `scripts/` | Build, validation and brand-sync helpers |
-| `translations/` | Where a translated edition will live, if one is made |
-| `output/` | **Generated.** Never committed |
-
+| <code>src/</code> | Canonical English Markdown source; <code>SUMMARY.md</code> is the table of contents |
+| <code>i18n/</code> | Spanish, Chinese, Japanese and German editions with per-chapter source hashes |
+| <code>theme/</code> | The web visual system: tokens, book CSS, print CSS and a small script |
+| <code>typst/</code> | The PDF typesetting layer |
+| <code>adr/</code> | Architecture decision records for the book system |
+| <code>templates/</code> | Chapter and ADR templates |
+| <code>quality/</code> | Editor configuration: markdownlint, Vale and lychee |
+| <code>scripts/</code> | Build, validation and brand-sync helpers |
+| <code>output/</code> | Generated files; never committed |
 ## Building
 
 ```sh

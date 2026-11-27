@@ -1,6 +1,6 @@
 # 01.2 — Explizites Vertrauen
 
-> **Status:** Vorgeschlagen  
+> **Status:** Vorgeschlagen (PROPOSED)
 > **Summary:** NUDO trennt generierte und verifizierte Werte, damit Vertrauensübergänge für Prüfende und Checker sichtbar sind.
 
 ## Die zentrale Unterscheidung

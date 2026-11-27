@@ -1,6 +1,6 @@
 # 05.1 — Agenten als begrenzte Ausführer
 
-> **Status:** Vorgeschlagen  
+> **Status:** Vorgeschlagen (PROPOSED)
 > **Summary:** Ein Agent soll ein deklarierter Ausführer mit expliziten Tools, Autorität, Grenzen und Abnahmekriterien sein, nicht eine unbeschränkte Prompt-Schleife.
 
 Agentendeklarationen sind nur nützlich, wenn sie etwas mitteilen, das Compiler oder

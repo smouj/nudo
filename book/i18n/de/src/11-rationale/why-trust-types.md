@@ -1,6 +1,6 @@
 # 11.2 — Warum Vertrauen zur Typgeschichte gehört
 
-> **Status:** Vorgeschlagene Begründung  
+> **Status:** Vorgeschlagene Begründung (PROPOSED)
 > **Summary:** Der Vertrauenszustand ist wichtig genug, um in Schnittstellen sichtbar zu sein, weil das Vergessen eines Verifikationsschritts eine Klasse von Programmfehlern ist und nicht bloß ein Logging-Thema.
 
 Wer prüft, sollte eine Funktionssignatur ansehen und einen Wert, der von einem Modell

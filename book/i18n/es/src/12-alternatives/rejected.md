@@ -1,6 +1,6 @@
 # 12.1 — Alternativas descartadas deliberadamente
 
-> **Status:** Histórico / Justificación de diseño (HISTORICAL / DESIGN RATIONALE)  
+> **Status:** Histórico (HISTORICAL) / Justificación de diseño
 > **Summary:** Varios enfoques más sencillos son útiles en las aplicaciones, pero no satisfacen el objetivo de NUDO de una confianza y una autoridad visibles para el lenguaje.
 
 | Alternativa | Por qué es insuficiente como modelo del lenguaje |

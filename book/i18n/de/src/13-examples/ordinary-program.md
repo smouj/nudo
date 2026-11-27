@@ -1,6 +1,6 @@
 # 13.1 — Gewöhnliches deterministisches Programm
 
-> **Status:** Vorgeschlagene Syntax  
+> **Status:** Vorgeschlagene Syntax (PROPOSED)
 > **Summary:** Ein kleines deterministisches Programm zeigt die Entwurfsanforderung, dass gewöhnlicher Code einfach bleibt.
 
 ```nudo

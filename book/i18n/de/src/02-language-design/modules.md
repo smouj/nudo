@@ -1,6 +1,6 @@
 # 02.3 — Module und Programm-Grenzen
 
-> **Status:** Vorgeschlagen  
+> **Status:** Vorgeschlagen (PROPOSED)
 > **Summary:** Module müssen explizite Namensräume und reproduzierbare Programmstruktur bieten, ohne Autoritäts- oder Abhängigkeitsgrenzen zu verbergen.
 
 Moduldesign ist eng mit Paketdesign, Namensauflösung und öffentlichen Schnittstellen

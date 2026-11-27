@@ -1,42 +1,28 @@
 # 00.3 — Estado actual del proyecto
 
-> **Status:** Implementado / Planificado (IMPLEMENTED / PLANNED)  
-> **Summary:** El repositorio es deliberadamente honesto sobre la distancia entre las fases del compilador ya implementadas y las fases futuras que solo están diseñadas.
+> **Status:** Implementado (IMPLEMENTED) / Planificado (PLANNED)
+> **Summary:** El repositorio cuenta con un front end funcional y soporte parcial de comprobación de tipos; la ejecución y la comprobación de efectos siguen siendo hitos futuros.
 
-## Base implementada
+El estado siguiente refleja la hoja de ruta del repositorio. «Implementado» significa que existen código y pruebas para el alcance indicado. No significa que el lenguaje completo ni un flujo de trabajo para usuarios estén terminados.
 
-La ruta que funciona está centrada actualmente en la carga del código fuente, los
-spans, el análisis léxico, los tokens, los diagnósticos, el árbol sintáctico sin
-pérdidas, el parser, el AST tipado y `nudo check` sobre todo ello. El proyecto cuenta
-además con infraestructura de repositorio, CI, seguridad, gobernanza, conformidad y
-documentación.
+| Hito | Estado | Qué está disponible |
+| --- | --- | --- |
+| M0 — Base del repositorio | Completo | Workspace, reglas de contribución, CI e infraestructura documental |
+| M1 — Modelo de fuentes y lexer | Completo | Archivos fuente, spans, tokens, diagnósticos léxicos y recuperación |
+| M2 — Parser y árbol sintáctico | Completo | Sintaxis sin pérdidas, parser, AST tipado y diagnósticos sintácticos |
+| M3.0 — Decisiones semánticas | Completo | Decisiones aceptadas registradas en la especificación y en las NEP |
+| M3.1 — HIR y resolución de nombres | Completo | Reducción a HIR, ámbitos, resolución de nombres y NDO2001–NDO2003 |
+| M3.2 — Sistema de tipos | En curso | Comprobador parcial para reglas aceptadas; aún no lo invoca la CLI |
+| M3.3 — Tipos de confianza | Parcial | Identidad de tipos y regla aceptada de asignación de Verified a su tipo interno |
+| M4 — Intérprete | Planificado | Primer programa de extremo a extremo y <code>nudo run</code> |
+| M5 — Sistema de efectos | Planificado | Inferencia, comprobación y diagnósticos de efectos; la semántica sigue propuesta |
 
-## Ruta planificada del compilador
+El comando <code>nudo check</code> carga el código fuente, lo analiza léxica y sintácticamente y resuelve nombres. Puede mostrar tokens, árboles sintácticos y resoluciones. Una ejecución limpia significa que esas fases no notificaron errores; no demuestra que el programa tenga tipos correctos, sea ejecutable o resulte seguro durante la ejecución.
 
-```text
-Source
-  ↓
-Lexer             implemented
-  ↓
-Lossless syntax   implemented
-  ↓
-Parser / AST      implemented
-  ↓
-HIR / typecheck   planned
-  ↓
-Effect checking   planned
-  ↓
-MIR
-  ↓
-Interpreter / WASM
-```
+El crate de comprobación de tipos cubre tipos primitivos y literales, anotaciones, llamadas, inferencia genérica acotada, acceso a campos, ciertas operaciones aritméticas, condiciones Bool y la asignación aceptada de tipos de confianza. Su corpus de conformidad prueba estas reglas independientemente de la CLI. Las reglas no admitidas siguen deliberadamente incompletas hasta que sus contratos semánticos estén listos.
 
-«Implementado» significa que una fase tiene comportamiento y pruebas hoy. Una
-ejecución limpia de `nudo check` significa que el archivo pasa el análisis léxico y el
-sintáctico; no significa que el programa sea correcto, y no se ejecuta.
+M4 y M5 tienen criterios de dependencia. M4 requiere completar el trabajo restante de tipos y confianza, además de una ruta de ejecución real. M5 necesita esas bases y un diseño aceptado del sistema de efectos. La hoja de ruta define la finalización mediante criterios funcionales y evidencia de conformidad, no mediante fechas.
 
 ## Por qué importan las etiquetas de estado
 
-Un libro sobre un lenguaje en fase pre-alpha puede volverse engañoso con facilidad,
-porque los ejemplos cuidados parecen reales. Por eso cada capítulo lleva un estado,
-y los ejemplos de sintaxis futura se describen como propuestas cuando corresponde.
+Un ejemplo pulido puede parecer una función publicada. Por eso cada capítulo indica si describe comportamiento implementado, diseño aceptado, una propuesta o trabajo planificado. La <a href="https://github.com/smouj/nudo/blob/main/ROADMAP.md">hoja de ruta</a> es el registro cambiante y autoritativo del estado.

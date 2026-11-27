@@ -1,36 +1,40 @@
-# 04.2 — `Generated<T>` y `Verified<T>`
+# 04.2 — Valores Generated y Verified
 
-> **Status:** Propuesto (PROPOSED)  
-> **Summary:** Los tipos de confianza pretenden impedir que una salida probabilística se convierta en datos de aplicación de confianza mediante una conversión implícita.
-
+> **Status:** Implementado (IMPLEMENTED) / Especificado (SPECIFIED) / Planificado (PLANNED)
+>
+> **Summary:** El comprobador aplica la distinción entre los tipos generado y verificado; ejecutar la verificación y registrar la procedencia siguen siendo trabajo futuro del runtime.
 
 {{#include ../diagrams/trust-flow.svg}}
 
-*Una salida de modelo solo se convierte en un valor verificado mediante un paso explícito.*
+*Las reglas de tipos estáticas están implementadas en parte; la operación
+verify y la ruta de procedencia son una vista previa del diseño y aún no se
+pueden ejecutar.*
 
-## ¿Por qué no `T`?
+## La distinción de confianza
 
-Si un modelo devuelve un `Article` directamente, la procedencia sobre cómo se produjo
-ese valor desaparece de la frontera de tipos.
+<code>Generated&lt;T&gt;</code> y <code>Verified&lt;T&gt;</code> son tipos distintos. El comprobador no los convierte implícitamente y sus argumentos genéricos siguen siendo invariantes. Por tanto, un resultado generado no puede satisfacer un parámetro que exija explícitamente el tipo verificado.
 
-## ¿Por qué no `Result<T, E>`?
+Las reglas aceptadas también permiten usar el <code>Verified&lt;T&gt;</code> integrado donde se espera <code>T</code> en posiciones admitidas. Esto se basa en la identidad resuelta del tipo integrado; un tipo definido por el usuario con la misma grafía no obtiene esa regla. El comportamiento está cubierto por casos de conformidad del comprobador, pero <code>nudo check</code> todavía no ejecuta la comprobación de tipos.
 
-`Result` puede representar el éxito o el fallo de una operación. No representa el
-estado de confianza de un valor correcto. Una respuesta de modelo perfectamente
-analizada puede seguir sin estar verificada.
+## La operación de verificación planificada
 
-## ¿Por qué no un indicador booleano?
+El parser acepta la sintaxis <code>verify value with Verifier</code> y la representa en HIR. El contrato del verificador, la ejecución, el tratamiento de errores y la procedencia aún no están implementados. El diseño del verificador sigue siendo una propuesta; por eso la forma siguiente ilustra el flujo previsto y no es un programa ejecutable:
 
-```text
+~~~nudo
+let checked: Result<Verified<Article>, VerificationError> =
+    verify draft with ArticleVerifier
+~~~
+
+El diseño hace visibles dos hechos distintos: la verificación puede fallar y un valor correcto lleva un tipo de confianza diferente. No vuelve determinista la generación probabilística; hace revisable el límite de confianza.
+
+## Por qué no representar la confianza con un booleano
+
+~~~text
 ModelOutput<T> { value: T, verified: Bool }
-```
+~~~
 
-Esto traslada la regla a una convención del runtime. Quien llama puede olvidarse de
-inspeccionar el indicador. Los tipos distintos permiten que el comprobador haga
-imposible ignorar la transición que falta.
+Quien llama puede olvidarse de inspeccionar una bandera. Los tipos distintos permiten que el comprobador rechace un valor en un límite de comprobación compatible, en vez de depender de una convención en tiempo de ejecución.
 
-## Cuestiones de diseño obligatorias
+## Qué queda pendiente
 
-Antes de estabilizar, NUDO debe especificar los tipos de fallo del verificador, la
-composición, la conservación de la procedencia, las fronteras de serialización y las
-interacciones con los genéricos y la coincidencia de patrones.
+La operación de runtime, las declaraciones de verificadores comprobables estáticamente, un tipo estable de error, los registros de procedencia y las trazas siguen planificados o propuestos. Se puede nombrar <code>Result&lt;T, E&gt;</code> con los argumentos de tipo requeridos, pero la comprobación de <code>match</code> y el tratamiento exhaustivo aún no están implementados.

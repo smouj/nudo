@@ -43,42 +43,40 @@ knowingly, and the staleness check is what keeps it from becoming drift.
 Rules that apply to every language. They exist because a translated manual about
 a pre-alpha language is an unusually effective way to mislead people.
 
-1. **Never translate a status label into something stronger.** The four ranks are
-   `IMPLEMENTED`, `SPECIFIED`, `PLANNED` and `PROPOSED`, and they mean exactly
-   what [`../../AGENTS.md`](../../AGENTS.md) says they mean.
+1. **Never translate a status label into something stronger.** Use the status
+   vocabulary in [the editorial contract](../EDITORIAL.md):
+   <code>IMPLEMENTED</code>, <code>SPECIFIED</code>, <code>PROPOSED</code>,
+   <code>PLANNED</code>, <code>OPEN</code> and <code>HISTORICAL</code>. Preserve
+   the exact English token in uppercase even when the display label is translated.
 
-   A chapter's status line is `<rank>` or `<rank> / <rank>`, optionally followed by
-   a short descriptor: `Implemented foundation`, `Proposed syntax`. The rank is
-   **kept verbatim in uppercase English** so that it stays machine-checkable and
-   cannot drift, and the descriptor is translated.
+   A chapter status may be one rank or two ranks, optionally followed by a short
+   descriptor such as “foundation” or “syntax”. The translated label carries
+   the original token in parentheses, for example
+   <code>Implementado (IMPLEMENTED)</code> or
+   <code>Histórico (HISTORICAL) / Vivo</code>. Keep descriptors translated and
+   do not turn them into additional ranks.
 
-   The label itself — `Status:` — may be translated (`状态`, `ステータス`) or kept as
-   the English field name; both are in use and neither changes the meaning. The
-   value must carry the English rank token in parentheses after the translated
-   wording, as in `> **Status:** Especificado (SPECIFIED)`, which is the part a
-   check can act on. A translation that turns
-   "planned" into "available" is a defect, not a nuance.
-
-   There is no `Open` rank. "The design question this chapter names has not been
-   settled" is written as `Proposed`, and a chapter whose question *has* been
-   settled is updated rather than left carrying its old label — which is what
-   happened to `02-language-design/expressions.md` once the expression grammar was
-   frozen.
+   The field name “Status:” may be translated or kept in English. The uppercase
+   English token in parentheses is the part a check can act on. OPEN is reserved
+   for a deliberately unresolved question; PROPOSED describes a design direction
+   that may still change. When a question is settled, update its status to match
+   the accepted design or implemented behavior.
 2. **Never translate a claim into a promise.** If the English says a feature is
    designed and not built, every language says that.
-3. **Code, identifiers, file paths, `NDO` codes, type names and command names are
-   not translated.** `nudo check`, `Generated<T>`, `NDO1003`, `spec/grammar.md`
-   and `book/src` stay exactly as they are.
+3. **Code, identifiers, file paths, NDO codes, type names and command names are
+   not translated.** <code>NDO1003</code>, <code>nudo check</code>,
+   <code>Generated&lt;T&gt;</code>, <code>spec/grammar.md</code> and
+   <code>book/src</code> stay exactly as they are.
 4. **Links point at the translated sibling chapter**, not at the English one. A
    reader who chose a language should stay in it.
 5. **Never invent a feature to make a sentence flow.** If a translation needs a
    fact the source does not have, the source is what is missing. Say so.
-6. **Diagrams are shared, not duplicated.** They are included from
-   `../../diagrams` by relative path and contain almost no prose. Any label that
-   must be translated is a signal that the diagram is doing too much talking.
-7. **The canonical title stays recognisable.** "The NUDO Technical Book" may be
-   rendered in the target language, but `NUDO` does not become anything else.
-
+6. **Diagrams are shared, not duplicated.** They are included from the shared
+   diagrams directory by relative path and contain almost no prose. Any label
+   that must be translated is a signal that the diagram is doing too much
+   talking.
+7. **The canonical title stays recognisable.** “The NUDO Technical Book” may be
+   rendered in the target language, but NUDO does not become anything else.
 ## Adding a language
 
 1. Copy the structure: `mkdir -p <code>/src` and copy the `book.toml` from

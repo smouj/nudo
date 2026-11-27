@@ -1,21 +1,35 @@
-# 03.4 — プロダクト設計としての診断
+# 03.4 — 製品設計としての診断
 
-> **ステータス:** 実装済み (IMPLEMENTED) / 計画中 (PLANNED)  
-> **概要:** コンパイラのエラーは、規則、ソース位置、その要件を持ち込んだ連鎖を説明します。
+> **Status:** 実装済み (IMPLEMENTED) / 計画中 (PLANNED)
+> **Summary:** NUDO の診断は安定したコードとソース span を使用します。実装済みの分類は、字句・構文・名前解決・部分的な型検査のエラーを扱います。
 
-診断はデバッグダンプではなく、言語体験の一部です。字句と構文のファミリー (`NDO1xxx`) は実装済みです。ファイルは安定したコード、正確なスパン、expected/found の対とともに拒否されます。型、エフェクト、ケイパビリティのファミリーは計画中であり、それらが示さなければならない連鎖は `spec/errors.md` に仕様化されています。
+診断は言語体験の一部であり、debug dump ではありません。<code>nudo-diagnostics</code> crate は、severity、code、ソース位置、note、help を持つ構造化診断を提供します。コンパイラーの各段階が独自に出力を整形せずに事実を報告できるよう、renderer を共有しています。
 
-高品質なケイパビリティエラーは、呼び出し地点と理由の両方を特定すべきです。
+## 実装済みの診断分類
 
-```text
-error[NDO3xxx]: missing capability `Network`
+- <code>NDO1xxx</code> は字句エラーと構文エラーを扱います。lexer と parser は可能な場合に回復し、ソース span を報告します。
+- <code>NDO2001</code>–<code>NDO2003</code> は名前解決エラーで、<code>nudo check</code> が出力します。
+- <code>NDO2004</code>–<code>NDO2007</code> と <code>NDO2017</code> は実装済みの型検査規則を扱います。型チェッカーのテストは、それらの規則について expected/found の構造化 note とソース位置を固定します。
 
-  ┌─ src/main.nudo:14:5
-  │
-14│     fetch(url)
-  │     ^^^^^^^^^^ requires Network
-  │
-  └─ current task was not granted Network
-```
+型チェッカーは部分的な実装で、CLI からはまだ呼び出されません。そのため、エラーのない <code>nudo check</code> はソースが字句解析、構文解析、名前解決を通過したことを示すだけで、型検査を通過したという意味ではありません。
 
-トラスト型については、エラーは `Generated<T>` と `Verified<T>` が意図的に別物であることを説明し、安全でないキャストを勧めるのではなく、明示的な検証の境界を指し示すべきです。
+## 計画中の診断分類
+
+エフェクトシステムの <code>NDO3xxx</code> 分類は M5 で計画されています。現在これらの診断を出すエフェクトチェッカーはありません。以下は目標を示す例であり、現在の toolchain の出力ではありません。
+
+~~~text
+error[NDO3xxx]: capability Network が不足しています
+
+  --> src/main.nudo:14:5
+   |
+14 |     fetch(url)
+   |     ^^^^^^^^^^ Network が必要です
+   |
+   = note: 呼び出し経路が Network を必要とします
+~~~
+
+採用済み診断仕様は構造とソース位置の要件を定義します。エフェクト構文と検査規則は、提案が採用されることを引き続き前提としています。
+
+## 診断の品質
+
+役に立つ診断は、どの規則に違反したか、ソースのどこで違反したか、どの要件がエラーを生んだかを説明します。信頼型の不一致では、<code>Generated&lt;T&gt;</code> と <code>Verified&lt;T&gt;</code> が別の型であることと、保証に違反する値を示すべきです。安全でない cast を提案してはいけません。

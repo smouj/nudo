@@ -1,36 +1,39 @@
-# 04.2 — `Generated<T>` und `Verified<T>`
+# 04.2 — Generated- und Verified-Werte
 
-> **Status:** Vorgeschlagen  
-> **Summary:** Die Vertrauenstypen sollen verhindern, dass probabilistische Ausgabe durch eine implizite Konvertierung zu vertrauenswürdigen Anwendungsdaten wird.
-
+> **Status:** Implementiert (IMPLEMENTED) / Spezifiziert (SPECIFIED) / Geplant (PLANNED)
+>
+> **Summary:** Der Typechecker setzt die Unterscheidung zwischen generierten und verifizierten Typen durch; die Ausführung von Verifikation und die Erfassung von Provenienz bleiben künftige Runtime-Arbeit.
 
 {{#include ../diagrams/trust-flow.svg}}
 
-*Eine Modellausgabe wird nur durch einen expliziten Schritt zu einem verifizierten Wert.*
+*Statische Typregeln sind teilweise implementiert; die verify-Operation und
+der Provenienzpfad sind ein Designentwurf und heute nicht ausführbar.*
 
-## Warum nicht `T`?
+## Die Vertrauensunterscheidung
 
-Wenn ein Modell direkt ein `Article` zurückgibt, verschwindet die Provenienz
-darüber, wie dieser Wert erzeugt wurde, aus der Typgrenze.
+<code>Generated&lt;T&gt;</code> und <code>Verified&lt;T&gt;</code> sind verschiedene Typen. Der Typechecker konvertiert nicht implizit zwischen ihnen, und ihre Typargumente bleiben invariant. Ein generiertes Ergebnis erfüllt daher keinen Parameter, der ausdrücklich den verifizierten Typ verlangt.
 
-## Warum nicht `Result<T, E>`?
+Die angenommenen Regeln erlauben außerdem, das eingebaute <code>Verified&lt;T&gt;</code> an unterstützten Stellen zu verwenden, an denen <code>T</code> erwartet wird. Grundlage ist die aufgelöste Typidentität des eingebauten Typs; ein benutzerdefinierter Typ mit derselben Schreibweise erhält diese Regel nicht. Das Verhalten wird durch Typechecker-Konformitätsfälle abgedeckt, doch <code>nudo check</code> führt die Typprüfung noch nicht aus.
 
-`Result` kann Erfolg/Fehlschlag einer Operation darstellen. Es stellt nicht den
-Vertrauensstatus eines erfolgreichen Werts dar. Eine perfekt geparste Modellantwort
-kann trotzdem unverifiziert sein.
+## Die geplante Verifikationsoperation
 
-## Warum kein Boolesches Flag?
+Der Parser akzeptiert die Syntax <code>verify value with Verifier</code> und bildet sie in HIR ab. Der Vertrag des Verifiers, die Ausführung, Fehlerbehandlung und Provenienz sind nicht implementiert. Das Verifier-Design ist weiterhin ein Vorschlag; die folgende Form zeigt daher den vorgesehenen Ablauf und ist kein ausführbares Programm:
 
-```text
+~~~nudo
+let checked: Result<Verified<Article>, VerificationError> =
+    verify draft with ArticleVerifier
+~~~
+
+Das Design macht zwei Tatsachen getrennt sichtbar: Verifikation kann fehlschlagen, und ein erfolgreicher Wert trägt einen anderen Vertrauens-Typ. Es macht probabilistische Generierung nicht deterministisch, sondern die Grenze überprüfbar.
+
+## Warum Vertrauen nicht als Boolean darstellen?
+
+~~~text
 ModelOutput<T> { value: T, verified: Bool }
-```
+~~~
 
-Das verschiebt die Regel in eine Laufzeitkonvention. Ein Aufrufer kann vergessen,
-das Flag zu prüfen. Verschiedene Typen erlauben es dem Checker, den fehlenden
-Übergang unmöglich zu ignorieren.
+Ein Aufrufer kann vergessen, ein Flag zu prüfen. Verschiedene Typen erlauben es dem Typechecker, einen Wert an einer unterstützten Typprüfgrenze zurückzuweisen, statt sich auf eine Runtime-Konvention zu verlassen.
 
-## Notwendige Entwurfsfragen
+## Was noch fehlt
 
-Vor der Stabilisierung muss NUDO Verifier-Fehlertypen, Komposition, Provenienzerhalt,
-Serialisierungsgrenzen und die Wechselwirkung mit Generics und Pattern Matching
-spezifizieren.
+Die Runtime-Operation, statisch prüfbare Verifier-Deklarationen, ein stabiler Fehlertyp, Provenienzaufzeichnungen und Traces sind weiterhin geplant oder vorgeschlagen. <code>Result&lt;T, E&gt;</code> kann mit den erforderlichen Typargumenten benannt werden; <code>match</code>-Typprüfung und vollständige Fallbehandlung sind jedoch nicht implementiert.

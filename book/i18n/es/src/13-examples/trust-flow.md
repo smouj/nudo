@@ -1,6 +1,6 @@
 # 13.2 — Salida del modelo y flujo de verificación
 
-> **Status:** Sintaxis propuesta (PROPOSED SYNTAX)  
+> **Status:** Sintaxis propuesta (PROPOSED)
 > **Summary:** El ejemplo canónico de agente muestra por qué la salida generada y la salida verificada son intencionadamente distintas.
 
 ```nudo

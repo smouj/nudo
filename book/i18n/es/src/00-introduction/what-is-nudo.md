@@ -1,29 +1,35 @@
 # 00.1 — ¿Qué es NUDO?
 
-> **Status:** Especificado (SPECIFIED)  
-> **Summary:** NUDO se diseña como un lenguaje de propósito general en el que el código determinista y el trabajo probabilístico acotado pueden convivir sin ocultar las fronteras de confianza ni de autoridad.
+> **Status:** Especificado (SPECIFIED) / Implementado (IMPLEMENTED)
+>
+> **Summary:** NUDO es un proyecto de lenguaje de propósito general cuyo diseño hace explícitas la confianza y la autoridad; su implementación actual es un compilador pre-alpha con un front end funcional.
 
 ## El modelo en una frase
 
-NUDO conecta personas, código, agentes, herramientas y modelos bajo un mismo
-sistema de tipos, permisos y verificación.
+NUDO pretende conectar código determinista, personas, agentes, herramientas y modelos mediante un sistema común de tipos, permisos y verificación.
 
-## Qué hace singular al proyecto
+## El problema que aborda
 
-La mayoría de los lenguajes de aplicación solo pueden representar una llamada a un
-modelo como E/S de biblioteca corriente. Eso significa que el compilador ve una
-llamada a función y quizá un valor JSON, pero no sabe que el valor se generó de
-forma probabilística, ni qué autoridad concedió quien hizo la llamada, ni qué
-presupuesto se consumió, ni si alguien verificó el resultado.
+En muchas aplicaciones con agentes, un prompt es una cadena, el esquema de una herramienta es JSON, los permisos residen en la configuración, los presupuestos en la consola del proveedor y la verificación en el código de la aplicación. Cada parte puede funcionar, pero el compilador no ve cómo se relacionan.
 
-NUDO explora trasladar esas fronteras a estructuras visibles para el lenguaje, sin
-dejar de mantener la programación determinista ordinaria como ruta por defecto.
+NUDO explora cómo hacer visibles esos límites en el lenguaje y el runtime. Un tipo puede distinguir datos generados de datos verificados. Una firma de efectos podría expresar qué autoridad necesita una función. Un runtime podría registrar qué entradas y comprobaciones produjeron un resultado. Son objetivos de diseño; aún no son todas funciones disponibles.
+
+## Qué existe hoy
+
+La CLI puede cargar archivos fuente, tokenizarlos, analizarlos en un árbol sintáctico sin pérdidas, resolver nombres y mostrar esas fases. Los crates de HIR y de resolución de nombres están implementados. El comprobador de tipos implementa un conjunto parcial de reglas aceptadas y tiene sus propias pruebas y casos de conformidad, pero <code>nudo check</code> todavía no lo ejecuta.
+
+La toolchain actual no ejecuta programas NUDO. Todavía no hay intérprete, comprobador de efectos, proveedor de modelos, runtime de agentes, sandbox de herramientas, almacén de procedencia ni backend WASM. El <a href="status.md">estado del proyecto</a> y la <a href="https://github.com/smouj/nudo/blob/main/ROADMAP.md">hoja de ruta</a> distinguen el front end funcional de los subsistemas planificados.
+
+## Qué hace distinto al proyecto
+
+NUDO trata el software determinista como la vía normal y el trabajo probabilístico como una operación acotada con un límite de confianza visible. Una respuesta de un modelo no debería convertirse en datos fiables de la aplicación solo porque tenga la forma adecuada. Una herramienta no debería obtener autoridad solo porque el proceso anfitrión la tenga.
+
+El compilador y el runtime pretenden que esas afirmaciones puedan revisarse y, cuando exista la implementación, hacerlas cumplir.
 
 ## Qué no es
 
-NUDO no es un SDK de modelos, ni un framework de prompts, ni un DSL específico de
-un proveedor, ni una nueva piel sobre Python. Las formas de petición propias de cada
-proveedor pertenecen a los adaptadores del runtime. La composición de prompts
-pertenece en su mayor parte a las bibliotecas. El lenguaje es responsable del
-significado y de las reglas de confianza y autoridad sobre las que deben coincidir
-implementaciones independientes.
+NUDO no es un SDK de modelos, un framework de prompts, un DSL específico de un proveedor ni una nueva capa sobre Python. Los formatos de petición de cada proveedor corresponden a adaptadores del runtime; la composición de prompts suele corresponder a bibliotecas. NUDO tampoco está listo para producción: el lenguaje, el compilador y el runtime están incompletos y siguen sujetos a cambios mediante el proceso de especificación.
+
+## Fuente de verdad
+
+La especificación define el lenguaje. Las NEP aceptadas la modifican. Las pruebas fijan el comportamiento observable de la implementación. El libro explica motivaciones y estado, pero no resuelve de forma implícita una cuestión del lenguaje que siga abierta.

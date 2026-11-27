@@ -1,28 +1,35 @@
 # 00.1 — Was ist NUDO?
 
-> **Status:** Spezifiziert  
-> **Summary:** NUDO ist als universell einsetzbare Sprache entworfen, in der deterministischer Code und begrenzte probabilistische Arbeit nebeneinander bestehen können, ohne Vertrauens- oder Autoritätsgrenzen zu verbergen.
+> **Status:** Spezifiziert (SPECIFIED) / Implementiert (IMPLEMENTED)
+>
+> **Summary:** NUDO ist ein allgemeines Sprachprojekt, dessen Design Vertrauen und Autorität explizit macht; die aktuelle Implementierung ist ein Prä-Alpha-Compiler mit funktionsfähigem Frontend.
 
 ## Das Modell in einem Satz
 
-NUDO verbindet Menschen, Code, Agenten, Tools und Modelle unter einem gemeinsamen
-System aus Typen, Berechtigungen und Verifikation.
+NUDO soll deterministischen Code, Menschen, Agenten, Tools und Modelle unter einem gemeinsamen System aus Typen, Berechtigungen und Verifikation verbinden.
 
-## Was das Projekt ungewöhnlich macht
+## Das Problem
 
-Die meisten Anwendungssprachen können einen Modellaufruf nur als gewöhnliche
-Bibliotheks-Ein-/Ausgabe darstellen. Das heißt: Der Compiler sieht einen
-Funktionsaufruf und vielleicht einen JSON-Wert, aber er weiß nicht, dass der Wert
-probabilistisch erzeugt wurde, welche Autorität der Aufrufer gewährt hat, welches
-Budget verbraucht wurde oder ob jemand das Ergebnis verifiziert hat.
+In vielen Agentenanwendungen ist ein Prompt eine Zeichenfolge, das Schema eines Tools JSON, Berechtigungen liegen in der Konfiguration, Budgets in der Konsole des Anbieters und Verifikation im Anwendungscode. Jeder Teil kann funktionieren, doch der Compiler sieht ihre Zusammenhänge nicht.
 
-NUDO untersucht, diese Grenzen in sprachsichtbare Strukturen zu verschieben,
-während gewöhnliche deterministische Programmierung der Standardweg bleibt.
+NUDO untersucht, wie sich diese Grenzen in Sprache und Runtime sichtbar machen lassen. Ein Typ kann generierte von verifizierten Daten unterscheiden. Eine Effektsignatur könnte ausdrücken, welche Autorität eine Funktion benötigt. Eine Runtime könnte festhalten, welche Eingaben und Prüfungen ein Ergebnis hervorgebracht haben. Das sind Designziele; sie sind noch nicht alle ausgelieferte Funktionen.
+
+## Was heute existiert
+
+Die CLI kann Quelldateien laden, tokenisieren, in einen verlustfreien Syntaxbaum parsen, Namen auflösen und diese Stufen anzeigen. Die HIR- und Namensauflösungs-Crates sind implementiert. Der Typechecker implementiert einen Teil der angenommenen Regeln und hat eigene Tests und Konformitätsfälle; <code>nudo check</code> führt ihn noch nicht aus.
+
+Die aktuelle Toolchain führt keine NUDO-Programme aus. Es gibt noch keinen Interpreter, Effektprüfer, Modellanbieter, Agenten-Runtime, Tool-Sandbox, Provenienzspeicher oder WASM-Backend. Der <a href="status.md">Projektstatus</a> und die <a href="https://github.com/smouj/nudo/blob/main/ROADMAP.md">Roadmap</a> unterscheiden das funktionierende Frontend von geplanten Subsystemen.
+
+## Was das Projekt besonders macht
+
+NUDO behandelt deterministische Software als Normalfall und probabilistische Arbeit als begrenzte Operation mit sichtbarer Vertrauensgrenze. Eine Modellantwort sollte nicht allein deshalb zu vertrauenswürdigen Anwendungsdaten werden, weil sie die passende Form hat. Ein Tool sollte nicht allein deshalb Autorität erhalten, weil der Hostprozess sie besitzt.
+
+Compiler und Runtime sollen diese Aussagen überprüfbar machen und, soweit implementiert, durchsetzen.
 
 ## Was es nicht ist
 
-NUDO ist kein Modell-SDK, kein Prompt-Framework, keine anbieterspezifische DSL und
-keine neue Hülle über Python. Anbieterspezifische Anfrageformen gehören in
-Laufzeit-Adapter. Prompt-Komposition gehört überwiegend in Bibliotheken. Die
-Sprache ist zuständig für Bedeutung, Vertrauen und Autoritätsregeln, über die
-unabhängige Implementierungen übereinstimmen müssen.
+NUDO ist kein Modell-SDK, Prompt-Framework, anbieterspezifisches DSL oder neuer Anstrich für Python. Anbieterspezifische Anfrageformate gehören in Runtime-Adapter; Prompt-Zusammensetzung gehört meist in Bibliotheken. NUDO ist außerdem nicht produktionsreif: Sprache, Compiler und Runtime sind unvollständig und können sich durch das Spezifikationsverfahren ändern.
+
+## Maßgebliche Quelle
+
+Die Spezifikation definiert die Sprache. Angenommene NEPs ändern sie. Tests legen das beobachtbare Implementierungsverhalten fest. Das Buch erklärt Motivation und Status, entscheidet aber keine offene Sprachfrage stillschweigend.

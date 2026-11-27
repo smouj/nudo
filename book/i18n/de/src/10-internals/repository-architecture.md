@@ -1,6 +1,6 @@
 # 10.1 — Repository-Architektur
 
-> **Status:** Implementiertes Fundament  
+> **Status:** Implementiertes Fundament (IMPLEMENTED)
 > **Summary:** Das Monorepo hält die Entwicklung von Spezifikation, Compiler, Laufzeit und Tooling in einer prüfbaren Historie, während konzeptionelle Crate-Grenzen erhalten bleiben.
 
 Der Workspace trennt Compiler-Stufen, Laufzeitdienste, gemeinsame Fundament-Crates,

@@ -4,7 +4,7 @@ The canonical source is Markdown under `src/`.
 
 ## Supported production stack
 
-- mdBook 0.5.x for the web book.
+- mdBook 0.5.4 for the web book (the version pinned in CI).
 - Typst 0.15.x for the production PDF.
 - Pandoc for the Markdown-to-Typst preparation stage.
 - Python 3.11+ for validation and deterministic helper scripts.
@@ -16,7 +16,7 @@ No font files are vendored. The theme uses system-font fallbacks.
 ### mdBook
 
 ```bash
-cargo install mdbook --no-default-features --features search --vers "^0.5.4" --locked
+cargo install mdbook --version 0.5.4 --locked
 ```
 
 ### Typst
