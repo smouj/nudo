@@ -1,12 +1,11 @@
 # Type checker design (M3.2–M3.3)
 
-**Status: first slice, bounded generic inference, and the M3.3 trust-type
-assignment rule implemented.**
+**Status: first slice, bounded generic inference with NDO2008/NDO2009 recovery,
+and the M3.3 trust-type assignment rule implemented.**
 `nudo-typeck` is exercised by unit tests and by `tests/conformance/typeck`.
 Deterministic robustness cases also check recovered HIR, diagnostic span bounds
-and repeatability. Diagnostics for unresolved type parameters remain pending.
-This document records what the checker does and the one architectural rule that
-makes "is HIR enough?" a question with a test.
+and repeatability. This document records what the checker does and the one
+architectural rule that makes "is HIR enough?" a question with a test.
 
 Read [`hir-design.md`](hir-design.md) first; this layer consumes what that one
 produces.
@@ -86,7 +85,7 @@ fill in cases instead of redesigning the centre:
 | Field access | `article.title` takes the field's type after substituting the receiver's generic arguments; a built-in `Verified<T>` receiver uses the supported view of `T`; `NDO2007` points at a missing field's name |
 | Calls | arity (`NDO2005`, reported at the argument list), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`, reported at the callee); a built-in `Verified<Fn(...) -> ...>` can be called through its supported `Fn` view; malformed calls still check matched arguments against their parameters and excess argument expressions for nested errors |
 | Function types | `Fn(A, B) -> C` annotations keep parameter and result types as a function type, so function-valued parameters can be called and participate in structural comparison and bounded inference |
-| Generic calls | Argument-driven inference in source order, then inference from a known expected result type; substitutions recurse through nested named and function types |
+| Generic calls | Direct function-item parameters are inferred from arguments in source order, then a known expected result; unresolved parameters use `NDO2008`, signature-absent parameters use `NDO2009`, and dependent cascades are suppressed |
 | Numeric arithmetic | On `Int` or `Float` values (including `Verified<T>` values assignable to those primitives), `+`, `-`, `*` and `/` require matching types; `%` is `Int`-only; unary `-` preserves the primitive result type; mismatches report `NDO2004` |
 | Trust assignment | The resolved built-in `Verified<T>` is usable where `T` is expected; `Generated<T>` is not, and the relation does not widen nested generic arguments |
 | One diagnostic shape | `expected` and `found` as structure, never as prose to re-parse |
@@ -116,7 +115,6 @@ or annotation error inside them is not hidden.
 | The result type of `if`, including agreement between branch values | a specification decision |
 | Other operator operand domains, logical negation, logical operators, equality, comparisons and indexing | their complete operand and result rules are not specified yet |
 | Integer literal range checking and arithmetic evaluation | the interpreter and compile-time literal checking; arithmetic behavior is in NEP-0007 |
-| A stable diagnostic for a generic parameter that remains unresolved | [NEP-0015](../../neps/0015-uninferable-generic-parameters.md) (**Draft**); do not implement before acceptance |
 | Enum pattern resolution, payload binding, exhaustiveness and arm result types | NEP-0020 (**Draft**); do not implement before acceptance |
 | Building a nominal value: **the grammar has no construction syntax at all**, so it needs a NEP before it can be implemented | when the language decides |
 | `Result<T, E>` and exhaustive `match` behavior | after the match rules are accepted and implemented |

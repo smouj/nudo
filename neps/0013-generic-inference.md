@@ -100,6 +100,7 @@ layer down. So inference is kept where it removes noise and nowhere else.
 arguments in source order and then from an already-known expected result type,
 including through nested named and function types. The `typeck` conformance
 corpus pins argument inference, contextual inference, and a repeated-parameter
-mismatch. A stable diagnostic for a parameter that remains unresolved is still
-pending. The full NEP is not complete until that rule is implemented and
-covered by conformance cases.
+mismatch. Accepted NEP-0015 adds `NDO2008` for unresolved call parameters and
+`NDO2009` for function type parameters absent from their signatures. The bounded
+inference rule and its recovery behavior are covered by conformance cases
+0036–0044 in `tests/conformance/typeck/`.

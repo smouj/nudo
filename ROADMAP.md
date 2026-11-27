@@ -164,12 +164,11 @@ generic field types substituted from the receiver. `if` conditions are checked
 as `Bool`, branch expressions are checked recursively, and the expected
 condition type reaches generic inference; the conditional result and branch
 agreement remain unspecified. Deferred expression forms also check their
-children for supported rules. Numeric arithmetic typing is in place. The next
-slices include a stable diagnostic for unresolved generic parameters (NEP-0015;
-**Draft**), the remaining operator and index rules, match typing and
-exhaustiveness, nominal construction, and `Result<T, E>`. Draft-gated rules stay
-unimplemented until accepted; until then, the checker stays silent rather than
-inventing semantics. See
+children for supported rules. Numeric arithmetic typing and stable diagnostics
+for unresolved generic parameters (NEP-0015) are in place. The next slices are
+the remaining operator and index rules, match typing and exhaustiveness, nominal
+construction, and `Result<T, E>`. Draft-gated rules stay unimplemented until
+accepted; until then, the checker stays silent rather than inventing semantics. See
 [`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
 
 Two gates are taken before this one is written, so that the checker is written
@@ -199,8 +198,9 @@ rules of their own.
       preserve their type for `+`, `-`, `*` and `/`; `%` is `Int`-only, and
       unary `-` preserves its numeric operand type
 * [ ] Logical negation, logical/equality/comparison operators and index typing
-* [ ] A stable diagnostic for generic parameters that remain unresolved
-      (NEP-0015; **Draft**; do not implement before acceptance)
+* [x] Stable generic-inference diagnostics: `NDO2008` for unresolved call
+      parameters and `NDO2009` for function parameters absent from the signature
+      (NEP-0015)
 * [ ] `match` typing: variant validation, payload binding, arm type agreement
       and exhaustiveness; current HIR stores only the head and flat binding
       definitions, not wildcard structure or ordered payload patterns (NEP-0020;
@@ -236,8 +236,6 @@ diagnostic contracts are accepted; a Draft NEP is not an implementation target.
   accepted.
 * **Boolean operators:** typing and short-circuit evaluation for `!`, `&&` and
   `||` are proposed in NEP-0017 (Draft).
-* **Uninferable generic parameters:** stable diagnostics and recovery are
-  proposed in NEP-0015 (Draft).
 * **Omitted function result types:** the current rules conflict; NEP-0016 is
   Draft.
 * **`match` and `Result<T, E>`:** variant resolution, payload binding, arm

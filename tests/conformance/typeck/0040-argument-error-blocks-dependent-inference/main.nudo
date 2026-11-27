@@ -1,0 +1,15 @@
+struct Article {
+    title: Text
+}
+
+struct Box<T> {
+    value: T
+}
+
+fn choose<T, U>(value: T) -> Box<U> {
+    choose(value)
+}
+
+fn main(article: Article) {
+    let value = choose(article.missing);
+}

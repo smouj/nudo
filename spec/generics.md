@@ -3,11 +3,12 @@
 **State: syntax and inference rules are accepted; type-checker implementation is
 partial.** [NEP-0006](../neps/0006-generic-syntax.md) settles angle-bracket
 syntax, [NEP-0010](../neps/0010-declaration-site-generics.md) settles
-declaration-site parameters, and [NEP-0013](../neps/0013-generic-inference.md)
-defines bounded inference. The parser accepts the syntax, and `nudo-typeck`
-checks named type-argument arity and implements inference from call arguments
-and from an already-known expected result type. The stable diagnostic for
-unresolved parameters remains pending.
+declaration-site parameters, [NEP-0013](../neps/0013-generic-inference.md)
+defines bounded inference, and [NEP-0015](../neps/0015-uninferable-generic-parameters.md)
+defines diagnostics for unresolved parameters and unused function type
+parameters. The parser accepts the syntax, and `nudo-typeck` checks named
+type-argument arity, performs bounded call inference and emits `NDO2008` and
+`NDO2009`.
 
 ## What is needed
 
@@ -59,6 +60,16 @@ question is only what it looks like and how much it can express.
   context already expects; a `let` is monomorphic; a parameter that cannot be
   inferred is a compile error that asks for a written type. No unification across
   items, no let-generalisation, no turbofish, no guesses.
+* **Every function type parameter is part of its signature**
+  ([NEP-0015](../neps/0015-uninferable-generic-parameters.md)): a parameter
+  absent from every input and the result is rejected once at its declaration
+  with `NDO2009`. A parameter still unresolved after argument and expected-result
+  inference emits `NDO2008` at the call. Diagnostics follow parameter
+  declaration order; a wrong argument count does not add inference diagnostics,
+  and an earlier argument error suppresses only the parameters that depended on
+  it. Type parameters from an enclosing function remain fixed when calling a
+  function-typed value. After `NDO2008`, the call result is `Error` to prevent
+  follow-up mismatches. There are no defaults or global inference passes.
 
 ## Process
 

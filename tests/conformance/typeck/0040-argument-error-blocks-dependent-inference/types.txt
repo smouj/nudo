@@ -1,0 +1,11 @@
+# nudo-typeck v1
+def 0009 struct `Article` 1:8: <unknown>
+def 0010 struct `Box` 5:8: <unknown>
+def 0011 function `choose` 9:4: Fn(T) -> Box<U>
+def 0012 function `main` 13:4: Fn(Article) -> Unit
+def 0013 type-parameter `T` 5:12: <unknown>
+def 0014 type-parameter `T` 9:11: <unknown>
+def 0015 type-parameter `U` 9:14: <unknown>
+def 0016 parameter `value` 9:17: T
+def 0017 parameter `article` 13:9: Article
+def 0018 binding `value` 14:9: <error>

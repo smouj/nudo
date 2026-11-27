@@ -1,0 +1,12 @@
+struct Pair<A, B> {
+    first: A
+    second: B
+}
+
+fn make<A, B>() -> Pair<A, B> {
+    make()
+}
+
+fn main() {
+    let value = make();
+}

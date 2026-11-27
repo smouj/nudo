@@ -46,6 +46,8 @@ program.
 | `NDO2005` | `WRONG_ARGUMENT_COUNT` | error | **implemented** (type checker, M3.2) |
 | `NDO2006` | `NOT_CALLABLE` | error | **implemented** (type checker, M3.2) |
 | `NDO2007` | `UNKNOWN_FIELD` | error | **implemented** (type checker, M3.2) |
+| `NDO2008` | `TYPE_PARAMETER_NOT_INFERRED` | error | **implemented** (type checker, M3.2) |
+| `NDO2009` | `TYPE_PARAMETER_NOT_IN_SIGNATURE` | error | **implemented** (type checker, M3.2) |
 | `NDO2017` | `WRONG_TYPE_ARGUMENT_COUNT` | error | **implemented** (type checker, M3.2) |
 | `NDO1002` | `UNKNOWN_CHARACTER` | error | **implemented** |
 | `NDO1003` | `UNTERMINATED_STRING` | error | **implemented** |
@@ -59,6 +61,24 @@ The single source of truth in code is
 `codes::ALL` lists every registered code and `codes::IMPLEMENTED` lists the ones
 the toolchain can actually emit. A test asserts that the second is a subset of
 the first, and that identifiers are well formed and unique.
+
+## Generic-inference diagnostics
+
+* `NDO2008` points at the full generic call expression. Emit one diagnostic for
+  each type parameter declared by the directly called function that remains
+  unresolved after argument and already-known expected-result inference, in
+  declaration order. The message
+  names the parameter and the help requests a type annotation at the value's
+  use. A wrong argument count remains `NDO2005` without `NDO2008` diagnostics.
+* `NDO2009` points at the type parameter's declaration. Emit it when the
+  parameter occurs in neither an input type nor the function result; emit
+  multiple diagnostics in declaration order.
+* An argument error or known argument-type mismatch suppresses `NDO2008` only
+  for unresolved parameters whose inference depends on that argument. An
+  already erroneous expected result suppresses it only for parameters in the
+  function result. Independent unresolved parameters remain reportable. After
+  reporting `NDO2008`, the call result is `Error` to prevent follow-up
+  mismatches.
 
 **The registry may not claim a capability the toolchain lacks.** A code that no
 stage can emit is `reserved`, and the specification says so.

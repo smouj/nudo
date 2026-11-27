@@ -1,0 +1,11 @@
+struct Box<T> {
+    value: T
+}
+
+fn empty<T>() -> Box<T> {
+    empty()
+}
+
+fn main() {
+    let value = empty();
+}

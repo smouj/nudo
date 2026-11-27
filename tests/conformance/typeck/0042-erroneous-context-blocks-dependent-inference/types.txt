@@ -1,0 +1,7 @@
+# nudo-typeck v1
+def 0009 struct `Box` 1:8: <unknown>
+def 0010 function `empty` 5:4: Fn() -> Box<T>
+def 0011 function `main` 9:4: Fn() -> Unit
+def 0012 type-parameter `T` 1:12: <unknown>
+def 0013 type-parameter `T` 5:10: <unknown>
+def 0014 binding `value` 10:9: <error>

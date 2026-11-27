@@ -1,0 +1,6 @@
+# nudo-typeck v1
+def 0009 struct `Box` 1:8: <unknown>
+def 0010 function `inspect` 5:4: Fn(<error>) -> Int
+def 0011 type-parameter `T` 1:12: <unknown>
+def 0012 type-parameter `T` 5:12: <unknown>
+def 0013 parameter `value` 5:15: <error>

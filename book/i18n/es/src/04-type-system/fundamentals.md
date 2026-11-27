@@ -13,17 +13,17 @@ El sistema de tipos está especificado en los capítulos del lenguaje y en las N
 | Tipos primitivos y literales | Se representan <code>Int</code>, <code>Float</code>, <code>Bool</code>, <code>Text</code> y <code>Unit</code> |
 | Anotaciones y firmas de función | Los valores se comparan con los tipos escritos; se comprueban los tipos de función y las llamadas |
 | Llamadas | La aridad usa <code>NDO2005</code>, los argumentos incompatibles <code>NDO2004</code> y los valores no invocables <code>NDO2006</code> |
-| Llamadas genéricas | Los parámetros de tipo se infieren a partir de los argumentos y de los tipos de resultado esperados que ya se conocen, en orden de origen |
+| Llamadas genéricas | Los parámetros de tipo se infieren a partir de los argumentos y de los tipos de resultado esperados que ya se conocen, en orden de origen; los parámetros genéricos no inferibles usan <code>NDO2008</code> y los parámetros de función ausentes de la firma usan <code>NDO2009</code> |
 | Tipos con nombre | La aridad de argumentos de tipo usa <code>NDO2017</code>; se comprueban la identidad nominal y el acceso a campos admitido |
 | Aritmética | Los operandos numéricos coincidentes admiten <code>+</code>, <code>-</code>, <code>*</code> y <code>/</code>; <code>%</code> solo admite Int y el <code>-</code> unario conserva el tipo numérico |
 | Condiciones | La condición de <code>if</code> debe ser <code>Bool</code>; se siguen visitando las expresiones de las ramas |
 | Asignación de confianza | El <code>Verified&lt;T&gt;</code> integrado puede usarse donde se espera <code>T</code> en las posiciones admitidas |
 
-La inferencia genérica tiene límites deliberados. No resuelve tipos para todo el programa, no generaliza una variable local ni adivina un parámetro sin resolver. Los argumentos genéricos siguen siendo invariantes y las conversiones numéricas no son implícitas.
+La inferencia genérica tiene límites deliberados. No resuelve tipos para todo el programa, no generaliza una variable local ni adivina un parámetro sin resolver. Los argumentos genéricos siguen siendo invariantes y las conversiones numéricas no son implícitas. [NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) hace visible este límite: <code>NDO2008</code> señala una llamada genérica sin suficiente información, mientras que <code>NDO2009</code> señala un parámetro de función ausente de su firma. Los parámetros de tipo externos permanecen fijos al invocar un valor de función. La recuperación suprime solo los diagnósticos que dependen de un error anterior.
 
 ## Reglas aún incompletas
 
-El comprobador todavía no define un tipo de resultado para <code>if</code>, la concordancia entre valores de ramas, todos los operadores, la indexación, la construcción nominal, <code>match</code> ni la correspondencia con <code>Result&lt;T, E&gt;</code>. También está pendiente un diagnóstico estable para un parámetro genérico que siga sin resolverse. [NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) propone ese contrato de diagnóstico, pero sigue en Draft y todavía no se ha aceptado ni implementado. La comprobación del rango de literales enteros, agentes, tareas y herramientas aún no está implementada en este comprobador.
+El comprobador todavía no define un tipo de resultado para <code>if</code>, la concordancia entre valores de ramas, todos los operadores, la indexación, la construcción nominal, <code>match</code> ni la correspondencia con <code>Result&lt;T, E&gt;</code>. La comprobación del rango de literales enteros, agentes, tareas y herramientas aún no está implementada en este comprobador.
 
 Estas omisiones son deliberadas. Una regla solo se implementa cuando se acepta su contrato semántico y diagnóstico. La hoja de ruta y la especificación indican qué trabajo está listo y qué decisiones siguen abiertas.
 

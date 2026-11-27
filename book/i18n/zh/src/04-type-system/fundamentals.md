@@ -15,21 +15,20 @@
 | 基本类型与字面量 | 表示 <code>Int</code>、<code>Float</code>、<code>Bool</code>、<code>Text</code> 和 <code>Unit</code> |
 | 类型注解与函数签名 | 将值与声明类型比较；检查函数类型和调用 |
 | 调用 | 参数个数错误使用 <code>NDO2005</code>，参数类型不兼容使用 <code>NDO2004</code>，不可调用值使用 <code>NDO2006</code> |
-| 泛型调用 | 按源码顺序，从实参和已知的期望结果类型推断类型参数 |
+| 泛型调用 | 按源码顺序，从实参和已知的期望结果类型推断类型参数；无法推断的泛型类型参数使用 <code>NDO2008</code>，函数签名中未使用的类型参数使用 <code>NDO2009</code> |
 | 名义类型 | 使用 <code>NDO2017</code> 检查类型参数个数，并检查名义身份和已支持的字段访问 |
 | 算术 | 匹配的数值类型支持 <code>+</code>、<code>-</code>、<code>*</code>、<code>/</code>；<code>%</code> 仅允许 Int；一元 <code>-</code> 保持数值类型 |
 | 条件 | <code>if</code> 的条件必须为 <code>Bool</code>；分支表达式仍会被检查 |
 | 信任赋值 | 内置 <code>Verified&lt;T&gt;</code> 在已支持的位置可用于要求 <code>T</code> 的地方 |
 
 泛型推断有明确边界。它不会跨整个程序求解类型，不会泛化局部绑定，也不会猜测未解析的类型参数。
-泛型参数保持不变，数值类型之间没有隐式转换。
+泛型参数保持不变，数值类型之间没有隐式转换。[NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) 明确了这一边界：信息不足的泛型调用报告 <code>NDO2008</code>，函数签名中未出现的类型参数报告 <code>NDO2009</code>。调用函数值时，外层类型参数保持固定。恢复过程只抑制依赖先前错误的诊断，以避免错误级联。
 
 ## 尚未完成的规则
 
 检查器尚未定义 <code>if</code> 的结果类型与分支值一致性，也没有实现所有运算符、
 索引、名义值构造、<code>match</code> 或 <code>Result&lt;T, E&gt;</code> 模式匹配。
-泛型参数仍未解析时的稳定诊断也尚未完成。[NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) 提出了诊断契约，但目前仍是 Draft，尚未被接受或实现。该检查器尚未实现整数字面量范围检查、
-智能体、任务和工具类型。
+该检查器尚未实现整数字面量范围检查、智能体、任务和工具类型。
 
 这些遗漏是有意的。只有语义和诊断契约已经接受，规则才能实现。
 路线图和规范会记录哪些工作已就绪，哪些决定仍然开放。
