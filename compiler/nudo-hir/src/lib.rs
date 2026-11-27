@@ -376,6 +376,8 @@ pub enum ExprKind {
         receiver: ExprId,
         /// The field's name.
         name: String,
+        /// Where the field's name is written.
+        name_span: Span,
     },
     /// `a[i]`.
     Index {
@@ -1136,12 +1138,19 @@ impl Lowerer {
                     .into_iter()
                     .find(|child| is_expression(child.kind()))
                     .and_then(|child| self.lower_expression(child))?;
-                let name = node
+                let field_token = node
                     .child_tokens()
                     .into_iter()
-                    .rfind(|token| token.kind() == SyntaxKind::Ident)
-                    .map_or_else(String::new, |token| token.text().to_string());
-                ExprKind::Field { receiver, name }
+                    .rfind(|token| token.kind() == SyntaxKind::Ident);
+                let (name, name_span) = field_token.map_or_else(
+                    || (String::new(), node.span()),
+                    |token| (token.text().to_string(), token.span()),
+                );
+                ExprKind::Field {
+                    receiver,
+                    name,
+                    name_span,
+                }
             }
             SyntaxKind::IndexExpression => {
                 let mut parts = node
