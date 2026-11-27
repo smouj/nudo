@@ -498,8 +498,16 @@ impl Checker<'_> {
                     None => Type::Unit,
                 }
             }
-            ExprKind::Call { callee, arguments } => self.type_of_call(callee, &arguments, expected),
-            ExprKind::Field { receiver, name } => self.type_of_field(receiver, &name),
+            ExprKind::Call {
+                callee,
+                arguments,
+                arguments_span,
+            } => self.type_of_call(callee, &arguments, arguments_span, expected),
+            ExprKind::Field {
+                receiver,
+                name,
+                name_span,
+            } => self.type_of_field(receiver, &name, name_span),
             ExprKind::If {
                 condition,
                 then_block,
@@ -666,6 +674,7 @@ impl Checker<'_> {
         &mut self,
         callee: ExprId,
         arguments: &[ExprId],
+        arguments_span: Span,
         expected_result: Option<&Type>,
     ) -> Type {
         let callee_type = self.type_of_expression(callee);
@@ -690,7 +699,6 @@ impl Checker<'_> {
             } else {
                 "arguments"
             };
-            let span = self.hir.expr(callee).map_or_else(zero_span, |it| it.span);
             self.diagnostics.push(
                 Diagnostic::error(
                     codes::WRONG_ARGUMENT_COUNT,
@@ -700,7 +708,7 @@ impl Checker<'_> {
                         parameters.len()
                     ),
                 )
-                .with_location(self.source, span)
+                .with_location(self.source, arguments_span)
                 .with_note(format!("expected: {}", parameters.len()))
                 .with_note(format!("found: {}", arguments.len()))
                 .with_help("every call passes exactly what the signature takes"),
@@ -807,12 +815,11 @@ impl Checker<'_> {
     /// Two receivers stay silent. An unknown one (`Error`) has nothing to say. An
     /// `enum` one is read through a `match`, and typing a `match` is the next
     /// slice: saying nothing beats inventing a rule for reaching into a variant.
-    fn type_of_field(&mut self, receiver: ExprId, name: &str) -> Type {
+    fn type_of_field(&mut self, receiver: ExprId, name: &str, name_span: Span) -> Type {
         let receiver_type = self.type_of_expression(receiver);
         if receiver_type.is_error() {
             return Type::Error;
         }
-        let span = self.hir.expr(receiver).map_or_else(zero_span, |it| it.span);
 
         let Type::Named {
             definition,
@@ -820,7 +827,7 @@ impl Checker<'_> {
             ..
         } = &receiver_type
         else {
-            self.report_unknown_field(name, &receiver_type, span, &[]);
+            self.report_unknown_field(name, &receiver_type, name_span, &[]);
             return Type::Error;
         };
         let Some(id) = definition.resolved() else {
@@ -869,7 +876,7 @@ impl Checker<'_> {
             let field_type = self.type_of_annotation(&annotation);
             return self.substitute_type(&field_type, &substitutions);
         }
-        self.report_unknown_field(name, &receiver_type, span, &available);
+        self.report_unknown_field(name, &receiver_type, name_span, &available);
         Type::Error
     }
 
@@ -1529,6 +1536,26 @@ mod tests {
     }
 
     #[test]
+    fn an_arity_diagnostic_points_at_the_argument_list() {
+        for (call, expected_span) in [("add(1)", "(1)"), ("add(1, 2, 3)", "(1, 2, 3)")] {
+            let program = format!(
+                "fn add(left: Int, right: Int) -> Int {{ left }}\n\
+                 fn main() {{ let value = {call}; }}\n"
+            );
+            let (sources, id, result) = checked(&program);
+            let diagnostic = result
+                .diagnostics
+                .as_slice()
+                .iter()
+                .find(|diagnostic| diagnostic.code().id() == "NDO2005")
+                .expect("the call has the wrong number of arguments");
+            let file = sources.get(id).expect("just added");
+            let span = diagnostic.span().expect("the argument list has a span");
+            assert_eq!(file.span_text(span), Some(expected_span));
+        }
+    }
+
+    #[test]
     fn an_arity_error_does_not_hide_errors_inside_supplied_arguments() {
         let program = "fn takes(value: Int) {}\n\
                        let number = 1;\n\
@@ -1591,7 +1618,23 @@ mod tests {
     #[test]
     fn calling_something_that_is_not_a_function_is_reported() {
         let program = "let number = 1;\n\nfn main() {\n    number();\n}\n";
-        assert_eq!(codes_for(program), vec!["NDO2006".to_string()]);
+        let (sources, id, result) = checked(program);
+        assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
+        let diagnostic = &result.diagnostics.as_slice()[0];
+        assert_eq!(diagnostic.code().id(), "NDO2006");
+        assert_eq!(diagnostic.message(), "this value is not a function");
+        assert!(
+            diagnostic.notes().join(" | ").contains("found: `Int`"),
+            "{:?}",
+            diagnostic.notes()
+        );
+        assert_eq!(
+            diagnostic.help(),
+            Some("only a function type can be called")
+        );
+        let file = sources.get(id).expect("just added");
+        let span = diagnostic.span().expect("the callee has a span");
+        assert_eq!(file.span_text(span), Some("number"));
     }
 
     #[test]
@@ -1662,8 +1705,13 @@ mod tests {
     #[test]
     fn the_field_diagnostic_names_the_field_and_what_the_type_has() {
         let program = "struct Article {\n    title: Text\n    body: Text\n}\n\nfn headline(article: Article) -> Text {\n    article.titel\n}\n";
-        let (_, _, result) = checked(program);
+        let (sources, id, result) = checked(program);
+        let file = sources.get(id).expect("just added");
         let notes = result.diagnostics.as_slice()[0].notes().join(" | ");
+        let span = result.diagnostics.as_slice()[0]
+            .span()
+            .expect("the unknown field has a span");
+        assert_eq!(file.span_text(span), Some("titel"));
         assert!(
             notes.contains("no field `titel`") || notes.contains("found: `Article`"),
             "{notes}"
