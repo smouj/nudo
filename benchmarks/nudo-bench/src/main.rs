@@ -243,6 +243,7 @@ fn build_cases() -> Vec<Case> {
     let mut cases = Vec::new();
     for (case, source) in [
         ("functions", synthetic_functions(2_000)),
+        ("calls", synthetic_calls(2_000)),
         ("bindings", synthetic_bindings(5_000)),
         ("text-literals", synthetic_text(2_000)),
         ("comments", synthetic_comments(2_000)),
@@ -437,6 +438,20 @@ fn synthetic_functions(count: usize) -> String {
     for index in 0..count {
         source.push_str(&format!(
             "fn f{index}(a: Int, b: Int) -> Int {{\n    a + b * {index}\n}}\n\n"
+        ));
+    }
+    source
+}
+
+fn synthetic_calls(count: usize) -> String {
+    let mut source = String::with_capacity(count * 64);
+    source.push_str(
+        "fn identity(value: Int) -> Int { value }\n\
+         fn same<T>(value: T) -> T { value }\n\n",
+    );
+    for index in 0..count {
+        source.push_str(&format!(
+            "let plain_{index} = identity({index});\nlet inferred_{index} = same({index});\n"
         ));
     }
     source
@@ -1156,6 +1171,28 @@ mod tests {
             assert_eq!(prepared.unit(), unit);
             assert!(prepared.run() > 0, "{} produced no {unit}", stage.as_str());
         }
+    }
+
+    #[test]
+    fn call_benchmark_inputs_typecheck_cleanly() {
+        let source = synthetic_calls(2);
+        let mut sources = SourceMap::new();
+        let id = sources.add("calls.nudo", source);
+        let file = sources.get(id).expect("just added");
+        let parsed = parse(file);
+        assert!(!parsed.has_errors(), "call benchmark source must parse");
+        let resolved = lower(parsed.tree(), id);
+        assert!(
+            resolved.diagnostics.is_empty(),
+            "call benchmark source must resolve: {:?}",
+            resolved.diagnostics
+        );
+        let checked = check(&resolved.hir, id);
+        assert!(
+            checked.diagnostics.is_empty(),
+            "call benchmark source must typecheck: {:?}",
+            checked.diagnostics
+        );
     }
 
     #[test]

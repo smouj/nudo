@@ -1,0 +1,7 @@
+# nudo-typeck v1
+def 0009 struct `Article` 1:8: <unknown>
+def 0010 function `headline` 5:4: Fn(Verified<Article>) -> Text
+def 0011 function `apply` 9:4: Fn(Verified<Fn(Int) -> Int>, Int) -> Int
+def 0012 parameter `article` 5:13: Verified<Article>
+def 0013 parameter `operation` 9:10: Verified<Fn(Int) -> Int>
+def 0014 parameter `value` 9:47: Int

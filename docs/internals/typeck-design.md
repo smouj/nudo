@@ -83,8 +83,8 @@ fill in cases instead of redesigning the centre:
 | Names | a path takes the type of the definition it resolved to |
 | Functions | a body is compared with the written return type; with none written, the body's type *is* the result type |
 | `if` | the condition is checked as `Bool`; branches are checked recursively, and the expected condition type drives generic call inference |
-| Field access | `article.title` takes the field's type after substituting the receiver's generic arguments; `NDO2007` points at a missing field's name |
-| Calls | arity (`NDO2005`, reported at the argument list), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`, reported at the callee); malformed calls still check matched arguments against their parameters and excess argument expressions for nested errors |
+| Field access | `article.title` takes the field's type after substituting the receiver's generic arguments; a built-in `Verified<T>` receiver uses the supported view of `T`; `NDO2007` points at a missing field's name |
+| Calls | arity (`NDO2005`, reported at the argument list), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`, reported at the callee); a built-in `Verified<Fn(...) -> ...>` can be called through its supported `Fn` view; malformed calls still check matched arguments against their parameters and excess argument expressions for nested errors |
 | Function types | `Fn(A, B) -> C` annotations keep parameter and result types as a function type, so function-valued parameters can be called and participate in structural comparison and bounded inference |
 | Generic calls | Argument-driven inference in source order, then inference from a known expected result type; substitutions recurse through nested named and function types |
 | Numeric arithmetic | On `Int` or `Float` values (including `Verified<T>` values assignable to those primitives), `+`, `-`, `*` and `/` require matching types; `%` is `Int`-only; unary `-` preserves the primitive result type; mismatches report `NDO2004` |
