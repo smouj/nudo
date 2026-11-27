@@ -48,10 +48,11 @@ Hir
   a provenance record later — says `DefId` instead of repeating a name and
   hoping it means the same thing.
 * **Spans are preserved everywhere.** Every `Def`, `Expr` and `Stmt` carries the
-  span it came from, and every `Reference` carries the span of the name. A field
-  expression also keeps the member-name span so `NDO2007` can point at the
-  missing field rather than the receiver. A diagnostic written at M3 is still
-  renderable at M8.
+  span it came from, and every `Reference` carries the span of the name. A call
+  retains its argument-list span so `NDO2005` points at the arguments, and a
+  field expression keeps the member-name span so `NDO2007` points at the missing
+  field rather than the receiver. A diagnostic written at M3 is still renderable
+  at M8.
 * **A definition carries its structure.** A `struct`'s fields and an `enum`'s
   variants are recorded with their types, lowered in the declaration's own scope
   so that a declaration's type parameter is visible inside its own fields. The

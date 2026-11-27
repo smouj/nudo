@@ -369,6 +369,8 @@ pub enum ExprKind {
         callee: ExprId,
         /// The arguments, in source order.
         arguments: Vec<ExprId>,
+        /// Where the arguments are written, including delimiters.
+        arguments_span: Span,
     },
     /// `a.b`.
     Field {
@@ -1120,8 +1122,9 @@ impl Lowerer {
                     .into_iter()
                     .find(|child| is_expression(child.kind()))
                     .and_then(|child| self.lower_expression(child))?;
-                let arguments = node
-                    .child_of_kind(SyntaxKind::ArgumentList)
+                let argument_list = node.child_of_kind(SyntaxKind::ArgumentList);
+                let arguments_span = argument_list.as_ref().map_or(span, |list| list.span());
+                let arguments = argument_list
                     .map(|list| {
                         list.child_nodes()
                             .into_iter()
@@ -1130,7 +1133,11 @@ impl Lowerer {
                             .collect()
                     })
                     .unwrap_or_default();
-                ExprKind::Call { callee, arguments }
+                ExprKind::Call {
+                    callee,
+                    arguments,
+                    arguments_span,
+                }
             }
             SyntaxKind::FieldExpression => {
                 let receiver = node
