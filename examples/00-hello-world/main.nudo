@@ -4,11 +4,10 @@
 //
 //     nudo check examples/00-hello-world/main.nudo
 //
-// This file uses only the token set the pre-alpha lexer implements, so it
-// reports zero diagnostics. It does not run: there is no parser (M2) and no
-// interpreter (M4).
+// This file is lexed, parsed and name-resolved by `nudo check` today. It does
+// not run yet; `nudo run` is planned for M4.
 
-fn main() {
+fn main() -> Unit {
     let greeting = "hello, nudo";
 }
 
