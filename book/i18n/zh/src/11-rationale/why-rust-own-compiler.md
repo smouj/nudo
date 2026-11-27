@@ -1,6 +1,6 @@
 # 11.1 — 为什么选择 Rust，为什么自建编译器？
 
-> **状态（Status）：** 规范已定义的论证（SPECIFIED rationale）  
+> **状态（Status）：** 规范已定义的论证（SPECIFIED）
 > **概述（Summary）：** Rust 提供了强大的实现基座，而如果 NUDO 语义要独立于另一种宿主语言存在，专用编译器就是必需的。
 
 ## 为什么用 Rust 实现

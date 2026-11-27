@@ -1,6 +1,6 @@
 # 06.2 — Bedrohungsmodell
 
-> **Status:** Spezifiziert / Geplant  
+> **Status:** Spezifiziert (SPECIFIED) / Geplant (PLANNED)
 > **Summary:** NUDO behandelt Modellausgabe und externe Tool-Eingabe als nicht vertrauenswürdig, bis explizite Regeln Daten über Vertrauensgrenzen bewegen.
 
 Das Bedrohungsmodell umfasst Prompt-Injection, bösartige Tool-Ausgabe,

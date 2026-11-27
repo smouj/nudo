@@ -1,6 +1,6 @@
 # 15.1 — 里程碑与证据
 
-> **状态（Status）：** 历史 / 持续更新（HISTORICAL / LIVING）
+> **状态（Status）：** 历史（HISTORICAL）/ 持续更新
 >
 > **概述（Summary）：** NUDO 采用基于证据的里程碑；M3 仍在进行，解释器和效果系统仍在计划中。
 

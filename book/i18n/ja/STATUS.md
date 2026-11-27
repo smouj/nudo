@@ -1,90 +1,18 @@
-# Translation status — 日本語 (`ja`)
+# 翻訳状況 — 日本語（ja）
 
-**Language:** Japanese (日本語), code `ja`.
-**Canonical source:** `book/src` (English).
-**English revision translated from:** `c28fc0c`; this translation is behind the current canonical source.
-**Status:** 33 of 34 files translated; the benchmark chapter is missing.
-**Translation tree:** `book/i18n/ja/src/`, one file per English source file, at the identical relative path.
+**正本:** 英語の <code>book/src</code>。  
+**収録範囲:** Markdown ページ 34 / 34。  
+**原文の追跡:** <code>translation.json</code> に各英語章の hash を記録します。
 
-> **Working-tree note.** At translation time the English working tree was not
-> identical to `c28fc0c`: `book/src/index.md`,
-> `book/src/03-compiler/pipeline.md`,
-> `book/src/04-type-system/generated-verified.md`,
-> `book/src/05-agents-and-ai/tasks-tools-models.md` and
-> `book/src/06-security/capabilities-effects.md` carried uncommitted edits, and
-> `book/src/diagrams/` was untracked. The translation follows the working tree as
-> it stood when each file was translated. `translation.json` records the SHA-256
-> of each English file as translated, which is what `check_translations.py`
-> compares against; if the English changes again, the chapter is reported as
-> **behind** rather than silently left in place.
+日本語版はこの revision の英語各章に合わせて更新されています。図は正本と共有し、include path を維持します。規範上の情報源は英語仕様であり、この翻訳が言語規則を定めることはありません。
 
-## Chapters
+名前、identifier、command、NDO code、path、code example は正本の表記を保ちます。status label は[翻訳契約](../README.md)と[編集契約](../../EDITORIAL.md)に従い、英語の status rank を大文字で括弧内に残します。
 
-All 33 English Markdown files have a Japanese counterpart. Status is the chapter's
-own English status label, whose rank is preserved in translation (never
-strengthened).
+今回の更新について、母語話者による独立した編集レビューを行ったとは記載しません。hash は原文 revision との対応を記録しますが、それだけで言語品質を保証するものではありません。
 
-| # | Chapter (`src/…`) | English status | Translated |
-| --- | --- | --- | --- |
-| — | `index.md` | Historical / Living | yes |
-| — | `SUMMARY.md` | — (navigation) | yes |
-| 00.1 | `00-introduction/what-is-nudo.md` | Specified | yes |
-| 00.2 | `00-introduction/why-exists.md` | Specified | yes |
-| 00.3 | `00-introduction/status.md` | Implemented / Planned | yes |
-| 01.1 | `01-philosophy/deterministic-first.md` | Specified | yes |
-| 01.2 | `01-philosophy/explicit-trust.md` | Proposed | yes |
-| 01.3 | `01-philosophy/local-first.md` | Specified | yes |
-| 02.1 | `02-language-design/grammar.md` | Proposed | yes |
-| 02.2 | `02-language-design/expressions.md` | Open | yes |
-| 02.3 | `02-language-design/modules.md` | Proposed | yes |
-| 03.1 | `03-compiler/pipeline.md` | Specified | yes |
-| 03.2 | `03-compiler/lexer.md` | Implemented | yes |
-| 03.3 | `03-compiler/parser.md` | Planned | yes |
-| 03.4 | `03-compiler/diagnostics.md` | Specified / Planned | yes |
-| 04.1 | `04-type-system/fundamentals.md` | Proposed | yes |
-| 04.2 | `04-type-system/generated-verified.md` | Proposed | yes |
-| 05.1 | `05-agents-and-ai/agents.md` | Proposed | yes |
-| 05.2 | `05-agents-and-ai/tasks-tools-models.md` | Proposed | yes |
-| 06.1 | `06-security/capabilities-effects.md` | Proposed | yes |
-| 06.2 | `06-security/threat-model.md` | Specified / Planned | yes |
-| 07.1 | `07-runtime/trace-provenance.md` | Proposed | yes |
-| 07.2 | `07-runtime/budgets-approvals.md` | Proposed | yes |
-| 08.1 | `08-tooling/cli.md` | Implemented / Planned | yes |
-| 09.1 | `09-interoperability/mcp-a2a-wasm.md` | Planned | yes |
-| 10.1 | `10-internals/repository-architecture.md` | Implemented foundation | yes |
-| 11.1 | `11-rationale/why-rust-own-compiler.md` | Specified rationale | yes |
-| 11.2 | `11-rationale/why-trust-types.md` | Proposed rationale | yes |
-| 12.1 | `12-alternatives/rejected.md` | Historical / Design rationale | yes |
-| 13.1 | `13-examples/ordinary-program.md` | Proposed syntax | yes |
-| 13.2 | `13-examples/trust-flow.md` | Proposed syntax | yes |
-| 14.1 | `14-contributing/spec-nep-adr.md` | Specified process | yes |
-| 15.1 | `15-history/milestones.md` | Historical / Living | yes |
+## 検証
 
-## Not translated, and why
-
-* **Diagrams.** `book/src/diagrams/*.svg` are shared, not duplicated: the build
-  copies the canonical set into `book/i18n/ja/src/diagrams/`, and the
-  `{{#include …}}` lines are byte-identical to the English ones. The SVGs do
-  contain English labels (`Orchestrator`, `holds three capabilities`,
-  `Delegation may narrow. It may never widen.`). Per
-  [`../README.md`](../README.md), that is a signal that the diagram is saying too
-  much, and the fix belongs in the diagram, not in five translations. The caption
-  line under each include **is** translated.
-* **Assets.** `book/src/assets/brand/*` are images.
-* **Out of scope by contract.** `book/adr`, `book/quality`, `book/scripts`,
-  `book/theme`, `spec/`, `neps/` and the repository `README.md` stay in English;
-  see [`../README.md`](../README.md), "What is not translated".
-* **Furniture outside `book/i18n/ja/`.** `book/i18n/ja/book.toml` already existed
-  and was left untouched; the language is already registered in
-  `book/scripts/build_site.py` and in the switcher in `book/theme/nudo-book.js`.
-
-## Verification
-
-```sh
-python3 book/scripts/build_site.py ja
-python3 book/scripts/stamp_translation.py --lang ja
-python3 book/scripts/check_translations.py
-```
-
-Real output is recorded in the translation report for this revision; run the
-commands again to reproduce it.
+~~~sh
+python3 book/scripts/check_translations.py --strict
+python3 book/scripts/build_site.py ja --strict
+~~~

@@ -1,6 +1,6 @@
 # 11.1 — Warum Rust und warum ein eigener Compiler?
 
-> **Status:** Spezifizierte Begründung  
+> **Status:** Spezifizierte Begründung (SPECIFIED)
 > **Summary:** Rust bietet ein starkes Implementierungssubstrat, während ein eigener Compiler notwendig ist, wenn NUDO-Semantik unabhängig von einer anderen Hostsprache existieren soll.
 
 ## Warum Rust für die Implementierung

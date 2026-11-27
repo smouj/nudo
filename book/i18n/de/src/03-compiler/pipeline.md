@@ -1,44 +1,27 @@
 # 03.1 — Compiler-Pipeline
 
-> **Status:** Implementiert / Spezifiziert (IMPLEMENTED / SPECIFIED)  
-> **Summary:** NUDO ist in explizite Compiler-Stufen gegliedert, damit jede Transformation eine testbare Verantwortung hat.
-
+> **Status:** Implementiert (IMPLEMENTED) / Geplant (PLANNED)
+>
+> **Summary:** Das NUDO-Frontend besteht aus klar getrennten Stufen; HIR und Namensauflösung sind implementiert, spätere Prüf- und Ausführungsstufen befinden sich noch in Arbeit.
 
 {{#include ../diagrams/pipeline.svg}}
 
-*Die Pipeline, wobei die Akzentfarbe markiert, was heute existiert: das Laden von
-Quelltext, den Lexer, den verlustfreien Syntaxbaum, den Parser, den typisierten AST
-und Diagnostik.*
+*Der hervorgehobene Pfad zeigt die implementierte Frontend-Arbeit. Die Typprüfung
+ist teilweise implementiert und wird separat getestet; Effektprüfung, MIR und
+Ausführung sind geplant.*
 
-```text
-SourceFile
-   ↓
-Lexer → Tokens + lexical diagnostics
-   ↓
-Lossless Syntax Tree
-   ↓
-Typed AST
-   ↓
-HIR + name resolution
-   ↓
-Type checking
-   ↓
-Effect checking
-   ↓
-MIR
-   ↓
-Interpreter / code generation
-```
+~~~text
+SourceFile → Lexer → Lossless syntax tree → AST → HIR / name resolution
+                                                        ↓
+                                 Teil-Typechecker (nicht in nudo check)
+                                                        ↓
+                                    Effekte → MIR → Interpreter / Backend
+~~~
 
-Die ersten vier Stufen sind implementiert und durch Konformitätsfälle abgedeckt:
-das Lexing, der verlustfreie Syntaxbaum, das Parsen und der typisierte AST. `nudo
-check` durchläuft sie alle, weshalb ein sauberer Lauf jetzt „es lexikalisiert und es
-parst" bedeutet.
+Der CLI-Befehl <code>nudo check</code> lädt den Quellcode, führt Lexing und Parsing aus und senkt nach HIR ab beziehungsweise löst Namen auf. Er kann Tokens, den Syntaxbaum und Namensauflösungen ausgeben. Er ruft <code>nudo-typeck</code> nicht auf und führt den Quellcode nicht aus.
 
-Scharfe Stufengrenzen verbessern das Debugging und erlauben es Formatter, Language
-Server und Dokumentationswerkzeugen, stabile Repräsentationen zu teilen, statt Text
-mit unabhängigen Annahmen neu zu parsen.
+Das Crate <code>nudo-hir</code> senkt den typisierten AST auf Bezeichner und aufgelöste Definitionen ab. Das Crate <code>nudo-typeck</code> verarbeitet dieses HIR und implementiert einen Teil der angenommenen Typregeln. Unit-Tests und das Typeck-Konformitätskorpus prüfen es direkt. Die übrigen Regeln müssen spezifiziert werden, bevor sie implementiert werden.
 
-Die Architektur sollte während der Prä-Alpha-Phase flexibel bleiben.
-Platzhalter-Crates sind kein Grund, eine API einzufrieren, bevor die Implementierung
-dem Projekt zeigt, wo die richtige Grenze liegt.
+Der geplante Effektprüfer, MIR, Interpreter und das WebAssembly-Backend sind nicht verfügbar. Ihre Blöcke im Diagramm zeigen die vorgesehene Architektur und die Reihenfolge der Roadmap; sie versprechen nicht, dass ein Programm diese Stufen heute durchlaufen kann.
+
+Explizite Stufengrenzen machen jede Transformation testbar und erlauben es künftigen Tools, Repräsentationen gemeinsam zu nutzen, statt Quellcode mit unabhängigen Annahmen erneut zu parsen. In der Prä-Alpha-Phase können sich Crate-Grenzen noch ändern, wenn weitere Implementierungsbelege vorliegen.

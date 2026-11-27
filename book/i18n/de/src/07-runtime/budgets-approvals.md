@@ -1,6 +1,6 @@
 # 07.2 — Budgets und Freigaben
 
-> **Status:** Vorgeschlagen  
+> **Status:** Vorgeschlagen (PROPOSED)
 > **Summary:** Budgets begrenzen den Ressourcenverbrauch; Freigaben erzeugen explizite menschliche oder policy-gesteuerte Tore in autonomen Abläufen.
 
 Ein Budget kann mehr als Geld darstellen. Nützliche Dimensionen sind Aufrufe,

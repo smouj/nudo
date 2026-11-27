@@ -1,6 +1,6 @@
 # 12.1 — Bewusst verworfene Alternativen
 
-> **Status:** Historisch / Entwurfsbegründung  
+> **Status:** Historisch (HISTORICAL) / Entwurfsbegründung
 > **Summary:** Mehrere einfachere Ansätze sind in Anwendungen nützlich, erfüllen aber nicht NUDOs Ziel sprachsichtbaren Vertrauens und sprachsichtbarer Autorität.
 
 | Alternative | Warum sie als Sprachmodell nicht ausreicht |

@@ -1,6 +1,6 @@
 # 01.1 — Deterministische Software zuerst
 
-> **Status:** Spezifiziert  
+> **Status:** Spezifiziert (SPECIFIED)
 > **Summary:** Gewöhnlicher deterministischer Code muss der einfache, vorhersagbare Fall bleiben, obwohl NUDO für Systeme des KI-Zeitalters entworfen ist.
 
 Eine Sprache für Agenten, die einfache Software umständlich macht, löst das falsche

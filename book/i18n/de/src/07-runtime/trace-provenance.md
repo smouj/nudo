@@ -1,6 +1,6 @@
 # 07.1 — Traces und Provenienz
 
-> **Status:** Vorgeschlagen  
+> **Status:** Vorgeschlagen (PROPOSED)
 > **Summary:** Wichtige autonome Ausführung sollte genügend strukturierte Belege hinterlassen, um zu rekonstruieren, was geschehen ist, ohne Logs rückwärts zu entschlüsseln.
 
 Ein Trace ist eine Ausführungserzählung. Provenienz sind an Werte gebundene

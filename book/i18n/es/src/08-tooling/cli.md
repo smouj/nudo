@@ -1,13 +1,41 @@
-# 08.1 — Cadena de herramientas y CLI
+# 08.1 — Toolchain y CLI
 
-> **Status:** Implementado / Planificado (IMPLEMENTED / PLANNED)  
-> **Summary:** El comando `nudo` ofrece un único punto de entrada coherente, desde el análisis léxico y sintáctico de hoy hasta los flujos de compilación, ejecución, formateo, prueba, auditoría y trazas del futuro.
+> **Status:** Implementado (IMPLEMENTED) / Planificado (PLANNED)
+> **Summary:** El comando actual <code>nudo</code> comprueba el código fuente, la sintaxis y los nombres; la comprobación de tipos, la ejecución, los efectos y el resto de la toolchain siguen siendo trabajo futuro.
 
-Los comandos implementados actualmente incluyen `check` —que analiza léxica y
-sintácticamente, con `--dump-tokens` y `--dump-tree`— y los metadatos básicos de la
-CLI. Los comandos previstos en la hoja de ruta incluyen compilación, ejecución, REPL,
-formateador, documentación, pruebas, evaluación, doctor/auditoría y trazas.
+## Comandos implementados
 
-La superficie de comandos debería seguir siendo predecible: códigos de salida
-estables, salida legible por máquina cuando haga falta, códigos de diagnóstico y
-ninguna actividad de red silenciosa.
+~~~sh
+nudo check path/to/file.nudo
+nudo check --dump-tokens path/to/file.nudo
+nudo check --dump-tree path/to/file.nudo
+nudo check --dump-resolutions path/to/file.nudo
+nudo --version
+nudo --help
+~~~
+
+El comando check carga uno o varios archivos, los analiza léxica y sintácticamente, reduce la sintaxis aceptada a HIR, resuelve nombres e informa de diagnósticos léxicos, sintácticos y de resolución. También puede emitir un informe normal o dirigido a CI.
+
+Su alcance termina en la resolución de nombres. Un resultado limpio no garantiza que el programa tenga tipos correctos ni que sea ejecutable. El comprobador parcial de tipos es un crate separado con pruebas unitarias y casos de conformidad; la CLI no lo invoca. Todavía no existen <code>nudo run</code>, <code>nudo build</code>, REPL, formateador, servidor de lenguaje ni gestor de paquetes.
+
+Los códigos de salida son estables: 0 significa que las fases implementadas no encontraron diagnósticos de error; 1 significa que se notificó al menos un error; 2 significa un error de uso o de entrada, o un comando no implementado.
+
+## Mediciones del front end
+
+El programa independiente <code>nudo-bench</code> mide cuatro entradas sintéticas y deterministas en cuatro fases: lex, parse, reducción a HIR y comprobación de tipos. Produce dieciséis filas. La preparación del código fuente y del HIR para las fases posteriores ocurre fuera de la región medida; parse incluye tokenización porque el parser público consume tokens.
+
+El comprobador de tipos informa de la longitud de su tabla de tipos de expresiones. Ese recuento incluye los espacios que no tienen tipo y no cuenta las reglas semánticas ejecutadas. Que dos recuentos coincidan no prueba que dos revisiones del comprobador hayan realizado el mismo trabajo.
+
+{{#include ../diagrams/benchmark-portability.svg}}
+
+*El tiempo observado depende de toda la configuración registrada. No se puede
+deducir de forma fiable la escala entre equipos solo por la frecuencia de CPU
+o el número de núcleos.*
+
+Una ejecución registra commit, estado modificado, versión de Rust, sistema operativo, arquitectura, modelo de CPU cuando está disponible, tamaño de entrada, iteraciones y estadísticas de tiempo. No hay una referencia global del proyecto ni una barrera de rendimiento en CI.
+
+Para comparar de forma útil, compila ambas revisiones en modo release, usa cargas y cantidad de iteraciones idénticas y mídelo en el mismo equipo sin carga. Repite las ejecuciones. Trata los cruces de umbral como señales para investigar: una muestra aislada no demuestra una regresión.
+
+Los resultados de un equipo describen ese equipo y esa carga. Pueden servir como referencia aproximada para planificar, pero para estimar otro equipo hay que medirlo con el mismo commit, toolchain, carga y configuración. Las CPU, los subsistemas de memoria, los planificadores y las frecuencias sostenidas pueden cambiar cada fase de manera distinta, así que no existe una conversión fiable de un solo número entre equipos.
+
+La suite mide únicamente fases del front end del compilador. No puede informar del arranque del intérprete, de la ejecución completa de programas, de llamadas a agentes o modelos ni de la memoria máxima, porque esos sistemas aún no existen en la toolchain.

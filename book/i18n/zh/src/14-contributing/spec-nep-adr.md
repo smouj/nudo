@@ -1,6 +1,6 @@
 # 14.1 — 规范、NEP 与 ADR
 
-> **状态（Status）：** 规范已定义的流程（SPECIFIED process）  
+> **状态（Status）：** 规范已定义的流程（SPECIFIED）
 > **概述（Summary）：** 规范性规则、提案的语言变更和架构理由属于不同的文档类别，因为它们回答不同的问题。
 
 ## 规范（Specification）

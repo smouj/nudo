@@ -1,6 +1,6 @@
 # 05.2 — Tasks, Tools und Modelle
 
-> **Status:** Vorgeschlagen  
+> **Status:** Vorgeschlagen (PROPOSED)
 > **Summary:** NUDO trennt Zielsetzungen, effektbehaftete Tools und Modellanbieter, damit Autonomie begrenzt werden kann, ohne einen Anbieter in die Sprache einzubacken.
 
 

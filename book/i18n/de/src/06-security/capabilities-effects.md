@@ -1,25 +1,32 @@
 # 06.1 — Capabilities, Effekte und Autorität
 
-> **Status:** Vorgeschlagen  
-> **Summary:** Effekte beschreiben, was eine Ausführung tun darf; Capabilities beschreiben, welche Autorität der aktuelle Kontext tatsächlich gewähren kann.
-
+> **Status:** Vorgeschlagen (PROPOSED) / Geplant (PLANNED)
+>
+> **Summary:** NUDO schlägt statische Effektverfolgung und explizite Capability-Autorität vor; die aktuelle Toolchain implementiert weder Effektprüfung noch Runtime-Durchsetzung von Capabilities.
 
 {{#include ../diagrams/authority.svg}}
 
-*Autorität verengt sich entlang einer Delegationskette und kann nicht zurückfließen.*
+*Dies ist das vorgeschlagene Autoritätsmodell und keine Sicherheitsgrenze,
+die von der heutigen Runtime durchgesetzt wird.*
 
-Diese Konzepte müssen zueinander in Beziehung stehen, ohne verwechselt zu werden.
+## Drei verwandte Konzepte
 
-- **Effekt**: eine statische Beschreibung, dass eine Berechnung eine Operation wie
-  Netzwerkzugriff ausführen kann.
-- **Capability-Gewährung**: einem Kontext zur Verfügung gestellte Autorität.
-- **Policy**: Regeln, die einschränken, wann oder wie diese Autorität ausgeübt
-  werden darf.
+- **Effekt:** Statische Beschreibung dessen, was eine Berechnung tun kann, etwa das Netzwerk nutzen.
+- **Capability-Erteilung:** Autorität, die einem Programm oder Ausführungskontext zur Verfügung steht.
+- **Policy:** Regeln, die einschränken, wann oder wie Autorität ausgeübt werden darf.
 
-Als Standard ist die Verweigerung gedacht. Code sollte nicht allein deshalb
-Netzwerk-, Dateisystem-, Shell- oder Secret-Zugriff erhalten, weil der Host-Prozess
-ihn zufällig besitzt.
+Das Design verknüpft den von einer Funktion benötigten Effekt mit der Autorität, die am Aufrufort verfügbar ist. Es soll standardmäßig verweigern und verhindern, dass ein delegiertes Tool oder ein Agent die Autorität des Aufrufers erweitert.
 
-Eine kritische Invariante ist die Nicht-Verstärkung: Ein Tool oder ein delegierter
-Agent darf seine eigene Autorität nicht über das hinaus erweitern, was der Aufrufer
-gewährt hat.
+## Aktueller Implementierungsstand
+
+M5 ist geplant. Das Effektkapitel ist weiterhin vorgeschlagen und <code>neps/0004-effects.md</code> ist Draft. Es gibt heute weder Effektinferenz noch Effektprüfung, eine Implementierung von <code>NDO3xxx</code> oder Runtime-Durchsetzung von Capabilities. Das Crate <code>nudo-effects</code> markiert eine Grenze in der Roadmap, kein fertiges Subsystem.
+
+Das folgende Beispiel verwendet die Syntax des Draft-Vorschlags. Es ist keine angenommene Syntax, auf die sich Nutzer verlassen können:
+
+~~~nudo
+fn fetch(url: Text) -> Text with Network {
+    // Vorgeschlagen: Ein Aufruf von fetch benötigt Network.
+}
+~~~
+
+Das Exit-Kriterium von M5 in der Roadmap ist, einen Aufruf mit Effekt aus einer effektfreien Funktion abzulehnen und eine Diagnose auszugeben, die sowohl den Effekt als auch den verursachenden Aufrufpfad nennt. Das Design muss angenommen werden, bevor dieser Prüfer implementiert werden kann. Runtime-Policy-Durchsetzung ist ein separater späterer Meilenstein.

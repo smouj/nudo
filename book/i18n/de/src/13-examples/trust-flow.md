@@ -1,6 +1,6 @@
 # 13.2 — Modellausgabe und Verifikationsablauf
 
-> **Status:** Vorgeschlagene Syntax (PROPOSED SYNTAX)  
+> **Status:** Vorgeschlagene Syntax (PROPOSED)
 > **Summary:** Das kanonische Agentenbeispiel zeigt, warum generierte Ausgabe und verifizierte Ausgabe absichtlich getrennt sind.
 
 ```nudo

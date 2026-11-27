@@ -1,6 +1,6 @@
 # 10.1 — 仓库架构
 
-> **状态（Status）：** 已实现的基础（IMPLEMENTED foundation）  
+> **状态（Status）：** 已实现的基础（IMPLEMENTED）
 > **概述（Summary）：** 这个单体仓库（monorepo）把规范、编译器、运行时和工具链的演进放在一份可审计的历史里，同时保留概念上的 crate 边界。
 
 工作区（workspace）分离了编译器阶段、运行时服务、共享基础设施 crate、CLI、工具和后端。

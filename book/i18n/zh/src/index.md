@@ -1,6 +1,6 @@
 # 引言
 
-> **状态（Status）：** 历史 / 持续更新（HISTORICAL / LIVING）
+> **状态（Status）：** 历史（HISTORICAL）/ 持续更新
 >
 > **概述（Summary）：** 以证据为依据，介绍 NUDO 的设计、当前已有的编译器，以及项目正在构建的运行时。
 

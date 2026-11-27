@@ -1,45 +1,27 @@
-# 03.1 — El pipeline del compilador
+# 03.1 — Pipeline del compilador
 
-> **Status:** Implementado / Especificado (IMPLEMENTED / SPECIFIED)  
-> **Summary:** NUDO se estructura en fases explícitas del compilador para que cada transformación tenga una responsabilidad comprobable.
-
+> **Status:** Implementado (IMPLEMENTED) / Planificado (PLANNED)
+>
+> **Summary:** El front end de NUDO se divide en fases explícitas; HIR y la resolución de nombres están implementados, mientras que la comprobación y la ejecución posteriores siguen en desarrollo.
 
 {{#include ../diagrams/pipeline.svg}}
 
-*El pipeline, con el acento marcando lo que existe hoy: la carga del código fuente,
-el lexer, el árbol sintáctico sin pérdidas, el parser, el AST tipado y los
-diagnósticos.*
+*La ruta de acento marca el trabajo del front end implementado. La comprobación
+de tipos es parcial y se prueba por separado; la comprobación de efectos, MIR
+y la ejecución están planificadas.*
 
-```text
-SourceFile
-   ↓
-Lexer → Tokens + lexical diagnostics
-   ↓
-Lossless Syntax Tree
-   ↓
-Typed AST
-   ↓
-HIR + name resolution
-   ↓
-Type checking
-   ↓
-Effect checking
-   ↓
-MIR
-   ↓
-Interpreter / code generation
-```
+~~~text
+SourceFile → Lexer → Lossless syntax tree → AST → HIR / name resolution
+                                                        ↓
+                               comprobador parcial de tipos (no en nudo check)
+                                                        ↓
+                                    efectos → MIR → intérprete / backend
+~~~
 
-Las cuatro primeras fases están implementadas y cubiertas por casos de conformidad:
-el análisis léxico, el árbol sintáctico sin pérdidas, el análisis sintáctico y el AST
-tipado. `nudo check` las recorre todas, que es la razón de que una ejecución limpia
-signifique ahora «pasa el análisis léxico y el sintáctico».
+El comando <code>nudo check</code> carga el código fuente, ejecuta el análisis léxico y sintáctico y reduce a HIR/resuelve nombres. Puede volcar tokens, el árbol sintáctico y las resoluciones de nombres. No invoca <code>nudo-typeck</code> ni ejecuta el código.
 
-Unos límites nítidos entre fases mejoran la depuración y permiten que el
-formateador, el servidor de lenguaje y las herramientas de documentación compartan
-representaciones estables en lugar de reanalizar el texto con supuestos
-independientes.
+El crate <code>nudo-hir</code> reduce el AST tipado a identificadores y definiciones resueltas. El crate <code>nudo-typeck</code> consume ese HIR e implementa un conjunto parcial de reglas de tipos aceptadas. Las pruebas unitarias y el corpus de conformidad de typeck lo ejercitan directamente. Sus reglas restantes deben especificarse antes de implementarse.
 
-La arquitectura debería seguir siendo flexible durante la fase pre-alpha. Los crates
-de relleno no son motivo para congelar una API antes de que la implementación enseñe
-al proyecto dónde está el límite correcto.
+El comprobador de efectos planificado, MIR, el intérprete y el backend WebAssembly no están disponibles. Sus bloques en el diagrama muestran la arquitectura prevista y el orden de la hoja de ruta; no prometen que hoy un programa pueda recorrer esas fases.
+
+Los límites explícitos entre fases permiten probar cada transformación y compartir representaciones con herramientas futuras, en vez de volver a analizar el código con supuestos independientes. Durante la etapa pre-alpha, los límites entre crates todavía pueden cambiar a medida que se acumula evidencia de implementación.

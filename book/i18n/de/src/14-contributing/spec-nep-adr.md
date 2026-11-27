@@ -1,6 +1,6 @@
 # 14.1 — Spezifikation, NEPs und ADRs
 
-> **Status:** Spezifizierter Prozess  
+> **Status:** Spezifizierter Prozess (SPECIFIED)
 > **Summary:** Normative Regeln, vorgeschlagene Sprachänderungen und architektonische Begründung sind getrennte Dokumentklassen, weil sie unterschiedliche Fragen beantworten.
 
 ## Spezifikation

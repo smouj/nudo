@@ -1,6 +1,6 @@
 # 00.2 — Warum es NUDO gibt
 
-> **Status:** Spezifiziert  
+> **Status:** Spezifiziert (SPECIFIED)
 > **Summary:** Das Projekt beginnt bei einem Problem der Compiler-Sichtbarkeit: Kritischer Programmzustand im KI-Zeitalter ist häufig in Strings, Dashboards und Konventionen verborgen.
 
 ## Die Sichtbarkeitslücke

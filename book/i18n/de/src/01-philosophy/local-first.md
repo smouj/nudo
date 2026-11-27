@@ -1,6 +1,6 @@
 # 01.3 — Local-first und anbieterunabhängig
 
-> **Status:** Spezifiziert  
+> **Status:** Spezifiziert (SPECIFIED)
 > **Summary:** Lokale Modelle, lokale Tools und Offline-Ausführung sind als erstklassig gedacht und nicht als herabgestufte Betriebsarten.
 
 Ein Anbietername sollte nicht allein deshalb in der Kernsprache auftauchen, weil

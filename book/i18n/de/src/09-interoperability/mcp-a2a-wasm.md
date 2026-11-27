@@ -1,6 +1,6 @@
 # 09.1 — MCP, A2A und WebAssembly
 
-> **Status:** Geplant  
+> **Status:** Geplant (PLANNED)
 > **Summary:** Interoperabilität soll NUDO an bestehenden Tool- und Agenten-Ökosystemen teilnehmen lassen, ohne dass Adapter Autorität erweitern dürfen.
 
 MCP-Interoperabilität kann NUDO Tools nutzen oder bereitstellen lassen. Delegation

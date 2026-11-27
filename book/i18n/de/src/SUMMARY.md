@@ -15,17 +15,17 @@
 # 02 — Sprachdesign
 - [Grammatik und Syntaxdisziplin](02-language-design/grammar.md)
 - [Ausdrücke und Präzedenz](02-language-design/expressions.md)
-- [Module und Programm-Grenzen](02-language-design/modules.md)
+- [Module und Programmgrenzen](02-language-design/modules.md)
 
 # 03 — Compiler
 - [Compiler-Pipeline](03-compiler/pipeline.md)
 - [Quellmodell und Lexer](03-compiler/lexer.md)
 - [Parser, verlustfreie Syntax und AST](03-compiler/parser.md)
-- [Diagnostik als Produktdesign](03-compiler/diagnostics.md)
+- [Diagnostik als Produktgestaltung](03-compiler/diagnostics.md)
 
 # 04 — Typsystem
 - [Grundlagen des Typsystems](04-type-system/fundamentals.md)
-- [`Generated<T>` und `Verified<T>`](04-type-system/generated-verified.md)
+- [<code>Generated&lt;T&gt;</code> und <code>Verified&lt;T&gt;</code>](04-type-system/generated-verified.md)
 
 # 05 — Agenten und KI
 - [Agenten als begrenzte Ausführer](05-agents-and-ai/agents.md)
@@ -35,12 +35,13 @@
 - [Capabilities, Effekte und Autorität](06-security/capabilities-effects.md)
 - [Bedrohungsmodell](06-security/threat-model.md)
 
-# 07 — Laufzeit
+# 07 — Runtime
 - [Traces und Provenienz](07-runtime/trace-provenance.md)
 - [Budgets und Freigaben](07-runtime/budgets-approvals.md)
 
-# 08 — Tooling
+# 08 — Werkzeuge
 - [Toolchain und CLI](08-tooling/cli.md)
+- [Frontend-Benchmarking](08-tooling/benchmarks.md)
 
 # 09 — Interoperabilität
 - [MCP, A2A und WebAssembly](09-interoperability/mcp-a2a-wasm.md)
@@ -48,11 +49,11 @@
 # 10 — Interna
 - [Repository-Architektur](10-internals/repository-architecture.md)
 
-# 11 — Entwurfsbegründung
+# 11 — Designbegründung
 - [Warum Rust und warum ein eigener Compiler?](11-rationale/why-rust-own-compiler.md)
 - [Warum Vertrauen zur Typgeschichte gehört](11-rationale/why-trust-types.md)
 
-# 12 — Verworfene Alternativen
+# 12 — Bewusst verworfene Alternativen
 - [Bewusst verworfene Alternativen](12-alternatives/rejected.md)
 
 # 13 — Beispiele
@@ -63,4 +64,4 @@
 - [Spezifikation, NEPs und ADRs](14-contributing/spec-nep-adr.md)
 
 # 15 — Geschichte
-- [Meilensteine und Belege](15-history/milestones.md)
+- [Meilensteine und Nachweise](15-history/milestones.md)
