@@ -9,11 +9,11 @@
 //! | `diagnostics.txt`  | the expected diagnostics (optional) |
 //!
 //! The format is specified in `tests/conformance/README.md`. Unlike the lexer and
-//! parser corpora, the CLI exposes no type dump yet — the checker is deliberately
-//! not wired into `nudo check` until calls and structural rules exist — so these
-//! expectations are written by this driver with `NUDO_BLESS=1` and **reviewed as
-//! a diff**, like every other expectation in the repository. Blessing is not a
-//! way to make a failing case pass: it is the same command, minus the comparison.
+//! parser corpora, the CLI exposes no type dump yet: M3.2 is still in progress,
+//! and the checker is not wired into `nudo check`. These expectations are
+//! written by this driver with `NUDO_BLESS=1` and **reviewed as a diff**, like
+//! every other expectation in the repository. Blessing is not a way to make a
+//! failing case pass: it is the same command, minus the comparison.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -26,7 +26,7 @@ use nudo_typeck::{check, dump_types};
 
 /// The number of cases the corpus must contain, so that deleting one cannot make
 /// this test quietly pass.
-const MINIMUM_CASES: usize = 29;
+const MINIMUM_CASES: usize = 33;
 
 fn corpus_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/conformance/typeck")

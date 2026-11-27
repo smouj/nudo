@@ -1,0 +1,3 @@
+# nudo-typeck v1
+def 0009 function `inspect` 1:4: Fn(Int) -> Unit
+def 0010 parameter `number` 1:12: Int

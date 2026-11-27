@@ -1,0 +1,15 @@
+struct Article {
+    title: Text
+}
+
+struct Book {
+    title: Text
+}
+
+fn publish(article: Article) -> Text {
+    article.title
+}
+
+fn main(book: Book) -> Text {
+    publish(book)
+}
