@@ -3,9 +3,10 @@
 **Status: first slice, bounded generic inference, and the M3.3 trust-type
 assignment rule implemented.**
 `nudo-typeck` is exercised by unit tests and by `tests/conformance/typeck`.
-Diagnostics for unresolved type parameters remain pending. This document records
-what the checker does and the one
-architectural rule that makes "is HIR enough?" a question with a test.
+Deterministic robustness cases also check recovered HIR, diagnostic span bounds
+and repeatability. Diagnostics for unresolved type parameters remain pending.
+This document records what the checker does and the one architectural rule that
+makes "is HIR enough?" a question with a test.
 
 Read [`hir-design.md`](hir-design.md) first; this layer consumes what that one
 produces.
