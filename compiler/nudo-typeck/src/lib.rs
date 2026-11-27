@@ -1536,6 +1536,19 @@ mod tests {
     }
 
     #[test]
+    fn a_call_argument_mismatch_points_at_the_complete_argument_expression() {
+        let program = "fn takes(value: Int) {}\n\
+                       fn main() {\n    takes(true);\n}\n";
+        let (sources, id, result) = checked(program);
+        assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
+        let diagnostic = &result.diagnostics.as_slice()[0];
+        assert_eq!(diagnostic.code().id(), "NDO2004");
+        let file = sources.get(id).expect("just added");
+        let span = diagnostic.span().expect("the argument has a source span");
+        assert_eq!(file.span_text(span), Some("true"));
+    }
+
+    #[test]
     fn an_arity_diagnostic_points_at_the_argument_list() {
         for (call, expected_span) in [("add(1)", "(1)"), ("add(1, 2, 3)", "(1, 2, 3)")] {
             let program = format!(
