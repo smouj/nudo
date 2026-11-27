@@ -172,6 +172,14 @@ pub mod codes {
     /// A field that the value being read has no such field on.
     pub const UNKNOWN_FIELD: DiagnosticCode = DiagnosticCode::new("NDO2007", "UNKNOWN_FIELD");
 
+    /// A generic function parameter that call-site information cannot determine.
+    pub const TYPE_PARAMETER_NOT_INFERRED: DiagnosticCode =
+        DiagnosticCode::new("NDO2008", "TYPE_PARAMETER_NOT_INFERRED");
+
+    /// A function type parameter absent from every input and result type.
+    pub const TYPE_PARAMETER_NOT_IN_SIGNATURE: DiagnosticCode =
+        DiagnosticCode::new("NDO2009", "TYPE_PARAMETER_NOT_IN_SIGNATURE");
+
     /// A named type was supplied a different number of arguments than it declares.
     pub const WRONG_TYPE_ARGUMENT_COUNT: DiagnosticCode =
         DiagnosticCode::new("NDO2017", "WRONG_TYPE_ARGUMENT_COUNT");
@@ -197,6 +205,8 @@ pub mod codes {
         WRONG_ARGUMENT_COUNT,
         NOT_CALLABLE,
         UNKNOWN_FIELD,
+        TYPE_PARAMETER_NOT_INFERRED,
+        TYPE_PARAMETER_NOT_IN_SIGNATURE,
         WRONG_TYPE_ARGUMENT_COUNT,
         UNEXPECTED_FILE_EXTENSION,
     ];
@@ -220,6 +230,8 @@ pub mod codes {
         WRONG_ARGUMENT_COUNT,
         NOT_CALLABLE,
         UNKNOWN_FIELD,
+        TYPE_PARAMETER_NOT_INFERRED,
+        TYPE_PARAMETER_NOT_IN_SIGNATURE,
         WRONG_TYPE_ARGUMENT_COUNT,
         UNEXPECTED_FILE_EXTENSION,
     ];

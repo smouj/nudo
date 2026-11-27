@@ -1,0 +1,7 @@
+struct Box<T> {
+    value: T
+}
+
+fn inspect<T>(value: Box<Int, T>) -> Int {
+    0
+}

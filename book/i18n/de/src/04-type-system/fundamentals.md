@@ -13,17 +13,17 @@ Das Typsystem ist in den Sprachkapiteln und angenommenen NEPs spezifiziert. Das 
 | Primitive und Literaltypen | <code>Int</code>, <code>Float</code>, <code>Bool</code>, <code>Text</code> und <code>Unit</code> werden repräsentiert |
 | Annotationen und Funktionssignaturen | Werte werden mit angegebenen Typen verglichen; Funktionstypen und Aufrufe werden geprüft |
 | Aufrufe | Arität verwendet <code>NDO2005</code>, inkompatible Argumente <code>NDO2004</code>, nicht aufrufbare Werte <code>NDO2006</code> |
-| Generische Aufrufe | Typparameter werden aus Argumenten und bereits bekannten erwarteten Ergebnistypen in Quellreihenfolge hergeleitet |
+| Generische Aufrufe | Typparameter werden aus Argumenten und bereits bekannten erwarteten Ergebnistypen in Quellreihenfolge hergeleitet; nicht herleitbare Typparameter eines Aufrufs verwenden <code>NDO2008</code>, Signaturparameter ohne Verwendung <code>NDO2009</code> |
 | Benannte Typen | Die Typargument-Arität verwendet <code>NDO2017</code>; nominale Identität und unterstützter Feldzugriff werden geprüft |
 | Arithmetik | Übereinstimmende numerische Operanden unterstützen <code>+</code>, <code>-</code>, <code>*</code> und <code>/</code>; <code>%</code> gilt nur für Int, unäres <code>-</code> erhält den Zahlentyp |
 | Bedingungen | Die Bedingung von <code>if</code> muss <code>Bool</code> sein; die Zweigausdrücke werden weiterhin besucht |
 | Vertrauenszuweisung | Das eingebaute <code>Verified&lt;T&gt;</code> kann an unterstützten Stellen verwendet werden, an denen <code>T</code> erwartet wird |
 
-Die generische Inferenz ist bewusst begrenzt. Sie löst keine Typen für das gesamte Programm, generalisiert keine lokale Bindung und errät keinen ungelösten Parameter. Generische Argumente bleiben invariant und numerische Konvertierungen erfolgen nicht implizit.
+Die generische Inferenz ist bewusst begrenzt. Sie löst keine Typen für das gesamte Programm, generalisiert keine lokale Bindung und errät keinen ungelösten Parameter. Generische Argumente bleiben invariant und numerische Konvertierungen erfolgen nicht implizit. [NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) macht diese Grenze sichtbar: <code>NDO2008</code> verweist auf einen generischen Aufruf ohne ausreichende Informationen, <code>NDO2009</code> auf einen Funktionsparameter, der in der Signatur fehlt. Äußere Typparameter bleiben beim Aufruf eines Funktionswerts fest. Die Fehlerbehandlung unterdrückt nur Diagnosen, die von einem vorherigen Fehler abhängen.
 
 ## Noch unvollständige Regeln
 
-Der Typechecker definiert noch keinen Ergebnistyp für <code>if</code>, keine Übereinstimmung zwischen Zweigwerten, nicht alle Operatoren, keine Indizierung, nominale Konstruktion, <code>match</code> oder <code>Result&lt;T, E&gt;</code>-Matching. Auch eine stabile Diagnose für einen ungelösten generischen Parameter steht noch aus. [NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) schlägt diesen Diagnosevertrag vor; die NEP ist jedoch noch ein Draft und weder angenommen noch implementiert. Ganzzahl-Literalbereiche sowie Agenten, Tasks und Tools werden in diesem Typechecker noch nicht implementiert.
+Der Typechecker definiert noch keinen Ergebnistyp für <code>if</code>, keine Übereinstimmung zwischen Zweigwerten, nicht alle Operatoren, keine Indizierung, nominale Konstruktion, <code>match</code> oder <code>Result&lt;T, E&gt;</code>-Matching. Ganzzahl-Literalbereiche sowie Agenten, Tasks und Tools werden in diesem Typechecker noch nicht implementiert.
 
 Diese Lücken sind beabsichtigt. Eine Regel gilt erst dann als implementiert, wenn ihr semantischer und diagnostischer Vertrag angenommen wurde. Roadmap und Spezifikation halten fest, welche Arbeit bereit ist und welche Entscheidungen noch offen sind.
 

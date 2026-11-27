@@ -55,11 +55,10 @@
 //!
 //! Each omission is a named next step rather than a hole: the condition of an
 //! `if` is checked as `Bool`, but its branch/result typing remains deferred;
-//! logical, equality and comparison operators, indexing, diagnostics for
-//! unresolved generic parameters, `verify`, provenance tracking,
-//! `Result<T, E>` exhaustiveness, and effects remain. Unsupported expression
-//! results type as [`Type::Error`], which is compatible with everything and
-//! therefore reports nothing: silence, not a wrong answer.
+//! logical, equality and comparison operators, indexing, `verify`, provenance
+//! tracking, `Result<T, E>` exhaustiveness, and effects remain. Unsupported
+//! expression results type as [`Type::Error`], which is compatible with
+//! everything and therefore reports nothing: silence, not a wrong answer.
 
 pub mod types;
 
@@ -140,6 +139,10 @@ pub fn check(hir: &Hir, source: SourceId) -> TypeckResult {
         let signature = checker.signature_of(&hir.defs()[index]);
         checker.definition_types[id.index() as usize] = signature;
     }
+
+    // Function parameters that do not occur in the callable signature cannot
+    // be inferred at any call site. Report them once at the declaration.
+    checker.check_uninferable_function_parameters();
 
     // Then the bodies and the values.
     for index in 0..hir.defs().len() {
@@ -243,6 +246,65 @@ impl Checker<'_> {
                 .as_ref()
                 .map(|annotation| self.type_of_annotation(annotation)),
             _ => None,
+        }
+    }
+
+    /// Rejects function type parameters absent from all input and result types.
+    ///
+    /// Traverse the HIR type references once per function. This also counts a
+    /// parameter inside a malformed type application, whose recovery `Type`
+    /// may be `Error` and therefore no longer retain the reference.
+    fn check_uninferable_function_parameters(&mut self) {
+        for definition in self.hir.defs() {
+            if definition.kind != DefKind::Function || definition.type_parameters.is_empty() {
+                continue;
+            }
+
+            let mut used = HashSet::new();
+            for parameter in &definition.parameters {
+                if let Some(annotation) = self.hir.def(*parameter).and_then(|it| it.ty.as_ref()) {
+                    self.collect_type_parameters_from_ref(annotation, &mut used);
+                }
+            }
+            if let Some(result) = &definition.ty {
+                self.collect_type_parameters_from_ref(result, &mut used);
+            }
+
+            for parameter in &definition.type_parameters {
+                if used.contains(parameter) {
+                    continue;
+                }
+                let Some(parameter_definition) = self.hir.def(*parameter) else {
+                    continue;
+                };
+                self.diagnostics.push(
+                    Diagnostic::error(
+                        codes::TYPE_PARAMETER_NOT_IN_SIGNATURE,
+                        format!(
+                            "type parameter `{}` is not used in this function's signature",
+                            parameter_definition.name
+                        ),
+                    )
+                    .with_location(self.source, parameter_definition.span)
+                    .with_help("use the type parameter in an input or result type, or remove it"),
+                );
+            }
+        }
+    }
+
+    /// Collects type-parameter references directly from HIR type syntax.
+    fn collect_type_parameters_from_ref(&self, reference: &TypeRef, found: &mut HashSet<DefId>) {
+        if let Some(id) = reference.target.resolved() {
+            if self
+                .hir
+                .def(id)
+                .is_some_and(|definition| definition.kind == DefKind::TypeParameter)
+            {
+                found.insert(id);
+            }
+        }
+        for argument in &reference.arguments {
+            self.collect_type_parameters_from_ref(argument, found);
         }
     }
 
@@ -502,7 +564,13 @@ impl Checker<'_> {
                 callee,
                 arguments,
                 arguments_span,
-            } => self.type_of_call(callee, &arguments, arguments_span, expected),
+            } => self.type_of_call(
+                callee,
+                &arguments,
+                arguments_span,
+                expression.span,
+                expected,
+            ),
             ExprKind::Field {
                 receiver,
                 name,
@@ -667,14 +735,15 @@ impl Checker<'_> {
     /// the thing to change).
     ///
     /// Type parameters are inferred from arguments, left to right, and then from
-    /// an already-known expected result type, as NEP-0013 specifies. A diagnostic
-    /// for parameters that stay unresolved is still pending, so a result that
-    /// contains one is typed as unknown rather than guessed.
+    /// an already-known expected result type, as NEP-0013 specifies. Unresolved
+    /// parameters are diagnosed at the call site, and their result is `Error` to
+    /// prevent a cascade.
     fn type_of_call(
         &mut self,
         callee: ExprId,
         arguments: &[ExprId],
         arguments_span: Span,
+        call_span: Span,
         expected_result: Option<&Type>,
     ) -> Type {
         let callee_type = self.type_of_expression(callee);
@@ -721,11 +790,24 @@ impl Checker<'_> {
             );
         }
 
-        let mut generic_parameters = HashSet::new();
-        for parameter in parameters.iter() {
-            self.collect_type_parameters(parameter, &mut generic_parameters);
-        }
-        self.collect_type_parameters(&result, &mut generic_parameters);
+        // Only a direct function item owns call-site inference variables.
+        // Type parameters appearing in a function-valued parameter or local
+        // value belong to their enclosing declaration and stay fixed here.
+        let ordered_generic_parameters = self
+            .hir
+            .expr(callee)
+            .and_then(|expression| match &expression.kind {
+                ExprKind::Path { target, .. } => target.resolved(),
+                _ => None,
+            })
+            .and_then(|definition| self.hir.def(definition))
+            .filter(|definition| definition.kind == DefKind::Function)
+            .map(|definition| definition.type_parameters.to_vec())
+            .unwrap_or_default();
+        let generic_parameters = ordered_generic_parameters
+            .iter()
+            .copied()
+            .collect::<HashSet<_>>();
 
         if generic_parameters.is_empty() {
             for (expected, argument) in parameters.iter().zip(arguments) {
@@ -743,11 +825,18 @@ impl Checker<'_> {
         }
 
         let mut substitutions = HashMap::new();
+        let mut blocked_parameters = HashSet::new();
         for (parameter, argument) in parameters.iter().zip(arguments) {
             let actual = self.type_of_expression_with_expected(*argument, Some(parameter));
+            if self.contains_error_type(&actual) {
+                self.collect_type_parameters(parameter, &mut blocked_parameters);
+            }
             self.infer_type_arguments(parameter, &actual, &generic_parameters, &mut substitutions);
         }
         if let Some(expected_result) = expected_result {
+            if self.contains_error_type(expected_result) {
+                self.collect_type_parameters(&result, &mut blocked_parameters);
+            }
             self.infer_type_arguments(
                 &result,
                 expected_result,
@@ -781,6 +870,7 @@ impl Checker<'_> {
                 &expected,
                 &unresolved_parameters,
             ) {
+                self.collect_type_parameters(&expected, &mut blocked_parameters);
                 self.expect(&expected, &actual, span);
             }
         }
@@ -792,6 +882,31 @@ impl Checker<'_> {
             } else {
                 result.as_ref().clone()
             };
+        }
+        let mut reported_uninferable_parameter = false;
+        for parameter in &ordered_generic_parameters {
+            if !unresolved_parameters.contains(parameter) || blocked_parameters.contains(parameter)
+            {
+                continue;
+            }
+            let Some(definition) = self.hir.def(*parameter) else {
+                continue;
+            };
+            self.diagnostics.push(
+                Diagnostic::error(
+                    codes::TYPE_PARAMETER_NOT_INFERRED,
+                    format!(
+                        "type parameter `{}` cannot be inferred here",
+                        definition.name
+                    ),
+                )
+                .with_location(self.source, call_span)
+                .with_help("add a type annotation to the value that uses this call"),
+            );
+            reported_uninferable_parameter = true;
+        }
+        if reported_uninferable_parameter {
+            return Type::Error;
         }
         let result = self.substitute_type(&result, &substitutions);
         if self.contains_type_parameters(&result, &unresolved_parameters) {
@@ -1076,6 +1191,23 @@ impl Checker<'_> {
                     .iter()
                     .any(|parameter| self.contains_type_parameters(parameter, unresolved))
                     || self.contains_type_parameters(result, unresolved)
+            }
+            _ => false,
+        }
+    }
+
+    /// Whether an error type appears anywhere inside a recovered type.
+    fn contains_error_type(&self, ty: &Type) -> bool {
+        match ty {
+            Type::Error => true,
+            Type::Named { arguments, .. } => arguments
+                .iter()
+                .any(|argument| self.contains_error_type(argument)),
+            Type::Function { parameters, result } => {
+                parameters
+                    .iter()
+                    .any(|parameter| self.contains_error_type(parameter))
+                    || self.contains_error_type(result)
             }
             _ => false,
         }
@@ -1718,6 +1850,62 @@ mod tests {
             "the inferred binding should have type Int: {:?}",
             named_types(&result)
         );
+    }
+
+    #[test]
+    fn uninferable_parameters_are_reported_in_declaration_order_at_the_call() {
+        let program = "struct Pair<A, B> {\n    first: A\n    second: B\n}\n\nfn make<A, B>() -> Pair<A, B> {\n    make()\n}\n\nfn main() {\n    let value = make();\n}\n";
+        let (sources, id, result) = checked(program);
+        let diagnostics = result.diagnostics.as_slice();
+        assert_eq!(diagnostics.len(), 2, "{diagnostics:?}");
+        assert_eq!(diagnostics[0].code().id(), "NDO2008");
+        assert_eq!(
+            diagnostics[0].message(),
+            "type parameter `A` cannot be inferred here"
+        );
+        assert_eq!(diagnostics[1].code().id(), "NDO2008");
+        assert_eq!(
+            diagnostics[1].message(),
+            "type parameter `B` cannot be inferred here"
+        );
+        let file = sources.get(id).expect("just added");
+        for diagnostic in diagnostics {
+            assert_eq!(
+                diagnostic.help(),
+                Some("add a type annotation to the value that uses this call")
+            );
+            let span = diagnostic.span().expect("call span");
+            assert_eq!(file.span_text(span), Some("make()"));
+        }
+    }
+
+    #[test]
+    fn a_parameter_absent_from_the_function_signature_is_reported_once() {
+        let program = "fn answer<T>() -> Int {\n    42\n}\n";
+        let (sources, id, result) = checked(program);
+        let diagnostics = result.diagnostics.as_slice();
+        assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
+        let diagnostic = &diagnostics[0];
+        assert_eq!(diagnostic.code().id(), "NDO2009");
+        assert_eq!(
+            diagnostic.message(),
+            "type parameter `T` is not used in this function's signature"
+        );
+        assert_eq!(
+            diagnostic.help(),
+            Some("use the type parameter in an input or result type, or remove it")
+        );
+        let file = sources.get(id).expect("just added");
+        assert_eq!(
+            file.span_text(diagnostic.span().expect("declaration span")),
+            Some("T")
+        );
+    }
+
+    #[test]
+    fn a_function_value_call_does_not_infer_its_enclosing_type_parameters() {
+        let program = "fn apply<T>(operation: (Fn(T) -> T)) -> T {\n    operation(42)\n}\n";
+        assert_eq!(codes_for(program), vec!["NDO2004".to_string()]);
     }
 
     #[test]

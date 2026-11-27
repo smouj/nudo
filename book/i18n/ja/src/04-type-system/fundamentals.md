@@ -13,17 +13,17 @@
 | プリミティブ型とリテラル型 | <code>Int</code>、<code>Float</code>、<code>Bool</code>、<code>Text</code>、<code>Unit</code> を表現 |
 | 注釈と関数シグネチャー | 値を記述された型と比較し、関数型と呼び出しを検査 |
 | 呼び出し | 引数の個数には <code>NDO2005</code>、互換性のない引数には <code>NDO2004</code>、呼び出せない値には <code>NDO2006</code> |
-| ジェネリック呼び出し | 引数およびすでに判明している期待戻り値型から、ソース順に型パラメーターを推論 |
+| ジェネリック呼び出し | 引数およびすでに判明している期待戻り値型からソース順に推論。推論できない型パラメーターは <code>NDO2008</code>、関数シグネチャーで使われない型パラメーターは <code>NDO2009</code> で診断 |
 | 名前付き型 | 型引数の個数には <code>NDO2017</code> を使い、nominal identity と対応済みフィールドアクセスを検査 |
 | 算術 | 型が一致する数値オペランドで <code>+</code>、<code>-</code>、<code>*</code>、<code>/</code> を使用可能。<code>%</code> は Int のみ。単項 <code>-</code> は数値型を維持 |
 | 条件式 | <code>if</code> の条件には <code>Bool</code> が必要。分岐の式も引き続き検査 |
 | 信頼型の代入 | 組み込みの <code>Verified&lt;T&gt;</code> は、対応する位置で <code>T</code> が期待される場合に使用可能 |
 
-ジェネリック推論には意図的な制限があります。プログラム全体の型を解決せず、ローカル束縛を一般化せず、未解決パラメーターを推測もしません。ジェネリック引数は invariant のままで、数値変換は暗黙には行われません。
+ジェネリック推論には意図的な制限があります。プログラム全体の型を解決せず、ローカル束縛を一般化せず、未解決パラメーターを推測もしません。ジェネリック引数は invariant のままで、数値変換は暗黙には行われません。[NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) はこの境界を明示します。十分な情報がないジェネリック呼び出しは <code>NDO2008</code>、関数シグネチャーに現れない型パラメーターは <code>NDO2009</code> で報告します。関数値を呼び出す場合、外側の型パラメーターは固定されたままです。既存のエラーに依存する診断だけを抑制して、連鎖を防ぎます。
 
 ## 未完成の規則
 
-チェッカーはまだ <code>if</code> の戻り値型や分岐値の一致を定義しておらず、すべての演算子、indexing、nominal construction、<code>match</code>、<code>Result&lt;T, E&gt;</code> の match にも対応していません。未解決のジェネリックパラメーターに対する安定した診断も未対応です。[NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) が診断契約を提案していますが、まだ Draft であり、採用も実装もされていません。整数リテラルの範囲、エージェント、タスク、ツールもこのチェッカーには実装されていません。
+チェッカーはまだ <code>if</code> の戻り値型や分岐値の一致を定義しておらず、すべての演算子、indexing、nominal construction、<code>match</code>、<code>Result&lt;T, E&gt;</code> の match にも対応していません。整数リテラルの範囲、エージェント、タスク、ツールもこのチェッカーには実装されていません。
 
 これらの不足は意図的です。意味論と診断の契約が採用されて初めて、その規則を実装済みとします。ロードマップと仕様は、準備できた作業と未解決の判断を記録します。
 

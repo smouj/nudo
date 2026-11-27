@@ -2,9 +2,10 @@
 
 | Field | Value |
 | ----- | ----- |
-| Status | Draft |
+| Status | Accepted |
 | Authors | @smouj |
 | Created | 2026-10-25 |
+| Accepted | 2026-11-27 |
 | NEP number | 0015 |
 | Supersedes | — |
 | Superseded by | — |
@@ -13,9 +14,10 @@
 
 ## Summary
 
-Specify `NDO2008` (`TYPE_PARAMETER_NOT_INFERRED`) for an ordinary generic
-function call whose signature parameter cannot be determined from its arguments
-or from an already-known expected result type. Also reject a generic function
+This NEP specifies `NDO2008` (`TYPE_PARAMETER_NOT_INFERRED`) for an ordinary
+generic function call whose signature parameter cannot be determined from its
+arguments or from an already-known expected result type. It also rejects a
+generic function
 whose type parameter does not occur in its parameter or result types with
 `NDO2009` (`TYPE_PARAMETER_NOT_IN_SIGNATURE`), because no caller can ever
 supply that type through NUDO's accepted inference rules. Generic `tool` and
@@ -61,8 +63,8 @@ present in the function signature but still unknown after argument and
 expected-type inference. Its location is the whole call expression, its message
 names the parameter, and its help asks for an annotation at the value's use. A
 generic function parameter absent from every parameter and result type gets one
-`NDO2009` at its declaration instead. NUDO never chooses a default and this
-proposal does not add per-call type-argument syntax. These rules apply to
+`NDO2009` at its declaration instead. NUDO never chooses a default and these
+rules do not add per-call type-argument syntax. They apply to
 ordinary function calls; they do not decide how generic `tool` or `task` calls
 work.
 
@@ -74,10 +76,14 @@ error[NDO2008]: type parameter `T` cannot be inferred here
 
 ## Reference-level explanation
 
-* The proposed stable code is `NDO2008`, named `TYPE_PARAMETER_NOT_INFERRED`,
+* The stable code is `NDO2008`, named `TYPE_PARAMETER_NOT_INFERRED`,
   with severity `error`.
-* The proposed stable code is `NDO2009`, named
+* The stable code is `NDO2009`, named
   `TYPE_PARAMETER_NOT_IN_SIGNATURE`, with severity `error`.
+* A function type parameter is inferable only when it appears in that
+  function's parameter or result types. Type parameters from an enclosing
+  function remain fixed when a function-typed value is called; a nested call
+  does not infer its caller's type parameters.
 * Inference first uses call arguments in source order, then any expected result
   type already known at the call site, following NEP-0013.
 * For each generic function parameter that appears in neither a parameter type
@@ -88,9 +94,10 @@ error[NDO2008]: type parameter `T` cannot be inferred here
   `tool` or `task` declarations, and it does not reject phantom parameters on
   nominal `struct` or `enum` types, whose type arguments remain part of nominal
   type identity.
-* For each signature parameter that remains unresolved at a call, emit one
-  `NDO2008` at the full call expression. Emit them in declaration order and
-  name the parameter in the message.
+* For each of the directly called function's type parameters that appears in
+  its signature and remains unresolved at a call, emit one `NDO2008` at the
+  full call expression. Emit them in declaration order and name the parameter
+  in the message.
 * If arguments produce conflicting inferences, keep the existing
   `NDO2004` type-mismatch diagnostic at the later argument; do not also report
   that parameter as uninferable.
@@ -99,6 +106,15 @@ error[NDO2008]: type parameter `T` cannot be inferred here
 * If an earlier error leaves an argument's type unknown, suppress
   `NDO2008` for parameters whose inference depended on that argument. Continue
   reporting independently uninferable parameters.
+* If an argument has a known type that does not match its parameter type,
+  suppress `NDO2008` for unresolved parameters occurring in that parameter
+  type; the `NDO2004` mismatch already explains why that argument could not
+  infer them. Parameters that do not occur in the mismatching parameter type
+  remain independent and are still diagnosed.
+* If the expected result type is already `Error` because of an earlier
+  diagnostic, suppress `NDO2008` for unresolved parameters that occur in the
+  function's result type. Parameters that occur only in its input types remain
+  eligible for diagnostics.
 * The call's result is `Error` after reporting, preventing the same unknown
   type from causing follow-up mismatches.
 
@@ -128,7 +144,7 @@ error[NDO2008]: type parameter `T` cannot be inferred here
 | Specification | Add both diagnostic behaviors to `spec/generics.md` and `spec/errors.md`. |
 | Grammar | None. |
 | Compiler | Register and emit `NDO2008` and `NDO2009` from `nudo-typeck`; keep a call result as `Error` after `NDO2008`. |
-| Conformance | Add cases for an unresolved result, a context that resolves it, multiple unresolved parameters, recovery after an earlier error, and a function parameter absent from the signature. |
+| Conformance | Cover unresolved results, inference order, arity and error recovery, outer type parameters, and function parameters absent from signatures. |
 | Tooling | The diagnostic code and parameter name let editors offer a type annotation. |
 | Security | Prevents unknown generic types and uncallable phantom parameters from being silently accepted or guessed. |
 | Compatibility | Newly rejects calls that NEP-0013 already defines as compile errors, and functions with uninstantiable parameters. |
@@ -136,7 +152,7 @@ error[NDO2008]: type parameter `T` cannot be inferred here
 
 ## Open questions
 
-No open questions remain within this proposal's scope. A type parameter absent
+No open questions remain within this NEP's scope. A type parameter absent
 from a function's parameter and result types is a declaration error
 (`NDO2009`); a signature parameter that lacks enough call-site information is
 an inference error (`NDO2008`). Nominal type declarations are outside the
@@ -147,9 +163,9 @@ inference rules are still open in NEP-0013.
 ## Prior art
 
 NEP-0013 is the governing NUDO design: inference is local and bounded, and an
-uninferable parameter is an error rather than a default. This proposal assigns
+uninferable parameter is an error rather than a default. This NEP assigns
 the diagnostic contract needed to implement that accepted rule.
 
 ## Unresolved objections
 
-None recorded; this draft has not entered discussion.
+None recorded.

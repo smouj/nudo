@@ -16,7 +16,7 @@ The CLI does not invoke the checker yet.
 | Primitive and literal types | <code>Int</code>, <code>Float</code>, <code>Bool</code>, <code>Text</code> and <code>Unit</code> are represented |
 | Annotations and function signatures | Values are compared with written types; function types and calls are checked |
 | Calls | Arity uses <code>NDO2005</code>, incompatible arguments use <code>NDO2004</code>, and non-callable values use <code>NDO2006</code> |
-| Generic calls | Type parameters are inferred from arguments and already-known expected result types, in source order |
+| Generic calls | Type parameters are inferred from arguments and already-known expected result types, in source order; unresolved call parameters use <code>NDO2008</code> and unused function parameters use <code>NDO2009</code> |
 | Named types | Type-argument arity uses <code>NDO2017</code>; nominal identity and supported field access are checked |
 | Arithmetic | Matching numeric operands support <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>; <code>%</code> is Int-only and unary <code>-</code> preserves numeric type |
 | Conditions | The condition of <code>if</code> must be <code>Bool</code>; branch expressions are still visited |
@@ -25,16 +25,20 @@ The CLI does not invoke the checker yet.
 Generic inference is deliberately bounded. It does not solve types across the
 whole program, generalize a local binding or guess an unresolved parameter.
 Generic arguments remain invariant, and numeric conversions are not implicit.
+[NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md)
+makes this boundary visible: `NDO2008` points to an unresolved generic call,
+while `NDO2009` points to a function parameter absent from its signature.
+Type parameters from an enclosing function stay fixed when a function-valued
+parameter is called. Recovery suppresses only diagnostics that depend on an
+earlier error.
 
 ## Rules still incomplete
 
 The checker does not yet define a result type for <code>if</code>, agreement
 between branch values, all operators, indexing, nominal construction,
-<code>match</code> or <code>Result&lt;T, E&gt;</code> matching. A stable diagnostic
-for a generic parameter that remains unresolved is also pending. [NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md)
-proposes that diagnostic contract, but it is still a Draft and has not been
-accepted or implemented. Integer literal range checking, agents, tasks and tools
-have not been implemented in this checker.
+<code>match</code> or <code>Result&lt;T, E&gt;</code> matching. Integer literal
+range checking, agents, tasks and tools have not been implemented in this
+checker.
 
 These omissions are deliberate. A rule is implemented only when its semantic
 and diagnostic contract is accepted. The roadmap and the specification record

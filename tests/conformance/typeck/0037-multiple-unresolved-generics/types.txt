@@ -1,0 +1,9 @@
+# nudo-typeck v1
+def 0009 struct `Pair` 1:8: <unknown>
+def 0010 function `make` 6:4: Fn() -> Pair<A, B>
+def 0011 function `main` 10:4: Fn() -> Unit
+def 0012 type-parameter `A` 1:13: <unknown>
+def 0013 type-parameter `B` 1:16: <unknown>
+def 0014 type-parameter `A` 6:9: <unknown>
+def 0015 type-parameter `B` 6:12: <unknown>
+def 0016 binding `value` 11:9: <error>
