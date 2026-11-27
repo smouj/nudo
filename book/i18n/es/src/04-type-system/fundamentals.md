@@ -23,7 +23,7 @@ La inferencia genérica tiene límites deliberados. No resuelve tipos para todo 
 
 ## Reglas aún incompletas
 
-El comprobador todavía no define un tipo de resultado para <code>if</code>, la concordancia entre valores de ramas, todos los operadores, la indexación, la construcción nominal, <code>match</code> ni la correspondencia con <code>Result&lt;T, E&gt;</code>. También está pendiente un diagnóstico estable para un parámetro genérico que siga sin resolverse. La comprobación del rango de literales enteros, agentes, tareas y herramientas aún no está implementada en este comprobador.
+El comprobador todavía no define un tipo de resultado para <code>if</code>, la concordancia entre valores de ramas, todos los operadores, la indexación, la construcción nominal, <code>match</code> ni la correspondencia con <code>Result&lt;T, E&gt;</code>. También está pendiente un diagnóstico estable para un parámetro genérico que siga sin resolverse. [NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) propone ese contrato de diagnóstico, pero sigue en Draft y todavía no se ha aceptado ni implementado. La comprobación del rango de literales enteros, agentes, tareas y herramientas aún no está implementada en este comprobador.
 
 Estas omisiones son deliberadas. Una regla solo se implementa cuando se acepta su contrato semántico y diagnóstico. La hoja de ruta y la especificación indican qué trabajo está listo y qué decisiones siguen abiertas.
 

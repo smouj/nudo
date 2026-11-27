@@ -31,9 +31,10 @@ Generic arguments remain invariant, and numeric conversions are not implicit.
 The checker does not yet define a result type for <code>if</code>, agreement
 between branch values, all operators, indexing, nominal construction,
 <code>match</code> or <code>Result&lt;T, E&gt;</code> matching. A stable diagnostic
-for a generic parameter that remains unresolved is also pending. Integer literal
-range checking, agents, tasks and tools have not been implemented in this
-checker.
+for a generic parameter that remains unresolved is also pending. [NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md)
+proposes that diagnostic contract, but it is still a Draft and has not been
+accepted or implemented. Integer literal range checking, agents, tasks and tools
+have not been implemented in this checker.
 
 These omissions are deliberate. A rule is implemented only when its semantic
 and diagnostic contract is accepted. The roadmap and the specification record
