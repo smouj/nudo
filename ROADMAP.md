@@ -165,9 +165,10 @@ as `Bool`, branch expressions are checked recursively, and the expected
 condition type reaches generic inference; the conditional result and branch
 agreement remain unspecified. Deferred expression forms also check their
 children for supported rules. Numeric arithmetic typing is in place. The next
-slices are a stable diagnostic for unresolved generic parameters, the remaining
-operator and index rules, match typing and exhaustiveness, nominal construction,
-and `Result<T, E>`. Until a rule exists, the checker stays silent rather than
+slices include a stable diagnostic for unresolved generic parameters (NEP-0015;
+**Draft**), the remaining operator and index rules, match typing and
+exhaustiveness, nominal construction, and `Result<T, E>`. Draft-gated rules stay
+unimplemented until accepted; until then, the checker stays silent rather than
 inventing semantics. See
 [`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
 
@@ -199,9 +200,11 @@ rules of their own.
       unary `-` preserves its numeric operand type
 * [ ] Logical negation, logical/equality/comparison operators and index typing
 * [ ] A stable diagnostic for generic parameters that remain unresolved
-      (NEP-0013)
+      (NEP-0015; **Draft**; do not implement before acceptance)
 * [ ] `match` typing: variant validation, payload binding, arm type agreement
-      and exhaustiveness; HIR already records each arm's pattern
+      and exhaustiveness; current HIR stores only the head and flat binding
+      definitions, not wildcard structure or ordered payload patterns (NEP-0020;
+      **Draft**)
 * [ ] `Result<T, E>` as an intrinsic type, using the same exhaustive `match`
       rules as every other enum
 * [x] Function types and calls; no implicit numeric conversion
