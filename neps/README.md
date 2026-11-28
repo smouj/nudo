@@ -46,7 +46,7 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 | [0017](0017-boolean-comparison-conditionals.md) | Boolean, comparison and conditional expressions | Accepted |
 | [0018](0018-statically-checkable-verifiers.md) | Statically checkable verifiers | Discussion |
 | [0019](0019-integer-literal-boundary.md) | Integer literal boundary | Accepted |
-| [0020](0020-typed-enum-matching.md) | Typed enum matching | Implemented |
+| [0020](0020-typed-enum-matching.md) | Typed enum matching | Stabilized |
 | [0021](0021-sequence-indexing-and-bounds.md) | Sequence indexing and bounds | Discussion |
 | [0022](0022-nominal-value-construction.md) | Nominal value construction | Discussion |
 | [0023](0023-direct-calls-and-console-output.md) | M4 execution, direct calls and console output | Discussion |

@@ -2,10 +2,11 @@
 
 | Field | Value |
 | ----- | ----- |
-| Status | Implemented |
+| Status | Stabilized |
 | Authors | @smouj |
 | Created | 2026-10-26 |
 | Accepted | 2026-11-28, maintainer decision |
+| Stabilized | 2026-11-28, after parser and type-checker conformance coverage |
 | NEP number | 0020 |
 | Supersedes | — |
 | Superseded by | — |
