@@ -79,9 +79,15 @@ The recommended first implementation is deliberately limited:
   only the resolved target and its signature; it does not re-traverse the body.
   The body may use deterministic value expressions,
   immutable local bindings, field access, conditionals, match, and the accepted
-  scalar operators. It may not call functions or use ask, verify, delegate,
-  indexing, tools, tasks, or other operations that can introduce effects or
-  depend on runtime state. There are no loops in the accepted subset.
+  scalar operators. Value paths may resolve only to the verifier's input
+  parameter or immutable locals declared in its body, nested blocks, or match
+  arms. References to top-level bindings, constants, and functions are
+  forbidden; their initialization and effects are outside the verifier's
+  deterministic contract. Type names and enum variants used in type and
+  pattern positions remain allowed. The body may not call functions or use
+  ask, verify, delegate, indexing, tools, tasks, or other operations that can
+  introduce effects or depend on runtime state. There are no loops in the
+  accepted subset.
 * A verifier body must have type Bool. Every path is checked; a type error
   recovers as Error and must not trigger a second verifier-result mismatch.
 * verify first evaluates its named operand, then calls the statically resolved
@@ -111,8 +117,8 @@ accepted effect system. It must not silently widen this subset.
 * An unresolved verifier name uses NDO2001.
 * A resolved name that is not a supported verifier function receives proposed
   NDO2020, INVALID_VERIFIER_TARGET, at the verifier name.
-* An operation forbidden in a verifier body receives proposed NDO2021,
-  UNSUPPORTED_VERIFIER_BODY, at that operation.
+* An operation or value path forbidden in a verifier body receives proposed
+  NDO2021, UNSUPPORTED_VERIFIER_BODY, at that operation or path.
 * Parameter and result mismatches use NDO2004 with structured expected and
   found types. A prior error suppresses only diagnostics that depend on it.
 * On any verifier error, the verify expression recovers as Error so the same
@@ -134,11 +140,12 @@ M4/M6 runtime and bounded by the accepted provenance contract.
 ### Conformance
 
 The M3.3 cases should pin verifier resolution and signature shape, exact generic
-payload selection, type mismatch and forbidden-body diagnostics, error recovery
-without cascades, the resolved verifier DefId in typed HIR, and exhaustive
-Result handling under NEP-0020. M3.3 has no execution engine, so runtime tests
-for successful verification and false-to-Err conversion belong to M4. Tests for
-the complete provenance graph remain in M6.
+payload selection, type mismatch and forbidden-body diagnostics (including
+rejected references to top-level values), error recovery without cascades, the
+resolved verifier DefId in typed HIR, and exhaustive Result handling under
+NEP-0020. M3.3 has no execution engine, so runtime tests for successful
+verification and false-to-Err conversion belong to M4. Tests for the complete
+provenance graph remain in M6.
 
 ## What this makes impossible
 
@@ -185,8 +192,9 @@ auditable first slice; relaxing it needs an accepted effect contract.
    should the trust transition accept only Generated<T>?
 3. Is a single VerificationError::Rejected variant sufficient for M3.3, with
    richer deterministic reasons deferred until nominal construction lands?
-4. Is a call-free deterministic body an acceptable first slice, with
-   effect-checked helper calls deferred until after NEP-0004 is accepted?
+4. Is a call-free body restricted to its input and local immutable bindings an
+   acceptable deterministic first slice, with effect-checked helper calls
+   deferred until after NEP-0004 is accepted?
 5. Should M3.3 conformance pin verifier identity in typed HIR, M4 test actual
    success/failure, and M6 test the complete provenance graph, even though the
    current roadmap groups verification failure and provenance under M3.3?
