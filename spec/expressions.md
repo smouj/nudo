@@ -1,8 +1,9 @@
 # Expressions and statements
 
-**State: expression syntax is implemented; core operator and conditional rules
-are accepted and implemented** (NEP-0017). `match`, indexing and the agentic
-expressions at the end of this chapter still need their semantic gates.
+**State: expression syntax, core operator and conditional rules, and typed enum
+matching are accepted and implemented** (NEP-0017 and NEP-0020). Indexing and
+the agentic expressions at the end of this chapter still need their semantic
+gates.
 
 ## Shape
 
@@ -141,10 +142,37 @@ match status {
 * Without an `else`, the `then` branch must have type `Unit`, and the whole `if`
   has type `Unit`.
 * An `else if` follows these same rules.
-* `match` must be exhaustive, and uniformly so: an unhandled variant is an
-error whatever the enum is, including `Result<Verified<T>, E>`. NUDO has no
-must-use rule in this edition, so an ignored `Result` is not an error
-([NEP-0014](../neps/0014-trust-types-obey-the-rules.md)).
+### `match`
+
+`match` accepts only a scrutinee whose resolved type is a user enum or intrinsic
+`Result<T, E>`. Each arm uses one unqualified enum variant name or `_`. A name
+that is not a variant is `NDO2012`, never a binding. `Verified<Enum>` and
+`Generated<Enum>` are not implicitly unwrapped for pattern dispatch.
+
+Payload patterns bind fields positionally, in declaration order. A payload
+position is either a binding name or `_`; `_` discards that field and introduces
+no local. Binding names are immutable locals scoped to their arm. The number of
+payload patterns must equal the variant's number of fields. Nested variant and
+literal patterns are not part of this edition.
+
+Every variant must be covered exactly once, unless a final `_` covers the
+remaining variants. Duplicate variants, a wildcard after all variants are
+covered, and every arm after a wildcard are unreachable. Matching a non-enum
+uses `NDO2011`; invalid variant, payload-count, missing-coverage, and unreachable
+pattern diagnostics use `NDO2012` through `NDO2015` respectively. The checker
+still checks each arm body after a pattern error.
+
+When an expected result type is available, every arm is checked against it using
+ordinary assignment rules. Otherwise, every non-error arm must have exactly the
+same resolved type; the checker does not coerce arms or infer a common type.
+Disagreement is `NDO2016` at the mismatching body. If any pattern, coverage, or
+arm error occurs, or an input already has `Error` type, the recovered match type
+is `Error` and dependent mismatches are suppressed. A valid match has its
+expected type, or its common arm type when there is no expected type.
+
+`Result<T, E>` uses the same rules as every enum, with `Ok(T)` and `Err(E)`
+variants. NUDO has no must-use rule in this edition, so an ignored `Result` is
+not an error ([NEP-0014](../neps/0014-trust-types-obey-the-rules.md)).
 * There is no implicit truthiness: the condition is `Bool`.
 * **There is no `return`, and no early exit.** A block's value is its final
   expression, and both `if` and `match` are expressions, so a conditional result

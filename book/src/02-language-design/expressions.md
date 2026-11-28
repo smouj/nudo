@@ -1,7 +1,7 @@
 # 02.2 — Expressions and precedence
 
 > **Status:** Implemented / Specified / Planned
-> **Summary:** The parser implements the grammar; core operator types and `if` branch rules are also checked. `match` and indexing still need semantic decisions.
+> **Summary:** The parser implements the grammar; core operator types, `if` branch rules and typed enum `match` are checked. Indexing still needs a semantic decision.
 
 Precedence is not formatting trivia. `a + b * c` must have one meaning in every
 conforming implementation, and the parser produces exactly that shape: the tree
@@ -59,3 +59,28 @@ defines the operator domains and conditional result types:
 At runtime, skipped short-circuit operands and unselected branches do not run.
 Static effect checking still considers all of them, so a declaration remains
 valid for every input.
+
+## Typed enum matching
+
+[NEP-0020](https://github.com/smouj/nudo/blob/main/neps/0020-typed-enum-matching.md)
+defines `match` for user enums and intrinsic `Result<T, E>`. Each arm names one
+declared variant or uses `_`; payloads bind positionally with their declared
+types, after generic substitution. Every variant must be covered, unless a
+reachable wildcard covers the remaining variants. Unknown names are errors and
+never become bindings. Without an expected result type, arm bodies must have
+exactly the same type; with one, each body follows the ordinary assignment
+rules. The type checker reports pattern, coverage and arm errors while
+continuing to inspect each body.
+
+```nudo
+fn describe(value: Result<Int, Text>) -> Text {
+    match value {
+        Ok(number) => "success"
+        Err(reason) => reason
+    }
+}
+```
+
+The parser and type checker have conformance cases for generic payloads,
+`Result`, wildcard coverage, invalid patterns, recovery and arm types. The
+checker is not wired into `nudo check` yet.

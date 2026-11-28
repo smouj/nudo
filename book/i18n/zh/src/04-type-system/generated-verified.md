@@ -44,6 +44,7 @@ ModelOutput<T> { value: T, verified: Bool }
 
 ## 尚未完成的工作
 
-运行时验证操作、可静态检查的验证器声明、稳定失败类型、来源记录和执行追踪
-仍是计划或提案中的工作。<code>Result&lt;T, E&gt;</code> 可以按规定类型参数书写，
-但模式匹配和穷尽性检查尚未实现。
+类型检查器支持对内置 <code>Result&lt;T, E&gt;</code> 进行穷尽的 <code>match</code>，并像
+用户定义枚举的变体一样处理 <code>Ok(T)</code> 和 <code>Err(E)</code>。<code>verify</code>
+操作目前还不能生成此类型的值：运行时行为、可静态检查的验证器声明、稳定失败类型、
+来源记录和执行追踪仍是计划或提案中的工作。

@@ -8,8 +8,9 @@
 (* "Implemented" means the reference parser accepts exactly these           *)
 (* productions and rejects the rest with NDO1001. It does not mean the      *)
 (* language is finished: the productions marked provisional can still       *)
-(* change, and each change needs a NEP. Nothing is type-checked (M3) and    *)
-(* nothing runs (M4).                                                      *)
+(* change, and each change needs a NEP. The partial checker implements       *)
+(* accepted M3.2 rules but is not wired into `nudo check`; programs do not    *)
+(* run yet (M4).                                                            *)
 (*                                                                        *)
 (* Where this file and an example disagree, this file wins: the examples    *)
 (* are illustrations and say which of them the toolchain can read. The      *)
@@ -132,8 +133,9 @@ struct-decl         = "struct", identifier, [ generic-parameter-list ],
 field               = identifier, ":", type ;
 
 enum-decl           = "enum", identifier, [ generic-parameter-list ],
-                      "{", { variant }, "}" ;
-variant             = identifier, [ "(", [ field, { ",", field } ], ")" ] ;
+                      "{", variant, { variant }, "}" ;
+variant             = pattern-identifier,
+                      [ "(", [ field, { ",", field } ], ")" ] ;
 
 const-decl          = "const", identifier, ":", type, "=", expression, ";" ;
 
@@ -276,8 +278,12 @@ if-expression       = "if", expression, block,
    expression, never a postfix suffix, so the scrutinee expression cannot
    swallow the `{` that opens the arms. *)
 match-expression    = "match", expression, "{", { match-arm }, "}" ;
-match-arm           = pattern, "=>", expression ;
-pattern             = path, [ "(", [ pattern, { ",", pattern } ], ")" ] ;
+match-arm           = match-pattern, "=>", expression ;
+match-pattern       = "_" | variant-pattern ;
+variant-pattern     = pattern-identifier,
+                      [ "(", [ payload-pattern, { ",", payload-pattern } ], ")" ] ;
+payload-pattern     = pattern-identifier | "_" ;
+pattern-identifier  = identifier ;  (* exact spelling "_" is excluded by the parser *)
 
 (* The agentic expressions. All three are provisional: NEP-0001, NEP-0002
    and NEP-0006 decide whether they are keywords, functions or protocols.

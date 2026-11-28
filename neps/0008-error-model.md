@@ -106,6 +106,7 @@ Three kinds of failure, and a reader can tell them apart from the code:
 
 ## Implementation status
 
-**Not implemented.** The parser accepts `Result<…>` as a type and `match` as a
-control-flow form; the type itself, exhaustiveness checking and the trap family
-arrive with M3 and M4.
+**Partially implemented (M3.2).** `Result<T, E>` is an intrinsic type with
+checked arity, and NEP-0020 implements exhaustive `Ok(T)` / `Err(E)` matching
+in the type checker. The `verify` producer and runtime trap family remain later
+work; `nudo check` does not run type checking yet.

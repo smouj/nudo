@@ -15,6 +15,6 @@ Important properties include:
 - stable diagnostic codes;
 - conformance cases that another implementation can reproduce.
 
-The `nudo check` success path now runs the whole front end: a clean result means
-the file lexes and parses. It still does not mean the program is semantically
-valid — nothing is type-checked (M3) and nothing runs (M4).
+The `nudo check` success path runs the whole CLI front end: a clean result means
+the file lexes, parses and resolves. The partial M3.2 type checker is exercised
+separately and is not called by this command. Nothing runs yet (M4).

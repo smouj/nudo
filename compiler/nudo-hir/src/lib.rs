@@ -44,12 +44,13 @@
 //!
 //! # What it deliberately does not do
 //!
-//! * **No types.** `Int` resolves to a built-in definition and is not checked;
-//!   nothing is inferred. That is M3.2.
-//! * **No pattern resolution.** A pattern head (`Pending` in `match x { Pending
-//!   => … }`) cannot be resolved without the scrutinee's type — a bare name
-//!   there is either a variant or a new binding. Sub-patterns are lowered as
-//!   bindings; heads are left for M3.2, and the rule is recorded in
+//! * **No type checking.** `Int` resolves to a built-in definition, while type
+//!   checking and inference belong to `nudo-typeck`.
+//! * **No variant resolution in HIR.** A pattern head (`Pending` in
+//!   `match x { Pending => … }`) stays unresolved because its meaning depends
+//!   on the scrutinee's type. HIR preserves the name and span, records payload
+//!   bindings and wildcards by position, and leaves lookup to the type checker
+//!   under NEP-0020. Wildcards introduce no local definitions. See
 //!   [`docs/internals/hir-design.md`][design].
 //! * **No modules.** A path written with `::` is reported as unresolved with a
 //!   note, because `::` reaches into a module and modules are M10.
@@ -223,20 +224,49 @@ pub struct Field {
     pub span: Span,
 }
 
+/// The structural pattern carried by one `match` arm.
+#[derive(Debug, Clone)]
+pub enum MatchPattern {
+    /// `_` matches all variants not covered by preceding arms.
+    Wildcard {
+        /// The underscore token.
+        span: Span,
+    },
+    /// A variant pattern, resolved against the scrutinee's enum during type checking.
+    Variant {
+        /// The unqualified variant name as written.
+        name: String,
+        /// The variant-name span.
+        name_span: Span,
+        /// The full pattern span.
+        span: Span,
+        /// Payload bindings and wildcards, in source order.
+        payloads: Vec<PayloadPattern>,
+    },
+}
+
+/// One payload position in a flat enum pattern.
+#[derive(Debug, Clone)]
+pub enum PayloadPattern {
+    /// A local binding introduced in the arm's scope.
+    Binding {
+        /// The arm-local definition.
+        definition: DefId,
+        /// The binding's source token.
+        span: Span,
+    },
+    /// `_` discards this payload position and introduces no name.
+    Wildcard {
+        /// The underscore token.
+        span: Span,
+    },
+}
+
 /// One arm of a `match`.
-///
-/// The head is recorded as **written**, not as decided. A bare name in a pattern
-/// is either a variant of the scrutinee's enum or a new binding, and which one it
-/// is needs the scrutinee's type — which exists now, one layer up. Guessing from
-/// capitalisation here would invent a language rule in the wrong layer.
 #[derive(Debug, Clone)]
 pub struct Arm {
-    /// The name written at the pattern's head, if the pattern has one.
-    pub head: Option<String>,
-    /// Where the pattern is written.
-    pub span: Span,
-    /// The definitions the pattern introduces, in source order.
-    pub bindings: Vec<DefId>,
+    /// The pattern, preserving wildcard and payload positions.
+    pub pattern: MatchPattern,
     /// The arm's body.
     pub body: ExprId,
 }
@@ -1327,36 +1357,51 @@ impl Lowerer {
 
     /// Lowers one `match` arm.
     ///
-    /// Only sub-patterns become bindings. A bare head name is a variant or a new
-    /// binding, and which one it is needs the scrutinee's type, so the head is
-    /// left for M3.2 rather than guessed from its spelling.
+    /// Variant heads remain unresolved until the scrutinee type is known;
+    /// payload bindings are preserved by position, and `_` introduces no name.
     fn lower_arm(&mut self, node: SyntaxNode<'_>) -> Option<Arm> {
         let outer = self.scope;
         self.scope = self.push_scope(outer, "match-arm");
 
-        let mut head = None;
-        let mut span = node
-            .child_tokens()
-            .first()
-            .map_or_else(zero_span, |token| token.span());
-        let mut bindings = Vec::new();
-
-        if let Some(pattern) = node.child_of_kind(SyntaxKind::Pattern) {
-            if let Some(token) = item_name_token(pattern) {
-                head = Some(token.text().to_string());
-                span = token.span();
+        let Some(pattern_node) = node.child_of_kind(SyntaxKind::Pattern) else {
+            self.scope = outer;
+            return None;
+        };
+        let Some(head) = item_name_token(pattern_node) else {
+            self.scope = outer;
+            return None;
+        };
+        let pattern = if head.text() == "_" {
+            MatchPattern::Wildcard { span: head.span() }
+        } else {
+            let payloads = pattern_node
+                .children_of_kind(SyntaxKind::Pattern)
+                .into_iter()
+                .filter_map(|payload| {
+                    let token = item_name_token(payload)?;
+                    if token.text() == "_" {
+                        Some(PayloadPattern::Wildcard { span: token.span() })
+                    } else {
+                        let definition = self.declare(
+                            token.text().to_string(),
+                            DefKind::Local,
+                            token.span(),
+                            None,
+                        );
+                        Some(PayloadPattern::Binding {
+                            definition,
+                            span: token.span(),
+                        })
+                    }
+                })
+                .collect();
+            MatchPattern::Variant {
+                name: head.text().to_string(),
+                name_span: head.span(),
+                span: pattern_node.span(),
+                payloads,
             }
-            for nested in pattern.children_of_kind(SyntaxKind::Pattern) {
-                if let Some(token) = item_name_token(nested) {
-                    bindings.push(self.declare(
-                        token.text().to_string(),
-                        DefKind::Local,
-                        token.span(),
-                        None,
-                    ));
-                }
-            }
-        }
+        };
 
         let body = node
             .child_nodes()
@@ -1365,9 +1410,7 @@ impl Lowerer {
             .and_then(|child| self.lower_expression(child));
         self.scope = outer;
         Some(Arm {
-            head,
-            span,
-            bindings,
+            pattern,
             body: body?,
         })
     }
@@ -1549,10 +1592,6 @@ fn item_kind(kind: SyntaxKind) -> Option<DefKind> {
 /// A tool is named by a path, so its name is the path's first segment — and a
 /// pattern binding has the same shape: `Failed(reason)` binds `reason`, whose
 /// token lives inside a `Path`, not as a token of the pattern itself.
-fn zero_span() -> Span {
-    Span::new(nudo_span::BytePos::new(0), nudo_span::BytePos::new(0))
-}
-
 fn item_name_token(node: SyntaxNode<'_>) -> Option<SyntaxToken<'_>> {
     name_token(node).or_else(|| {
         node.child_of_kind(SyntaxKind::Path)
@@ -1962,13 +2001,66 @@ mod tests {
         };
 
         assert_eq!(arms.len(), 2, "{arms:?}");
-        assert_eq!(arms[0].head.as_deref(), Some("Failed"));
-        assert_eq!(arms[0].bindings.len(), 1, "the payload is bound");
-        assert_eq!(arms[1].head.as_deref(), Some("Ready"));
+        let MatchPattern::Variant { name, payloads, .. } = &arms[0].pattern else {
+            panic!("expected a variant pattern");
+        };
+        assert_eq!(name, "Failed");
+        assert!(matches!(
+            payloads.as_slice(),
+            [PayloadPattern::Binding { .. }]
+        ));
+        let MatchPattern::Variant { name, payloads, .. } = &arms[1].pattern else {
+            panic!("expected a variant pattern");
+        };
+        assert_eq!(name, "Ready");
+        assert!(payloads.is_empty(), "a payload-free variant binds nothing");
+    }
+
+    #[test]
+    fn wildcard_patterns_do_not_introduce_local_definitions() {
+        let source = "enum Maybe {\n    Some(value: Int)\n    None\n}\n\n\
+             fn fallback(value: Maybe) -> Int {\n    match value {\n        Some(_) => 0\n        _ => 1\n    }\n}\n";
+        let compilation = Compilation::new(source);
+        let (_, resolved) = compilation.run();
+        assert_eq!(codes(&resolved), Vec::<String>::new());
         assert!(
-            arms[1].bindings.is_empty(),
-            "a variant without payload binds nothing"
+            resolved
+                .hir
+                .defs()
+                .iter()
+                .all(|definition| definition.name != "_"),
+            "wildcards never become local definitions"
         );
+
+        let function = resolved
+            .hir
+            .defs()
+            .iter()
+            .find(|definition| definition.name == "fallback")
+            .expect("the function");
+        let body = resolved
+            .hir
+            .expr(function.value.expect("a body"))
+            .expect("a body");
+        let ExprKind::Block {
+            value: Some(match_id),
+            ..
+        } = body.kind
+        else {
+            panic!("the body is a block with a match value");
+        };
+        let matched = resolved.hir.expr(match_id).expect("the match");
+        let ExprKind::Match { arms, .. } = &matched.kind else {
+            panic!("the value is a match");
+        };
+        assert!(matches!(
+            &arms[0].pattern,
+            MatchPattern::Variant {
+                payloads,
+                ..
+            } if matches!(payloads.as_slice(), [PayloadPattern::Wildcard { .. }])
+        ));
+        assert!(matches!(&arms[1].pattern, MatchPattern::Wildcard { .. }));
     }
 
     #[test]

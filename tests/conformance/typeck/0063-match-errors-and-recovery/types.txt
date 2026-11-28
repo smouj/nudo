@@ -1,0 +1,12 @@
+# nudo-typeck v1
+def 0009 enum `Flag` 1:6: <unknown>
+def 0010 enum `Pair` 6:6: <unknown>
+def 0011 function `non_enum` 11:4: Fn(Int) -> Int
+def 0012 function `invalid_and_body_error` 17:4: Fn(Flag) -> Int
+def 0013 function `wrong_arity` 24:4: Fn(Pair) -> Int
+def 0014 function `incomplete` 31:4: Fn(Pair) -> Int
+def 0015 parameter `value` 11:13: Int
+def 0016 parameter `value` 17:27: Flag
+def 0017 parameter `value` 24:16: Pair
+def 0018 local `left` 26:14: Int
+def 0019 parameter `value` 31:15: Pair

@@ -1,0 +1,9 @@
+# nudo-typeck v1
+def 0009 enum `One` 1:6: <unknown>
+def 0010 enum `Pair` 5:6: <unknown>
+def 0011 function `covered_before_wildcard` 10:4: Fn(One) -> Int
+def 0012 function `arm_after_wildcard` 17:4: Fn(Pair) -> Int
+def 0013 function `duplicate_variant` 25:4: Fn(Pair) -> Int
+def 0014 parameter `value` 10:28: One
+def 0015 parameter `value` 17:23: Pair
+def 0016 parameter `value` 25:22: Pair

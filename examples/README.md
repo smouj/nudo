@@ -21,7 +21,8 @@ checked 1 file: 0 errors and 0 warnings
 
 "Clean" means no diagnostics from the stages the toolchain has: the file lexes,
 it parses, and since M3.1 it resolves. It does not mean the file is correct or
-that it runs — there is no type checker (M3) and no interpreter (M4).
+that it runs — the partial type checker (M3.2) is not wired into `nudo check`,
+and there is no interpreter yet (M4).
 
 ## Design previews
 

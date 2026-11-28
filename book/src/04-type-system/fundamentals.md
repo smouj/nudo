@@ -22,6 +22,7 @@ The CLI does not invoke the checker yet.
 | Named types | Type-argument arity uses <code>NDO2017</code>; nominal identity and supported field access are checked |
 | Operators | Arithmetic uses matching numeric views, <code>%</code> is Int-only, Boolean operators use <code>Bool</code>, equality accepts matching primitive views, and ordering accepts matching <code>Int</code> or <code>Float</code>; invalid domains use <code>NDO2018</code> |
 | Conditions | <code>if</code> conditions are <code>Bool</code>; an expected type checks both branches, otherwise they must agree exactly; without <code>else</code>, the result and then-branch are <code>Unit</code>; an uncontextualised mismatch uses <code>NDO2019</code> |
+| Enum matching | User enums and <code>Result&lt;T, E&gt;</code> use explicit variant patterns, flat typed payload bindings, wildcard coverage, exhaustiveness and exact arm-result rules; diagnostics use <code>NDO2011</code>–<code>NDO2016</code> |
 | Trust assignment | The built-in <code>Verified&lt;T&gt;</code> can be used where <code>T</code> is expected in supported positions |
 
 Generic inference is deliberately bounded. It does not solve types across the
@@ -36,10 +37,9 @@ earlier error.
 
 ## Rules still incomplete
 
-Sequence indexing and its runtime bounds behavior, nominal construction,
-<code>match</code> and <code>Result&lt;T, E&gt;</code> matching remain pending.
-Verifier execution and provenance, agents, tasks and tools have not been
-implemented in this checker.
+Sequence indexing and its runtime bounds behavior, and nominal construction,
+remain pending. Verifier execution and provenance, agents, tasks and tools have
+not been implemented in this checker.
 
 These omissions are deliberate. A rule is implemented only when its semantic
 and diagnostic contract is accepted. The roadmap and the specification record

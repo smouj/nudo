@@ -1,0 +1,35 @@
+enum Flag {
+    On
+    Off
+}
+
+enum Pair {
+    Both(left: Int, right: Bool)
+    Other
+}
+
+fn non_enum(value: Int) -> Int {
+    match value {
+        Missing => 1
+    }
+}
+
+fn invalid_and_body_error(value: Flag) -> Int {
+    match value {
+        Missing => true + 1
+        On => 1
+    }
+}
+
+fn wrong_arity(value: Pair) -> Int {
+    match value {
+        Both(left) => left
+        Other => 0
+    }
+}
+
+fn incomplete(value: Pair) -> Int {
+    match value {
+        Other => 0
+    }
+}

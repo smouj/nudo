@@ -36,4 +36,4 @@ ModelOutput<T> { value: T, verified: Bool }
 
 ## 今後の作業
 
-runtime 操作、静的に検査可能な Verifier 宣言、安定した失敗型、provenance 記録、trace は計画中または提案中です。<code>Result&lt;T, E&gt;</code> は必要な型引数を付けて名前を使えますが、<code>match</code> の型検査と網羅的な処理は未実装です。
+チェッカーは組み込みの <code>Result&lt;T, E&gt;</code> に対する網羅的な <code>match</code> をサポートし、ユーザー定義 enum と同様に <code>Ok(T)</code> と <code>Err(E)</code> を扱います。<code>verify</code> 操作はまだこの型の値を生成できません。runtime の動作、静的に検査可能な Verifier 宣言、安定した失敗型、provenance 記録、trace は計画中または提案中です。

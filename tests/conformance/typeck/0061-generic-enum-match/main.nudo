@@ -1,0 +1,11 @@
+enum Maybe<T> {
+    Some(value: T)
+    None
+}
+
+fn unwrap_or(value: Maybe<Int>) -> Int {
+    match value {
+        Some(number) => number
+        _ => 0
+    }
+}

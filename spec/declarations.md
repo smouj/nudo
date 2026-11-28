@@ -71,6 +71,12 @@ enum Status {
 Variants may carry data. Matching over an enum must be exhaustive, and a
 non-exhaustive match is a compile error, not a runtime fallback.
 
+An enum has at least one variant, and `_` is reserved for match wildcards rather
+than a variant name. Variant names are matched against the enum type of the
+scrutinee; a name that is not one of those variants is an error, never a new
+binding. See the accepted pattern and recovery rules in
+[`expressions.md`](expressions.md#match).
+
 ## Agents
 
 ```nudo

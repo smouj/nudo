@@ -50,9 +50,11 @@ convention.
 
 ## What remains
 
-The runtime operation, statically checkable verifier declarations, a stable
-failure type, provenance records and traces remain planned or proposed work.
-<code>Result&lt;T, E&gt;</code> can be named with its required type arguments,
-but match typing and exhaustive handling are not implemented.
+The type checker supports exhaustive <code>match</code> over intrinsic
+<code>Result&lt;T, E&gt;</code>, using <code>Ok(T)</code> and
+<code>Err(E)</code> just like variants of a user enum. The
+<code>verify</code> operation still cannot produce a value of this type: its
+runtime behavior, statically checkable verifier declarations, stable failure
+type, provenance records and traces remain planned or proposed work.
 
 \n

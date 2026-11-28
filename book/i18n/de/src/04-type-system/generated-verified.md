@@ -36,4 +36,4 @@ Ein Aufrufer kann vergessen, ein Flag zu prüfen. Verschiedene Typen erlauben es
 
 ## Was noch fehlt
 
-Die Runtime-Operation, statisch prüfbare Verifier-Deklarationen, ein stabiler Fehlertyp, Provenienzaufzeichnungen und Traces sind weiterhin geplant oder vorgeschlagen. <code>Result&lt;T, E&gt;</code> kann mit den erforderlichen Typargumenten benannt werden; <code>match</code>-Typprüfung und vollständige Fallbehandlung sind jedoch nicht implementiert.
+Der Typechecker unterstützt exhaustives <code>match</code> über das eingebaute <code>Result&lt;T, E&gt;</code> mit <code>Ok(T)</code> und <code>Err(E)</code>, wie bei Varianten eines benutzerdefinierten Enums. Die Operation <code>verify</code> kann diesen Typ noch nicht erzeugen: Runtime-Verhalten, statisch prüfbare Verifier-Deklarationen, ein stabiler Fehlertyp, Provenienzaufzeichnungen und Traces bleiben geplante oder vorgeschlagene Arbeit.

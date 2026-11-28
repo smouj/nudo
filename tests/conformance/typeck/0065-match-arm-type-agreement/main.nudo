@@ -1,0 +1,24 @@
+enum Flag {
+    Yes
+    No
+}
+
+fn disagree(value: Flag) {
+    let result = match value {
+        Yes => 1
+        No => true
+    };
+}
+
+fn contextual(value: Flag, checked: Verified<Int>) -> Int {
+    match value {
+        Yes => checked
+        No => 0
+    }
+}
+fn expected_mismatch(value: Flag) -> Int {
+    match value {
+        Yes => 1
+        No => true
+    }
+}

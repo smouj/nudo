@@ -1,0 +1,6 @@
+# nudo-typeck v1
+def 0009 enum `Maybe` 1:6: <unknown>
+def 0010 function `unwrap_or` 6:4: Fn(Maybe<Int>) -> Int
+def 0011 type-parameter `T` 1:12: <unknown>
+def 0012 parameter `value` 6:14: Maybe<Int>
+def 0013 local `number` 8:14: Int

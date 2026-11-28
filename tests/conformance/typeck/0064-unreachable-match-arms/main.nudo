@@ -1,0 +1,31 @@
+enum One {
+    Only
+}
+
+enum Pair {
+    First
+    Second
+}
+
+fn covered_before_wildcard(value: One) -> Int {
+    match value {
+        Only => 1
+        _ => 2
+    }
+}
+
+fn arm_after_wildcard(value: Pair) -> Int {
+    match value {
+        First => 1
+        _ => 2
+        Second => 3
+    }
+}
+
+fn duplicate_variant(value: Pair) -> Int {
+    match value {
+        First => 1
+        First => 2
+        _ => 3
+    }
+}

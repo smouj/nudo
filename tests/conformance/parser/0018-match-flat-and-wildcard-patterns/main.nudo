@@ -1,0 +1,25 @@
+enum Outcome<T, E> {
+    Ok(value: T)
+    Err(error: E)
+    Pending
+}
+
+enum Status {
+    Ready
+    Failed(reason: Text)
+}
+
+fn outcome(value: Outcome<Int, Text>) -> Int {
+    match value {
+        Ok(number) => number
+        Err(_) => 0
+        _ => 1
+    }
+}
+
+fn status(value: Status) -> Int {
+    match value {
+        Ready() => 0
+        Failed(reason) => 1
+    }
+}

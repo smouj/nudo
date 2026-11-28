@@ -1,0 +1,10 @@
+# nudo-typeck v1
+def 0009 enum `Flag` 1:6: <unknown>
+def 0010 function `disagree` 6:4: Fn(Flag) -> Unit
+def 0011 function `contextual` 13:4: Fn(Flag, Verified<Int>) -> Int
+def 0012 function `expected_mismatch` 19:4: Fn(Flag) -> Int
+def 0013 parameter `value` 6:13: Flag
+def 0014 binding `result` 7:9: <error>
+def 0015 parameter `value` 13:15: Flag
+def 0016 parameter `checked` 13:28: Verified<Int>
+def 0017 parameter `value` 19:22: Flag

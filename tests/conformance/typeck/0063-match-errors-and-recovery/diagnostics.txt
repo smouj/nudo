@@ -1,0 +1,7 @@
+# nudo-diagnostics v1
+error NDO2011 12:11
+error NDO2012 19:9
+error NDO2018 19:25
+error NDO2014 18:5
+error NDO2013 26:9
+error NDO2014 32:5

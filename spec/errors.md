@@ -49,6 +49,12 @@ program.
 | `NDO2008` | `TYPE_PARAMETER_NOT_INFERRED` | error | **implemented** (type checker, M3.2) |
 | `NDO2009` | `TYPE_PARAMETER_NOT_IN_SIGNATURE` | error | **implemented** (type checker, M3.2) |
 | `NDO2010` | `INTEGER_LITERAL_OUT_OF_RANGE` | error | **implemented** (type checker, M3.2; NEP-0019) |
+| `NDO2011` | `MATCH_REQUIRES_ENUM` | error | **implemented** (type checker, M3.2; NEP-0020) |
+| `NDO2012` | `INVALID_MATCH_PATTERN` | error | **implemented** (type checker, M3.2; NEP-0020) |
+| `NDO2013` | `WRONG_VARIANT_PATTERN_ARITY` | error | **implemented** (type checker, M3.2; NEP-0020) |
+| `NDO2014` | `NON_EXHAUSTIVE_MATCH` | error | **implemented** (type checker, M3.2; NEP-0020) |
+| `NDO2015` | `UNREACHABLE_MATCH_ARM` | error | **implemented** (type checker, M3.2; NEP-0020) |
+| `NDO2016` | `MATCH_ARM_TYPE_MISMATCH` | error | **implemented** (type checker, M3.2; NEP-0020) |
 | `NDO2017` | `WRONG_TYPE_ARGUMENT_COUNT` | error | **implemented** (type checker, M3.2) |
 | `NDO2018` | `INVALID_OPERATOR_TYPES` | error | **implemented** (type checker, M3.2; NEP-0017) |
 | `NDO2019` | `IF_BRANCH_TYPE_MISMATCH` | error | **implemented** (type checker, M3.2; NEP-0017) |
@@ -110,6 +116,32 @@ See [NEP-0019](../neps/0019-integer-literal-boundary.md) for the accepted rule.
   expected type, and a non-`Unit` branch in an `if` without `else` use
   `NDO2004` at the condition or offending branch, with structured `expected` and
   `found` notes.
+
+## Enum-match diagnostics
+
+The match diagnostics implement the accepted contract in
+[NEP-0020](../neps/0020-typed-enum-matching.md):
+
+* `NDO2011` points at a known non-enum scrutinee. An already erroneous
+  scrutinee does not receive this diagnostic, and patterns are not resolved
+  against a non-enum type.
+* `NDO2012` points at the unknown variant identifier. The name is invalid, never
+  a binding. A non-exhaustive diagnostic may also follow because no declared
+  variant was covered by that arm.
+* `NDO2013` points at the first excess payload pattern, or at the whole variant
+  pattern when payloads are missing. Notes give the expected and found counts.
+* `NDO2014` points at the whole match and lists uncovered variants in
+  declaration order. A reachable `_` covers all remaining variants.
+* `NDO2015` points at the unreachable pattern head: a duplicate variant, a
+  wildcard after all variants are covered, or any arm after `_`.
+* `NDO2016` points at a mismatching arm body when there is no expected result
+  type. Notes carry the diagnostic baseline and the found type. An expected
+  result type instead checks each arm with ordinary assignment rules, including
+  the top-level `Verified<T>`-to-`T` relation; failures use `NDO2004`.
+
+The checker continues through every arm body to find independent errors. A
+pattern or coverage error, a body error, or an erroneous scrutinee makes the
+whole match recover as `Error`, suppressing dependent type mismatches.
 
 **The registry may not claim a capability the toolchain lacks.** A code that no
 stage can emit is `reserved`, and the specification says so.

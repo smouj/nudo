@@ -1,0 +1,9 @@
+enum Maybe {
+    Some(value: Int)
+}
+
+fn inspect(value: Maybe) {
+    match value {
+        Some(1) => 1
+    }
+}

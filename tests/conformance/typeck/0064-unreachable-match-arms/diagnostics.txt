@@ -1,0 +1,4 @@
+# nudo-diagnostics v1
+error NDO2015 13:9
+error NDO2015 21:9
+error NDO2015 28:9

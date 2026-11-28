@@ -4,10 +4,10 @@
 //
 //     nudo check examples/03-types/main.nudo
 //
-// This file uses only syntax the frozen grammar accepts: declarations,
-// variants with fields, and a `match` with patterns (spec/types.md,
-// spec/declarations.md). It does not run, and nothing here is type-checked:
-// the type checker is milestone M3 and the interpreter is M4.
+// This file uses accepted syntax: declarations, variants with fields, and a
+// `match` with patterns (spec/types.md, spec/declarations.md). The type checker
+// supports these rules, but `nudo check` does not invoke it yet. It does not run
+// because the interpreter is milestone M4.
 
 struct User {
     name: Text

@@ -19,13 +19,14 @@ El sistema de tipos está especificado en los capítulos del lenguaje y en las N
 | Tipos con nombre | La aridad de argumentos de tipo usa <code>NDO2017</code>; se comprueban la identidad nominal y el acceso a campos admitido |
 | Operadores | La aritmética usa vistas numéricas coincidentes; <code>%</code> solo admite Int; los operadores booleanos usan <code>Bool</code>; igualdad admite vistas primitivas coincidentes y el orden admite <code>Int</code> o <code>Float</code> coincidentes; los dominios inválidos usan <code>NDO2018</code> |
 | Condiciones | La condición de <code>if</code> es <code>Bool</code>; un tipo esperado comprueba ambas ramas y, si no existe, deben coincidir exactamente; sin <code>else</code>, el resultado y la rama <code>then</code> son <code>Unit</code>; un desacuerdo sin contexto usa <code>NDO2019</code> |
+| Coincidencia de enumeraciones | Las enumeraciones de usuario y <code>Result&lt;T, E&gt;</code> admiten patrones de variantes explícitos, enlaces planos y tipados de payload, cobertura con comodín, exhaustividad y reglas exactas para los tipos de las ramas; los diagnósticos usan <code>NDO2011</code>–<code>NDO2016</code> |
 | Asignación de confianza | El <code>Verified&lt;T&gt;</code> integrado puede usarse donde se espera <code>T</code> en las posiciones admitidas |
 
 La inferencia genérica tiene límites deliberados. No resuelve tipos para todo el programa, no generaliza una variable local ni adivina un parámetro sin resolver. Los argumentos genéricos siguen siendo invariantes y las conversiones numéricas no son implícitas. [NEP-0015](https://github.com/smouj/nudo/blob/main/neps/0015-uninferable-generic-parameters.md) hace visible este límite: <code>NDO2008</code> señala una llamada genérica sin suficiente información, mientras que <code>NDO2009</code> señala un parámetro de función ausente de su firma. Los parámetros de tipo externos permanecen fijos al invocar un valor de función. La recuperación suprime solo los diagnósticos que dependen de un error anterior.
 
 ## Reglas aún incompletas
 
-La indexación de secuencias y sus límites en ejecución, la construcción nominal, <code>match</code> y la correspondencia con <code>Result&lt;T, E&gt;</code> siguen pendientes. La ejecución de verificadores y la procedencia, además de agentes, tareas y herramientas, aún no están implementadas en este comprobador.
+La indexación de secuencias y sus límites en ejecución, y la construcción nominal siguen pendientes. La ejecución de verificadores y la procedencia, además de agentes, tareas y herramientas, aún no están implementadas en este comprobador.
 
 Estas omisiones son deliberadas. Una regla solo se implementa cuando se acepta su contrato semántico y diagnóstico. La hoja de ruta y la especificación indican qué trabajo está listo y qué decisiones siguen abiertas.
 
