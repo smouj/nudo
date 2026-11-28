@@ -194,6 +194,8 @@ rules of their own.
 * [x] Generic inference from call arguments and already-known expected result
       types, left to right and through nested named and function types, following
       [NEP-0013](neps/0013-generic-inference.md)
+* [x] An omitted ordinary-function result annotation means `Unit`; value-returning
+      functions declare their result type ([NEP-0016](neps/0016-omitted-function-result-types.md))
 * [x] Type-argument arity for user types, type parameters and intrinsic types;
       `NDO2017` points at the invalid type use, including fields and enum payloads
 * [x] Operator typing and `if` results ([NEP-0017](neps/0017-boolean-comparison-conditionals.md)):
@@ -240,8 +242,6 @@ diagnostic contracts are accepted; a Draft NEP is not an implementation target.
   `2^63` magnitude is valid under unary minus and proposes the stable diagnostic
   `NDO2010`; do not implement boundary diagnostics until that contract is
   accepted.
-* **Omitted function result types:** the current rules conflict; NEP-0016 is
-  Draft.
 * **`match` and `Result<T, E>`:** variant resolution, payload binding, arm
   agreement and exhaustiveness are proposed in NEP-0020 (Draft); `Result`
   checking depends on those rules.

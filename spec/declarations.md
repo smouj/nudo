@@ -1,11 +1,12 @@
 # Declarations
 
-**State: the syntax is implemented; the meaning is proposed.** The parser accepts
-every declaration form below (`compiler/nudo-parser`, pinned by
-`tests/conformance/parser`). Nothing resolves a name or checks a type yet: that
-is M3. The reserved words are the core [lexical-structure.md](lexical-structure.md)
-fixes; the words that introduce the declarations — `agent`, `task`, `tool`,
-`model` — are contextual, so they remain usable as names elsewhere.
+**State: function signature and body typing are accepted and implemented in the
+partial M3.2 checker.** The parser accepts every declaration form below
+(`compiler/nudo-parser`, pinned by `tests/conformance/parser`). The meaning of
+agent, task, tool and model declarations remains proposed. The reserved words
+are the core [lexical-structure.md](lexical-structure.md) fixes; the words that
+introduce agentic declarations — `agent`, `task`, `tool`, `model` — are
+contextual, so they remain usable as names elsewhere.
 
 ## Functions
 

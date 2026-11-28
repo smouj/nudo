@@ -27,10 +27,9 @@
 //!   compares them.
 //! * **Named type arity.** Structs, enums, type parameters and intrinsic types
 //!   require exactly their declared number of type arguments (`NDO2017`).
-//! * **Blocks.** A block's type is its final expression's, or `Unit` when it has
-//!   none — which is why a function with no written return type takes the type
-//!   of its body, the same statement the specification makes read from the other
-//!   end.
+//! * **Blocks and function results.** A block's type is its final expression's,
+//!   or `Unit` when it has none. A function without a result annotation has the
+//!   declared result `Unit`; its body must satisfy that type.
 //! * **Names.** A path takes the type of the definition it resolved to, which is
 //!   why resolution had to exist first.
 //! * **Calls.** Arity, callability, argument compatibility, and generic type
@@ -473,12 +472,12 @@ impl Checker<'_> {
 
         match definition.kind {
             DefKind::Function => {
-                let declared_result = definition
+                let expected = definition
                     .ty
                     .as_ref()
-                    .map(|annotation| self.type_of_annotation(annotation));
-                let actual = self.type_of_expression_with_expected(value, declared_result.as_ref());
-                let expected = declared_result.unwrap_or_else(|| actual.clone());
+                    .map(|annotation| self.type_of_annotation(annotation))
+                    .unwrap_or(Type::Unit);
+                let actual = self.type_of_expression_with_expected(value, Some(&expected));
                 self.expect(&expected, &actual, span);
                 let parameters: Vec<_> = definition
                     .parameters
@@ -1620,13 +1619,42 @@ mod tests {
     }
 
     #[test]
-    fn a_function_with_no_written_return_type_takes_its_body_type() {
-        let (_, _, result) = checked("fn answer() {\n    42\n}\n");
-        assert_eq!(result.diagnostics.len(), 0, "{:?}", result.diagnostics);
-        assert!(
-            named_types(&result).contains(&"Fn() -> Int".to_string()),
-            "{:?}",
-            named_types(&result)
+    fn an_omitted_function_result_is_unit_and_rejects_a_value_body() {
+        let program = "fn prepare() {\n    let ready = true;\n}\n\nfn answer() {\n    42\n}\n";
+        let (sources, id, hir, result) = checked_with_hir(program);
+        assert_eq!(
+            result
+                .diagnostics
+                .as_slice()
+                .iter()
+                .map(|diagnostic| diagnostic.code().id())
+                .collect::<Vec<_>>(),
+            vec!["NDO2004"]
+        );
+        for name in ["prepare", "answer"] {
+            let (index, _definition) = hir
+                .defs()
+                .iter()
+                .enumerate()
+                .find(|(_, definition)| definition.name == name)
+                .unwrap_or_else(|| panic!("missing function `{name}`"));
+            assert_eq!(
+                result.type_of_def(DefId::from_index(index as u32)),
+                Some(&Type::Function {
+                    parameters: Arc::from([]),
+                    result: Arc::new(Type::Unit),
+                }),
+                "{name} keeps its declared Unit result"
+            );
+        }
+        let diagnostic = &result.diagnostics.as_slice()[0];
+        let notes = diagnostic.notes().join(" | ");
+        assert!(notes.contains("expected: `Unit`"), "{notes}");
+        assert!(notes.contains("found: `Int`"), "{notes}");
+        let source = sources.get(id).expect("just added");
+        assert_eq!(
+            source.span_text(diagnostic.span().expect("function body span")),
+            Some("{\n    42\n}")
         );
     }
 

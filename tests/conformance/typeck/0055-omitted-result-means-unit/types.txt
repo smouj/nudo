@@ -1,0 +1,5 @@
+# nudo-typeck v1
+def 0009 function `prepare` 1:4: Fn() -> Unit
+def 0010 function `main` 5:4: Fn() -> Unit
+def 0011 function `explicit_unit` 9:4: Fn() -> Unit
+def 0012 binding `ready` 2:9: Bool

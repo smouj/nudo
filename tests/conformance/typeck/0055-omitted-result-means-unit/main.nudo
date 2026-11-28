@@ -1,0 +1,9 @@
+fn prepare() {
+    let ready = true;
+}
+
+fn main() {
+    prepare();
+}
+
+fn explicit_unit() -> Unit {}

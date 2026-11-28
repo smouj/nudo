@@ -17,6 +17,11 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **M3.2: function results are fixed by signatures.** NEP-0016 makes an omitted
+  result annotation mean `Unit`; a function returning a value declares its
+  result type. The checker validates the body against that type with `NDO2004`,
+  so callers do not depend on inferred body results.
+
 * **M3.2: operator and conditional rules are implemented.** NEP-0017 defines
   Boolean, equality and ordering domains, short-circuit evaluation and `if`
   branch typing. `Verified<T>` keeps its accepted primitive view; arithmetic

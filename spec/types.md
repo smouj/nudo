@@ -100,9 +100,11 @@ asked at different times, and one mechanism is better than two.
 
 * Local inference: the type of a `let` binding may be omitted when it is
   determined by the initialiser.
-* Signatures: function, agent, task and tool declarations **must** annotate
-  their types. A public interface whose types are inferred from its body is a
-  hidden dependency, and this language is not allowed to have those.
+* Signatures: function parameter types are explicit; an ordinary function's
+  result annotation may be omitted only when its result is `Unit`. Agent, task
+  and tool declarations must annotate their signature types. A public interface
+  whose types are inferred from its body is a hidden dependency, and this
+  language is not allowed to have those.
 * Conversion between numeric types is always explicit. No implicit widening.
 * `Generated<T>` and `Verified<T>` are never inferred into each other. If
   inference would have to guess which one you meant, it is an error and it says
@@ -112,6 +114,11 @@ Operator operand domains and conditional branch agreement are defined in
 [`expressions.md`](expressions.md#operator-types-and-evaluation) and
 [NEP-0017](../neps/0017-boolean-comparison-conditionals.md). They do not add
 implicit conversions or type variables.
+
+Function signatures are known before their bodies are checked. An omitted
+result annotation means `Unit`; a value-returning function writes its result
+type. The body must satisfy the declared result under ordinary assignment rules
+([NEP-0016](../neps/0016-omitted-function-result-types.md)).
 
 ## Subtyping
 

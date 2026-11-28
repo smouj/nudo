@@ -14,6 +14,7 @@
 | --- | --- |
 | 基本类型与字面量 | 表示 <code>Int</code>、<code>Float</code>、<code>Bool</code>、<code>Text</code> 和 <code>Unit</code> |
 | 类型注解与函数签名 | 将值与声明类型比较；检查函数类型和调用 |
+| 函数结果 | 省略结果类型注解时类型为 <code>Unit</code>；返回值的函数必须声明结果类型；函数体不匹配时使用 <code>NDO2004</code> |
 | 调用 | 参数个数错误使用 <code>NDO2005</code>，参数类型不兼容使用 <code>NDO2004</code>，不可调用值使用 <code>NDO2006</code> |
 | 泛型调用 | 按源码顺序，从实参和已知的期望结果类型推断类型参数；无法推断的泛型类型参数使用 <code>NDO2008</code>，函数签名中未使用的类型参数使用 <code>NDO2009</code> |
 | 名义类型 | 使用 <code>NDO2017</code> 检查类型参数个数，并检查名义身份和已支持的字段访问 |
