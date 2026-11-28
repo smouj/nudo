@@ -81,7 +81,8 @@ This is a Discussion proposal, not accepted syntax or runnable behavior.
   shorthand, positional construction, defaults, partial values, or update
   spread syntax.
 * A field name not declared by the struct is NDO2007. A repeated initializer
-  name is NDO2002. A missing field produces proposed NDO2023,
+  name produces proposed NDO2026, DUPLICATE_FIELD_INITIALIZER, at each repeated
+  field name. A missing field produces proposed NDO2023,
   MISSING_FIELD_INITIALIZER, at the struct expression, with missing names
   listed in declaration order.
 * Each value is checked against the field type after substituting the
@@ -120,13 +121,13 @@ postfix.
   variants. An unknown variant produces proposed NDO2024,
   INVALID_VARIANT_CONSTRUCTOR, at the variant name; it is never a new binding.
 * A payload variant is constructed as EnumName::Variant(value, ...). The
-  number of values must equal the declared payload count; otherwise the
-  existing NDO2005 wrong-argument-count diagnostic applies at the variant
-  constructor, with expected and found counts. Values are positional, in
-  declaration order, matching NEP-0020's flat payload pattern.
+  number of values must equal the declared payload count; otherwise proposed
+  NDO2027, WRONG_VARIANT_CONSTRUCTOR_ARITY, applies at the variant constructor,
+  with expected and found counts. Values are positional, in declaration order,
+  matching NEP-0020's flat payload pattern.
 * A zero-payload variant may also be written with an empty call. A payload
   variant path without its required call is not a value or first-class
-  constructor function in this edition; it reports NDO2005 with a found count
+  constructor function in this edition; it reports NDO2027 with a found count
   of zero.
 * Generic parameters are inferred from payload types in source order and then
   from an already-known expected type, following NEP-0013 and the same bounded
@@ -164,11 +165,13 @@ not by the spelling `Result`; a user enum with that name uses its own variants.
   constructor form in this proposal (including `Generated<T>` and
   `Verified<T>`) uses proposed NDO2025, NON_CONSTRUCTIBLE_TYPE, at the type
   head.
-* Unknown and duplicate struct fields use NDO2007 and NDO2002 respectively;
-  absent fields use proposed NDO2023.
+* Unknown, duplicate and missing struct fields use NDO2007, proposed NDO2026,
+  and proposed NDO2023 respectively. NDO2026 points at each repeated field
+  name; NDO2023 points at the constructor and lists absent fields in declaration
+  order.
 * An unknown enum variant uses proposed NDO2024. A payload count mismatch uses
-  NDO2005 at the variant constructor, with expected and found counts. Payload
-  type disagreement uses NDO2004.
+  proposed NDO2027 at the variant constructor, with expected and found counts.
+  Payload type disagreement uses NDO2004.
 * NDO2008 applies to unresolved generic parameters in struct and enum
   constructor expressions, including `Result` variants. Emit one diagnostic per
   unresolved parameter in declaration order at the whole constructor. This
@@ -241,12 +244,14 @@ should execute struct and enum values and confirm source-order evaluation.
 
 1. Is named, complete struct initialization preferable to requiring a named
    constructor function or allowing defaults?
-2. Should enum payloads remain positional to match NEP-0020, and should empty
-   calls be accepted for unit variants?
+2. Should enum payloads remain positional to match NEP-0020, should empty calls
+   be accepted for unit variants, and should arity errors use proposed NDO2027
+   rather than the function-call diagnostic NDO2005?
 3. Should generic nominal construction reuse NDO2008 and NEP-0013 inference, as
    proposed, or require explicit type arguments in a future edition?
-4. Is NDO2023 the right missing-field diagnostic, with unknown fields continuing
-   to use NDO2007?
+4. Are proposed NDO2023 for missing fields and NDO2026 for repeated field
+   initializers the right diagnostics, with unknown fields continuing to use
+   NDO2007?
 5. Should `Result::Ok` and `Result::Err` use the same inference rules as user
    enum payload constructors, and should NDO2025 reject every otherwise
    non-constructible type head, as proposed?
