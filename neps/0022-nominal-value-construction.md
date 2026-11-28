@@ -108,11 +108,18 @@ struct-construction = path, "{",
 field-initializer   = identifier, ":", expression ;
 ~~~
 
-Initializer lists are comma-separated. As with other lists under NEP-0011, a
-trailing comma is allowed in a multi-line list and rejected in a single-line
-list. The parser distinguishes a path followed by an initializer brace from a
-plain path; a brace following a path is construction syntax, not a block
-postfix.
+Initializer lists are comma-separated. This proposal adopts NEP-0011's policy
+for this list: a trailing comma is allowed in a multi-line initializer and
+rejected in a single-line initializer.
+
+The parser recognizes an initializer-shaped brace after a path as struct
+construction, except at the boundary between an `if` condition and its required
+body. There, the body block keeps the existing `if condition { ... }` meaning.
+An empty construction at the end of an `if` condition is grouped to make the
+choice explicit, for example `if (Empty {}) { ... }`. A constructor followed
+by another expression operator or postfix suffix is unambiguous and needs no
+extra grouping. This is a syntactic rule; it does not require type resolution
+or parser backtracking.
 
 #### Enums
 
@@ -255,8 +262,10 @@ should execute struct and enum values and confirm source-order evaluation.
 5. Should `Result::Ok` and `Result::Err` use the same inference rules as user
    enum payload constructors, and should NDO2025 reject every otherwise
    non-constructible type head, as proposed?
+6. Is the `if`-body priority and parenthesized empty-construction rule above a
+   clear resolution of the constructor/block ambiguity?
 
-An accepted NEP must close all five questions. This Discussion draft changes no
+An accepted NEP must close all six questions. This Discussion draft changes no
 language behavior.
 
 ## Prior art
