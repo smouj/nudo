@@ -222,7 +222,7 @@ rules of their own.
       cases
 * [x] Intrinsic `Result<T, E>` patterns use `Ok(T)` and `Err(E)` under the same
       exhaustive rules as every user enum; producing a `Result` from `verify`
-      remains gated by NEP-0018
+      remains gated by [NEP-0018](neps/0018-statically-checkable-verifiers.md)
 * [x] Function types and calls; no implicit numeric conversion
 * [x] `if` conditions are `Bool`; branches use an expected type or must agree
       exactly, and an `if` without `else` has type `Unit` (NEP-0017)
@@ -261,7 +261,8 @@ diagnostic contracts are accepted; a Draft NEP is not an implementation target.
       specified by NEP-0002 and NEP-0014; generic arguments stay invariant
 * [ ] `verify` yields `Result<Verified<T>, VerificationError>` after the
       verifier declaration and deterministic contract are statically checkable
-      (NEP-0018; **Draft**)
+      ([NEP-0018](neps/0018-statically-checkable-verifiers.md);
+      **Discussion**)
 * [x] Conformance cases: trust-type identity, rejected implicit conversions,
       shadowed built-in names, and invariant generic arguments
 * [ ] Conformance cases: verification failure and provenance
@@ -343,7 +344,8 @@ error, with a diagnostic that names the effect and the path that introduced it.
 * [x] Restricted `verify value with Verifier` syntax and HIR representation
       (M2/M3.1)
 * [ ] Statically checkable verifier declaration and deterministic contract
-      (NEP-0018; **Draft**)
+      ([NEP-0018](neps/0018-statically-checkable-verifiers.md);
+      **Discussion**)
 * [ ] Provenance records attached to verified values (`nudo-provenance`)
 * [ ] Execution traces (`nudo-trace`)
 * [ ] `nudo trace`

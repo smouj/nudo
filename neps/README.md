@@ -44,6 +44,7 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 | [0015](0015-uninferable-generic-parameters.md) | Uninferable generic parameters | Accepted |
 | [0016](0016-omitted-function-result-types.md) | Omitted function result types | Accepted |
 | [0017](0017-boolean-comparison-conditionals.md) | Boolean, comparison and conditional expressions | Accepted |
+| [0018](0018-statically-checkable-verifiers.md) | Statically checkable verifiers | Discussion |
 | [0019](0019-integer-literal-boundary.md) | Integer literal boundary | Accepted |
 | [0020](0020-typed-enum-matching.md) | Typed enum matching | Implemented |
 
@@ -61,6 +62,11 @@ boundary, including the one spelling of `Int::MIN` that requires magnitude
 `2^63`. [NEP-0020](0020-typed-enum-matching.md) settles enum-only `match`,
 explicit wildcard and payload patterns, exhaustive coverage, and arm result
 typing, including intrinsic `Result<T, E>`.
+
+[NEP-0018](0018-statically-checkable-verifiers.md) is in Discussion to resolve
+the missing verifier declaration, deterministic body, failure, and provenance
+contract for M3.3. It remains a proposal; no verification rule may be
+implemented until the maintainer accepts it.
 
 ## States
 
