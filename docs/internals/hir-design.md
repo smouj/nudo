@@ -59,6 +59,10 @@ Hir
   once and stores values through `2^63` or an out-of-range marker. It preserves
   the data needed by type checking without allocating a big integer or deciding
   whether the magnitude denotes a valid signed `Int`.
+* **Runtime literals carry their values.** HIR stores Boolean values, decodes
+  text escapes once into shared immutable storage, and retains decimal floats as
+  IEEE-754 bits. Later stages do not rescan source text or repeat literal
+  parsing during execution; cloning a text literal shares its bytes.
 * **A definition carries its structure.** A `struct`'s fields and an `enum`'s
   variants are recorded with their types, lowered in the declaration's own scope
   so that a declaration's type parameter is visible inside its own fields. The

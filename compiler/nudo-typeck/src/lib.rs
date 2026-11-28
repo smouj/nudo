@@ -549,9 +549,10 @@ impl Checker<'_> {
                 LiteralKind::Int(magnitude) => {
                     self.type_of_integer_literal(magnitude, expression.span)
                 }
-                LiteralKind::Float => Type::Float,
-                LiteralKind::Text => Type::Text,
-                LiteralKind::Bool => Type::Bool,
+                LiteralKind::Float(Some(_)) => Type::Float,
+                LiteralKind::Float(None) | LiteralKind::Text(None) => Type::Error,
+                LiteralKind::Text(Some(_)) => Type::Text,
+                LiteralKind::Bool(_) => Type::Bool,
             },
             ExprKind::Path { target, .. } => target
                 .resolved()
