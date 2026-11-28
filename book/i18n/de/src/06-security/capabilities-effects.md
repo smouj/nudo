@@ -19,9 +19,9 @@ Das Design verknüpft den von einer Funktion benötigten Effekt mit der Autorit�
 
 ## Aktueller Implementierungsstand
 
-M5 ist geplant. Das Effektkapitel ist weiterhin vorgeschlagen und <code>neps/0004-effects.md</code> ist Draft. Es gibt heute weder Effektinferenz noch Effektprüfung, eine Implementierung von <code>NDO3xxx</code> oder Runtime-Durchsetzung von Capabilities. Das Crate <code>nudo-effects</code> markiert eine Grenze in der Roadmap, kein fertiges Subsystem.
+M5 ist geplant. NEP-0004 befindet sich in der Diskussion; das Effektkapitel bleibt ein Vorschlag. Es gibt heute weder Effektinferenz noch Effektprüfung, eine Implementierung von <code>NDO3xxx</code> oder Runtime-Durchsetzung von Capabilities. Das Crate <code>nudo-effects</code> markiert eine Grenze in der Roadmap, kein fertiges Subsystem.
 
-Das folgende Beispiel verwendet die Syntax des Draft-Vorschlags. Es ist keine angenommene Syntax, auf die sich Nutzer verlassen können:
+Das folgende Beispiel veranschaulicht den diskutierten Vorschlag. Es ist keine angenommene Syntax, auf die sich Nutzer verlassen können:
 
 ~~~nudo
 fn fetch(url: Text) -> Text with Network {

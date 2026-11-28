@@ -19,12 +19,11 @@
 
 ## 当前实现状态
 
-M5 仍在计划中。效果章节仍为提案，
-<code>neps/0004-effects.md</code> 的状态是 Draft。
+M5 仍在计划中。NEP-0004 处于 Discussion 阶段，效果章节仍为提案。
 当前没有效果推断、效果检查器、<code>NDO3xxx</code> 实现或运行时能力执行机制。
 <code>nudo-effects</code> crate 目前只是路线图边界，不是完成的子系统。
 
-下面示例使用 Draft 提案中的语法；它不是用户可以依赖的已接受语法：
+下面示例展示的是正在 Discussion 的提案；它不是用户可以依赖的已接受语法：
 
 ~~~nudo
 fn fetch(url: Text) -> Text with Network {

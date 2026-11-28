@@ -33,6 +33,6 @@
   <text class="row muted" x="38" y="456">M5</text><text class="row muted" x="185" y="456">Effect inference, checking and diagnostics</text><rect class="planned" x="748" y="444" width="12" height="12" rx="3"/><text class="state muted" x="770" y="456">planned</text>
 </g>
 <line class="rule" x1="28" y1="478" x2="872" y2="478"/>
-<text class="sub" x="38" y="500">M5 follows the remaining M3 work and M4. Its effect-system contract is still a Draft proposal.</text>
+<text class="sub" x="38" y="500">M5 follows the remaining M3 work and M4. Its effect-system contract is under Discussion, not accepted.</text>
 <text class="sub" x="28" y="556">Accent = complete or active implementation · muted = planned · see ROADMAP.md for exit criteria.</text>
 </svg>

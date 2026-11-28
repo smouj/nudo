@@ -19,9 +19,9 @@
 
 ## 現在の実装状況
 
-M5 は計画中です。エフェクトの章は提案段階で、<code>neps/0004-effects.md</code> は Draft です。effect inference、effect checker、<code>NDO3xxx</code> の実装、runtime での capability 強制はまだありません。<code>nudo-effects</code> crate はロードマップ上の境界を示すもので、完成したサブシステムではありません。
+M5 は計画中です。NEP-0004 は Discussion 段階で、エフェクトの章も引き続き提案段階です。effect inference、effect checker、<code>NDO3xxx</code> の実装、runtime での capability 強制はまだありません。<code>nudo-effects</code> crate はロードマップ上の境界を示すもので、完成したサブシステムではありません。
 
-次の例は Draft 提案の構文を使っています。利用者が依存できる採用済み構文ではありません。
+次の例は Discussion 中の提案を示しています。利用者が依存できる採用済み構文ではありません。
 
 ~~~nudo
 fn fetch(url: Text) -> Text with Network {

@@ -338,9 +338,17 @@ is accepted.
 
 ## M5 — Effect system — **planned**
 
-* [ ] Effect inference and checking (`nudo-effects`)
-* [ ] Effects reported in signatures and callable through explicit handlers
-* [ ] `NDO3xxx` codes
+* [ ] Effect inference and checking (`nudo-effects`): infer body effects and
+      check them against explicit function and function-value signatures
+      ([NEP-0004](neps/0004-effects.md); **Discussion**)
+* [ ] Effectful calls require the caller to declare the required effect set;
+      `NDO3xxx` diagnostics include the path that introduced the effect
+* [ ] Runtime grants remain M8; language-level handlers require a separate
+      accepted design and are not part of the proposed M5 slice
+
+**BLOCKED_BY_SPEC:** [NEP-0004](neps/0004-effects.md) proposes exact effect
+signatures, bounded body inference and no runtime dispatch. It remains in
+Discussion; do not implement effect behavior until accepted.
 
 **Exit criteria:** an effectful call from an effect-free function is a compile
 error, with a diagnostic that names the effect and the path that introduced it.

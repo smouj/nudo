@@ -16,7 +16,7 @@
   "04-type-system/generated-verified.md": "d14fe9be91fe3a591e246a428a95a4f5eaab23ceb20c266d0c5cdde53df80bb9",
   "05-agents-and-ai/agents.md": "e95651bffd4e429eae84d64fb9d825c9dd1cb12c9baa519de492a7a972013f1b",
   "05-agents-and-ai/tasks-tools-models.md": "ccc381bb221a413fb18d15050f01a7f33f12182c11cc9931683ea031560b9cb9",
-  "06-security/capabilities-effects.md": "57d739f599974a10ad9c0d8dbc7d5eee4864b158d4f24214873e16c72f7e0fae",
+  "06-security/capabilities-effects.md": "e36d87a23c93abf24a220aeb7c0848adf3a82a3b65d3fd9cfe45aea82bc491e2",
   "06-security/threat-model.md": "2ef62e0c8d3687ef01e58e5458e6226123d6399f8def65f8a186b9359cdeed22",
   "07-runtime/budgets-approvals.md": "ba39552019ceb02af602ab8bae2973331a8d25bb3026150c1b84e2dcf9ded0d2",
   "07-runtime/trace-provenance.md": "5fbbc20dce1bacab7266c1ddfe65fb610d8f3c7cfcbe334620da8342e229635f",

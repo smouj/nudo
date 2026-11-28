@@ -17,6 +17,11 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **NEP-0004: effect system.** The M5 proposal defines exact effect sets on
+  functions and function values, body inference, bounded diagnostics and a
+  static-only checker. It remains in Discussion; runtime grants and language
+  handlers are not implemented or authorized by this proposal.
+
 * **NEP-0022: nominal value construction.** The M3.2 proposal defines complete
   named struct construction, statically resolved enum variants, bounded generic
   inference, error recovery and a non-forgeable trust-type boundary. It remains

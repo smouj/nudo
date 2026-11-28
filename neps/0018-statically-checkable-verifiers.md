@@ -199,8 +199,9 @@ implemented by this Discussion draft.
 NEP-0002 is the governing NUDO contract: verification is explicit, named,
 deterministic, fallible, and associated with provenance. NEP-0014 requires its
 Result to follow ordinary exhaustive-match and no-must-use rules. NEP-0004
-proposes the later effect system but remains Draft, so this proposal does not
-assume effect checking already exists.
+is in Discussion for M5 effect checking, but does not authorize implementation
+until accepted. This proposal does not assume that effect checking already
+exists.
 
 ## Unresolved objections
 

@@ -30,7 +30,7 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 | [0001](0001-agent-types.md) | Agent types | Draft |
 | [0002](0002-generated-verified.md) | `Generated<T>` and `Verified<T>` | Accepted |
 | [0003](0003-capability-system.md) | Capability system | Draft |
-| [0004](0004-effects.md) | Effect system | Draft |
+| [0004](0004-effects.md) | Effect system | Discussion |
 | [0005](0005-keyword-policy.md) | Keyword policy | Accepted |
 | [0006](0006-generic-syntax.md) | Generic syntax | Accepted |
 | [0007](0007-integer-semantics.md) | Integer semantics | Accepted |
@@ -52,11 +52,13 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 
 NEPs 0002 and 0007–0011 are the **semantic gates of M3**, taken together and
 before `nudo-typeck` exists, so that the checker is written against decided
-answers rather than guesses. [NEP-0001](0001-agent-types.md),
-[NEP-0003](0003-capability-system.md) and [NEP-0004](0004-effects.md) remain
-drafts, and gate M5–M8. [NEP-0012](0012-early-exit.md) is not a gate: it settles
-a question the specification had left in prose, and removes rather than adds a
-feature. [NEP-0017](0017-boolean-comparison-conditionals.md) is an accepted
+answers rather than guesses. [NEP-0001](0001-agent-types.md) and
+[NEP-0003](0003-capability-system.md) remain Draft and gate M7–M8.
+[NEP-0004](0004-effects.md) is in Discussion as the M5 effect-checking gate;
+it authorizes no implementation until accepted.
+[NEP-0012](0012-early-exit.md) is not a gate: it settles a question the
+specification had left in prose, and removes rather than adds a feature.
+[NEP-0017](0017-boolean-comparison-conditionals.md) is an accepted
 M3.2 gate for operator domains and conditional result types. [NEP-0016](0016-omitted-function-result-types.md)
 settles the M3.2 function-result contract: an omitted annotation means `Unit`.
 [NEP-0019](0019-integer-literal-boundary.md) settles the signed integer literal
@@ -78,6 +80,10 @@ implementation until acceptance.
 struct and enum value construction for M3.2, including field completeness,
 generic inference and the trust-type boundary. It authorizes no implementation
 until acceptance.
+
+NEP-0004 is in Discussion to settle exact effect signatures, body inference,
+function-value effects and M5 diagnostics. It defers runtime grants to M8 and
+adds no handler syntax; no effect behavior may be implemented until acceptance.
 
 ## States
 
