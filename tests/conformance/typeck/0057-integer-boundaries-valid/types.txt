@@ -1,0 +1,6 @@
+# nudo-typeck v1
+def 0009 binding `maximum` 1:5: Int
+def 0010 binding `minimum` 2:5: Int
+def 0011 binding `separated_maximum` 3:5: Int
+def 0012 binding `parenthesized_minimum` 4:5: Int
+def 0013 binding `twice_negated_minimum` 5:5: Int

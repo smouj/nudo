@@ -30,8 +30,13 @@ The type system is constrained by the rest of the language, not chosen freely:
 
 `Int` is fixed at 64 bits, and arithmetic **traps** on overflow and on division
 by zero rather than wrapping ([NEP-0007](../neps/0007-integer-semantics.md)). A
-literal that does not fit is a compile error. `Int` and `Float` do not mix:
-mixed arithmetic is a type error, and the conversion is written down.
+decimal magnitude through `9223372036854775807` denotes a non-negative `Int`.
+Exactly `9223372036854775808` denotes `Int::MIN` only as the direct, optionally
+parenthesized operand of unary `-`; larger magnitudes and that magnitude in any
+other context are compile errors (`NDO2010`). Separators do not change the
+magnitude ([NEP-0019](../neps/0019-integer-literal-boundary.md)). `Int` and
+`Float` do not mix: mixed arithmetic is a type error, and the conversion is
+written down.
 
 Sized and unsigned integers are not in this edition; adding them needs a NEP that
 says what narrowing does.

@@ -48,6 +48,7 @@ program.
 | `NDO2007` | `UNKNOWN_FIELD` | error | **implemented** (type checker, M3.2) |
 | `NDO2008` | `TYPE_PARAMETER_NOT_INFERRED` | error | **implemented** (type checker, M3.2) |
 | `NDO2009` | `TYPE_PARAMETER_NOT_IN_SIGNATURE` | error | **implemented** (type checker, M3.2) |
+| `NDO2010` | `INTEGER_LITERAL_OUT_OF_RANGE` | error | **implemented** (type checker, M3.2; NEP-0019) |
 | `NDO2017` | `WRONG_TYPE_ARGUMENT_COUNT` | error | **implemented** (type checker, M3.2) |
 | `NDO2018` | `INVALID_OPERATOR_TYPES` | error | **implemented** (type checker, M3.2; NEP-0017) |
 | `NDO2019` | `IF_BRANCH_TYPE_MISMATCH` | error | **implemented** (type checker, M3.2; NEP-0017) |
@@ -81,6 +82,19 @@ the first, and that identifiers are well formed and unique.
   function result. Independent unresolved parameters remain reportable. After
   reporting `NDO2008`, the call result is `Error` to prevent follow-up
   mismatches.
+
+## Integer-literal diagnostics
+
+* `NDO2010` points at the integer token when its decimal magnitude cannot
+  denote an `Int` in that expression. This includes magnitudes above `2^63`, and
+  exactly `2^63` unless the literal is the direct operand of unary `-` (with
+  parentheses allowed around the literal). The latter form denotes
+  `Int::MIN`. The diagnostic offers that form as help only for exactly `2^63`.
+* A malformed number already reported by the lexer as `NDO1005` does not also
+  receive `NDO2010`. An `NDO2010` expression recovers as `Error`, suppressing
+  dependent operator, branch and assignment mismatches.
+
+See [NEP-0019](../neps/0019-integer-literal-boundary.md) for the accepted rule.
 
 ## Operator and conditional diagnostics
 

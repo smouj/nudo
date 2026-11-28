@@ -11,6 +11,7 @@ El sistema de tipos está especificado en los capítulos del lenguaje y en las N
 | Regla | Comportamiento actual |
 | --- | --- |
 | Tipos primitivos y literales | Se representan <code>Int</code>, <code>Float</code>, <code>Bool</code>, <code>Text</code> y <code>Unit</code> |
+| Rango de literales enteros | Se acepta <code>Int::MAX</code>; la magnitud <code>2^63</code> solo se acepta directamente bajo el unario <code>-</code> para escribir <code>Int::MIN</code>; magnitudes mayores o inválidas usan <code>NDO2010</code> |
 | Anotaciones y firmas de función | Los valores se comparan con los tipos escritos; se comprueban los tipos de función y las llamadas |
 | Resultados de función | Si se omite el tipo de resultado, es <code>Unit</code>; las funciones que devuelven un valor declaran su tipo y los desacuerdos del cuerpo usan <code>NDO2004</code> |
 | Llamadas | La aridad usa <code>NDO2005</code>, los argumentos incompatibles <code>NDO2004</code> y los valores no invocables <code>NDO2006</code> |
@@ -24,7 +25,7 @@ La inferencia genérica tiene límites deliberados. No resuelve tipos para todo 
 
 ## Reglas aún incompletas
 
-La indexación de secuencias y sus límites en ejecución, la construcción nominal, <code>match</code> y la correspondencia con <code>Result&lt;T, E&gt;</code> siguen pendientes. La comprobación del rango de literales enteros, la ejecución de verificadores y la procedencia, además de agentes, tareas y herramientas, aún no están implementadas en este comprobador.
+La indexación de secuencias y sus límites en ejecución, la construcción nominal, <code>match</code> y la correspondencia con <code>Result&lt;T, E&gt;</code> siguen pendientes. La ejecución de verificadores y la procedencia, además de agentes, tareas y herramientas, aún no están implementadas en este comprobador.
 
 Estas omisiones son deliberadas. Una regla solo se implementa cuando se acepta su contrato semántico y diagnóstico. La hoja de ruta y la especificación indican qué trabajo está listo y qué decisiones siguen abiertas.
 

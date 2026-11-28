@@ -180,6 +180,10 @@ pub mod codes {
     pub const TYPE_PARAMETER_NOT_IN_SIGNATURE: DiagnosticCode =
         DiagnosticCode::new("NDO2009", "TYPE_PARAMETER_NOT_IN_SIGNATURE");
 
+    /// An integer literal magnitude cannot denote an `Int` in this expression.
+    pub const INTEGER_LITERAL_OUT_OF_RANGE: DiagnosticCode =
+        DiagnosticCode::new("NDO2010", "INTEGER_LITERAL_OUT_OF_RANGE");
+
     /// A named type was supplied a different number of arguments than it declares.
     pub const WRONG_TYPE_ARGUMENT_COUNT: DiagnosticCode =
         DiagnosticCode::new("NDO2017", "WRONG_TYPE_ARGUMENT_COUNT");
@@ -215,6 +219,7 @@ pub mod codes {
         UNKNOWN_FIELD,
         TYPE_PARAMETER_NOT_INFERRED,
         TYPE_PARAMETER_NOT_IN_SIGNATURE,
+        INTEGER_LITERAL_OUT_OF_RANGE,
         WRONG_TYPE_ARGUMENT_COUNT,
         INVALID_OPERATOR_TYPES,
         IF_BRANCH_TYPE_MISMATCH,
@@ -242,6 +247,7 @@ pub mod codes {
         UNKNOWN_FIELD,
         TYPE_PARAMETER_NOT_INFERRED,
         TYPE_PARAMETER_NOT_IN_SIGNATURE,
+        INTEGER_LITERAL_OUT_OF_RANGE,
         WRONG_TYPE_ARGUMENT_COUNT,
         INVALID_OPERATOR_TYPES,
         IF_BRANCH_TYPE_MISMATCH,

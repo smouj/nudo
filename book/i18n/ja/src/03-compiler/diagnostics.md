@@ -9,7 +9,7 @@
 
 - <code>NDO1xxx</code> は字句エラーと構文エラーを扱います。lexer と parser は可能な場合に回復し、ソース span を報告します。
 - <code>NDO2001</code>–<code>NDO2003</code> は名前解決エラーで、<code>nudo check</code> が出力します。
-- <code>NDO2004</code>–<code>NDO2007</code> と <code>NDO2017</code> は実装済みの型検査規則を扱います。型チェッカーのテストは、それらの規則について expected/found の構造化 note とソース位置を固定します。
+- <code>NDO2004</code>–<code>NDO2010</code> と <code>NDO2017</code>–<code>NDO2019</code> は実装済みの型検査規則を扱います。<code>NDO2010</code> は <code>Int</code> で表せない整数の大きさを指します。正確に <code>2^63</code> の値は <code>Int::MIN</code> を表す単項 <code>-</code> の直接のオペランドとしてのみ使用できます。型チェッカーのテストは、これらの規則の structured expected/found note とソース位置を固定します。
 
 型チェッカーは部分的な実装で、CLI からはまだ呼び出されません。そのため、エラーのない <code>nudo check</code> はソースが字句解析、構文解析、名前解決を通過したことを示すだけで、型検査を通過したという意味ではありません。
 

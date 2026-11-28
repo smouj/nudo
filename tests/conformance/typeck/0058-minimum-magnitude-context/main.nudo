@@ -1,0 +1,4 @@
+fn accept_float(value: Float) {}
+
+let positive: Int = 9223372036854775808;
+let float_result = accept_float(9223372036854775808);

@@ -179,9 +179,13 @@ the arguments and the expected type, and
 [NEP-0014](neps/0014-trust-types-obey-the-rules.md) keeps the trust types free of
 rules of their own.
 
-* [x] Primitive types: `Int` (with NEP-0007's rules), `Float`, `Bool`, `Text`,
-      `Unit` — typed in the first slice; numeric operator typing is now part of
-      M3.2, while evaluation and literal range checking remain later work
+* [x] Primitive types: `Int` (with NEP-0007 and NEP-0019's rules), `Float`,
+      `Bool`, `Text`, `Unit` — integer literal boundaries use `NDO2010`; numeric
+      operators are typed in M3.2, while evaluation remains later work
+* [x] Integer literal range: `Int::MAX` is accepted; the `2^63` magnitude is
+      accepted only as the direct, optionally parenthesized operand of unary
+      `-` for `Int::MIN`; larger or otherwise out-of-range magnitudes use
+      `NDO2010` (NEP-0019)
 * [x] Arity checking: a call passes exactly what the signature takes
 * [x] Nominal structure and field access: HIR records a `struct`'s fields and an
       `enum`'s variants; generic field types are instantiated from the receiver,
@@ -237,11 +241,6 @@ diagnostic contracts are accepted; a Draft NEP is not an implementation target.
 
 **BLOCKED_BY_SPEC — do not implement until the named decision is accepted:**
 
-* **Integer literal range checking:** NEP-0007 accepts signed 64-bit `Int` and
-  requires out-of-range literals to fail. NEP-0019 (Draft) decides whether the
-  `2^63` magnitude is valid under unary minus and proposes the stable diagnostic
-  `NDO2010`; do not implement boundary diagnostics until that contract is
-  accepted.
 * **`match` and `Result<T, E>`:** variant resolution, payload binding, arm
   agreement and exhaustiveness are proposed in NEP-0020 (Draft); `Result`
   checking depends on those rules.

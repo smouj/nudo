@@ -11,6 +11,7 @@
 | 規則 | 現在の動作 |
 | --- | --- |
 | プリミティブ型とリテラル型 | <code>Int</code>、<code>Float</code>、<code>Bool</code>、<code>Text</code>、<code>Unit</code> を表現 |
+| 整数リテラルの範囲 | <code>Int::MAX</code> を受け入れます。<code>2^63</code> は <code>Int::MIN</code> を表す単項 <code>-</code> の直接のオペランドとしてのみ受け入れ、それより大きい値やその他の無効な値は <code>NDO2010</code> になります |
 | 注釈と関数シグネチャー | 値を記述された型と比較し、関数型と呼び出しを検査 |
 | 関数の結果 | 結果型注釈を省略すると <code>Unit</code>。値を返す関数は結果型を宣言し、本文の不一致には <code>NDO2004</code> を使用 |
 | 呼び出し | 引数の個数には <code>NDO2005</code>、互換性のない引数には <code>NDO2004</code>、呼び出せない値には <code>NDO2006</code> |
@@ -24,7 +25,7 @@
 
 ## 未完成の規則
 
-シーケンスのインデックスと実行時の境界動作、nominal construction、<code>match</code>、<code>Result&lt;T, E&gt;</code> の match は未対応です。整数リテラルの範囲、検証器の実行と来歴、エージェント、タスク、ツールもこのチェッカーには実装されていません。
+シーケンスのインデックスと実行時の境界動作、nominal construction、<code>match</code>、<code>Result&lt;T, E&gt;</code> の match は未対応です。検証器の実行と来歴、エージェント、タスク、ツールもこのチェッカーには実装されていません。
 
 これらの不足は意図的です。意味論と診断の契約が採用されて初めて、その規則を実装済みとします。ロードマップと仕様は、準備できた作業と未解決の判断を記録します。
 

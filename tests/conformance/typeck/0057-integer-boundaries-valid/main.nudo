@@ -1,0 +1,5 @@
+let maximum: Int = 9223372036854775807;
+let minimum: Int = -9223372036854775808;
+let separated_maximum: Int = 9_223_372_036_854_775_807;
+let parenthesized_minimum: Int = -((9_223_372_036_854_775_808));
+let twice_negated_minimum: Int = -(-9223372036854775808);

@@ -1,0 +1,3 @@
+let subtraction: Int = 0 - 9223372036854775808;
+let too_large_positive = 9223372036854775809;
+let too_large_negative = -9223372036854775809;

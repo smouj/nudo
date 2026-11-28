@@ -9,7 +9,7 @@ Diagnostik gehört zum Spracherlebnis und ist kein Debug-Dump. Das Crate <code>n
 
 - <code>NDO1xxx</code> umfasst lexikalische und Syntaxfehler. Lexer und Parser erholen sich, soweit möglich, und melden Quell-Spans.
 - <code>NDO2001</code>–<code>NDO2003</code> umfasst Namensauflösungsfehler, die <code>nudo check</code> ausgibt.
-- <code>NDO2004</code>–<code>NDO2007</code> und <code>NDO2017</code> betreffen implementierte Typprüfregeln. Die Typechecker-Tests legen strukturierte Erwartet/Gefunden-Hinweise und Quellpositionen für diese Regeln fest.
+- <code>NDO2004</code>–<code>NDO2010</code> und <code>NDO2017</code>–<code>NDO2019</code> betreffen implementierte Typprüfregeln. <code>NDO2010</code> markiert eine Ganzzahl-Magnitude, die keinen <code>Int</code> ergeben kann; genau <code>2^63</code> ist nur direkt unter unärem <code>-</code> für <code>Int::MIN</code> zulässig. Die Typechecker-Tests legen strukturierte Erwartet/Gefunden-Hinweise und Quellpositionen für diese Regeln fest.
 
 Der Typechecker ist teilweise implementiert und wird noch nicht von der CLI aufgerufen. Ein fehlerfreies <code>nudo check</code> besagt daher, dass der Quellcode Lexing, Parsing und Namensauflösung bestanden hat; es bedeutet nicht, dass er die Typprüfung bestanden hat.
 

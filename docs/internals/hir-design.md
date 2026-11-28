@@ -55,6 +55,10 @@ Hir
   operator token span so type diagnostics point at the operation without a
   later stage rescanning source text. A diagnostic written at M3 is still
   renderable at M8.
+* **Integer magnitudes are bounded during lowering.** HIR scans decimal digits
+  once and stores values through `2^63` or an out-of-range marker. It preserves
+  the data needed by type checking without allocating a big integer or deciding
+  whether the magnitude denotes a valid signed `Int`.
 * **A definition carries its structure.** A `struct`'s fields and an `enum`'s
   variants are recorded with their types, lowered in the declaration's own scope
   so that a declaration's type parameter is visible inside its own fields. The

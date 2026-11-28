@@ -14,9 +14,12 @@ stage can report facts without formatting its own output.
   recover where possible and report source spans.
 - <code>NDO2001</code>–<code>NDO2003</code> cover name-resolution errors and
   are emitted by <code>nudo check</code>.
-- <code>NDO2004</code>–<code>NDO2007</code> and <code>NDO2017</code> cover
-  implemented type-checking rules. The type-checker tests pin structured
-  expected/found notes and source locations for those rules.
+- <code>NDO2004</code>–<code>NDO2010</code> and
+  <code>NDO2017</code>–<code>NDO2019</code> cover implemented type-checking
+  rules. <code>NDO2010</code> points at an integer magnitude that cannot denote
+  an <code>Int</code>; exactly <code>2^63</code> is allowed only directly under
+  unary <code>-</code> to spell <code>Int::MIN</code>. The type-checker tests pin
+  structured expected/found notes and source locations for those rules.
 
 The type checker is partial and is not yet called by the CLI. A clean
 <code>nudo check</code> therefore reports that source passed lexing, parsing and

@@ -334,15 +334,26 @@ pub struct Reference {
     pub namespace: Namespace,
 }
 
-/// A literal, as far as resolution is concerned.
+/// A decimal integer magnitude, bounded to the only exceptional value needed
+/// to spell `Int::MIN`.
 ///
-/// The value is not computed here: that is the type checker's and the
-/// interpreter's job, and computing it in this layer would put arithmetic in the
-/// wrong place.
+/// HIR parses the digits once without allocating or overflowing. The type
+/// checker decides whether the magnitude is valid in its expression context.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum IntegerMagnitude {
+    /// A magnitude from zero through `2^63`, inclusive.
+    Value(u64),
+    /// A syntactically valid magnitude greater than `2^63`.
+    OutOfRange,
+    /// A malformed token already diagnosed by the lexer.
+    Invalid,
+}
+
+/// A literal, as far as resolution is concerned.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LiteralKind {
-    /// An integer literal.
-    Int,
+    /// A decimal integer literal and its bounded magnitude.
+    Int(IntegerMagnitude),
     /// A floating-point literal.
     Float,
     /// A text literal.
@@ -1112,7 +1123,7 @@ impl Lowerer {
                     .child_tokens()
                     .into_iter()
                     .find(|token| !token.kind().is_trivia() && token.kind() != SyntaxKind::Eof)?;
-                ExprKind::Literal(literal_kind(token.kind())?)
+                ExprKind::Literal(literal_kind(token.kind(), token.text())?)
             }
             SyntaxKind::PathExpression => {
                 let path = node.child_of_kind(SyntaxKind::Path)?;
@@ -1569,13 +1580,59 @@ fn path_text(path: &SyntaxNode<'_>) -> String {
     text
 }
 
-fn literal_kind(kind: SyntaxKind) -> Option<LiteralKind> {
+fn literal_kind(kind: SyntaxKind, text: &str) -> Option<LiteralKind> {
     match kind {
-        SyntaxKind::IntLiteral => Some(LiteralKind::Int),
+        SyntaxKind::IntLiteral => Some(LiteralKind::Int(parse_integer_magnitude(text))),
         SyntaxKind::FloatLiteral => Some(LiteralKind::Float),
         SyntaxKind::TextLiteral => Some(LiteralKind::Text),
         SyntaxKind::KeywordTrue | SyntaxKind::KeywordFalse => Some(LiteralKind::Bool),
         _ => None,
+    }
+}
+
+/// Parses decimal digits once, retaining no value larger than `2^63`.
+///
+/// The lexer owns malformed-number diagnostics. Returning `Invalid` here lets
+/// later stages recover without adding an out-of-range diagnostic for a token
+/// the lexer has already rejected.
+fn parse_integer_magnitude(text: &str) -> IntegerMagnitude {
+    const MAX_MAGNITUDE: u64 = 1_u64 << 63;
+    const MAX_PREFIX: u64 = MAX_MAGNITUDE / 10;
+    const MAX_LAST_DIGIT: u8 = (MAX_MAGNITUDE % 10) as u8;
+
+    let mut magnitude = 0_u64;
+    let mut out_of_range = false;
+    let mut previous_was_digit = false;
+    let mut bytes = text.bytes().peekable();
+
+    while let Some(byte) = bytes.next() {
+        if byte.is_ascii_digit() {
+            if !out_of_range {
+                let digit = byte - b'0';
+                if magnitude > MAX_PREFIX || (magnitude == MAX_PREFIX && digit > MAX_LAST_DIGIT) {
+                    out_of_range = true;
+                } else {
+                    magnitude = magnitude * 10 + u64::from(digit);
+                }
+            }
+            previous_was_digit = true;
+        } else if byte == b'_' {
+            if !previous_was_digit || !bytes.peek().is_some_and(u8::is_ascii_digit) {
+                return IntegerMagnitude::Invalid;
+            }
+            previous_was_digit = false;
+        } else {
+            return IntegerMagnitude::Invalid;
+        }
+    }
+
+    if !previous_was_digit {
+        return IntegerMagnitude::Invalid;
+    }
+    if out_of_range {
+        IntegerMagnitude::OutOfRange
+    } else {
+        IntegerMagnitude::Value(magnitude)
     }
 }
 
@@ -1822,10 +1879,37 @@ mod tests {
             .filter(|def| {
                 def.value
                     .and_then(|value| result.hir.expr(value))
-                    .is_some_and(|expr| matches!(expr.kind, ExprKind::Literal(LiteralKind::Int)))
+                    .is_some_and(|expr| matches!(expr.kind, ExprKind::Literal(LiteralKind::Int(_))))
             })
             .count();
         assert_eq!(literals, 2);
+    }
+
+    #[test]
+    fn integer_magnitudes_are_bounded_and_ignore_separators() {
+        assert_eq!(
+            parse_integer_magnitude("9223372036854775807"),
+            IntegerMagnitude::Value(i64::MAX as u64)
+        );
+        assert_eq!(
+            parse_integer_magnitude("9_223_372_036_854_775_808"),
+            IntegerMagnitude::Value(1_u64 << 63)
+        );
+        assert_eq!(
+            parse_integer_magnitude("9223372036854775809"),
+            IntegerMagnitude::OutOfRange
+        );
+        assert_eq!(
+            parse_integer_magnitude("9_223_372_036_854_775_809"),
+            IntegerMagnitude::OutOfRange
+        );
+        assert_eq!(
+            parse_integer_magnitude("9_223_372_036_854_775_808_000"),
+            IntegerMagnitude::OutOfRange
+        );
+        assert_eq!(parse_integer_magnitude("1__0"), IntegerMagnitude::Invalid);
+        assert_eq!(parse_integer_magnitude("1_"), IntegerMagnitude::Invalid);
+        assert_eq!(parse_integer_magnitude("123abc"), IntegerMagnitude::Invalid);
     }
 
     #[test]
