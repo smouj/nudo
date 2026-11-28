@@ -7,7 +7,7 @@
 | Supersedes | — |
 | Superseded by | — |
 | Specification chapters | [`spec/agents/agent.md`](../spec/agents/agent.md), [`spec/declarations.md`](../spec/declarations.md) |
-| Related NEPs | NEP-0002, NEP-0003 |
+| Related NEPs | NEP-0002, NEP-0003, NEP-0005, NEP-0011 |
 
 ## Summary
 
@@ -47,9 +47,7 @@ agent Researcher {
     role:
         "Research reliable information."
 
-    tools:
-        web::search
-        web::open
+    tools: web::search, web::open
 
     allow:
         Network
@@ -107,7 +105,7 @@ declaration, not a failure at run time.
 | Compiler | `nudo-parser`, `nudo-hir`, `nudo-typeck`, `nudo-agent` |
 | Conformance | Agent declaration cases: valid, missing capability, unlisted tool |
 | Security | Removes an implicit-capability path; adds declaration-time checks |
-| Compatibility | New syntax; reserves the word `agent` |
+| Compatibility | New declaration syntax; `agent` remains contextual and usable as a name elsewhere |
 
 ## Open questions
 
