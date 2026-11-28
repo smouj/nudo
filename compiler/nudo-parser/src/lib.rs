@@ -625,8 +625,13 @@ impl<'a> Parser<'a> {
             self.builder.finish_node();
             return;
         }
+        let mut saw_variant = false;
         while !self.at(SyntaxKind::RBrace) && !self.at_eof() {
             if self.at(SyntaxKind::Ident) {
+                saw_variant = true;
+                if self.at_word("_") {
+                    self.unexpected("an enum variant name other than `_`");
+                }
                 self.start_node(SyntaxKind::Variant);
                 self.bump();
                 if self.eat(SyntaxKind::LParen) {
@@ -644,6 +649,9 @@ impl<'a> Parser<'a> {
             } else {
                 self.error_and_recover("an enum variant", &[SyntaxKind::RBrace]);
             }
+        }
+        if !saw_variant {
+            self.unexpected("at least one enum variant");
         }
         self.expect(SyntaxKind::RBrace, "`}`");
         self.builder.finish_node();
@@ -1426,6 +1434,10 @@ impl<'a> Parser<'a> {
                 self.parse_expression();
             } else {
                 self.unexpected("`=>`");
+                self.recover_in_node(&[SyntaxKind::FatArrow, SyntaxKind::RBrace]);
+                if self.eat(SyntaxKind::FatArrow) {
+                    self.parse_expression();
+                }
             }
             self.builder.finish_node();
         }
@@ -1435,18 +1447,49 @@ impl<'a> Parser<'a> {
 
     fn parse_pattern(&mut self) {
         self.start_node(SyntaxKind::Pattern);
-        self.parse_path();
-        if self.eat(SyntaxKind::LParen) {
+        let wildcard = self.at_word("_");
+        if !self.parse_pattern_identifier() {
+            self.recover_in_node(&[SyntaxKind::FatArrow, SyntaxKind::RBrace]);
+            self.builder.finish_node();
+            return;
+        }
+        if !wildcard && self.eat(SyntaxKind::LParen) {
             if !self.at(SyntaxKind::RParen) {
                 loop {
                     let before = self.pos;
-                    self.parse_pattern();
+                    self.parse_payload_pattern();
                     if self.pos == before || !self.eat(SyntaxKind::Comma) {
                         break;
                     }
                 }
             }
             self.expect(SyntaxKind::RParen, "`)`");
+        }
+        self.builder.finish_node();
+    }
+
+    /// Parses the single unqualified identifier used by an enum pattern.
+    fn parse_pattern_identifier(&mut self) -> bool {
+        if !self.at(SyntaxKind::Ident) {
+            self.unexpected("a variant name or `_`");
+            return false;
+        }
+        self.start_node(SyntaxKind::Path);
+        self.bump();
+        self.builder.finish_node();
+        true
+    }
+
+    /// Payload patterns in this edition are a binding name or `_`, never nested.
+    fn parse_payload_pattern(&mut self) {
+        self.start_node(SyntaxKind::Pattern);
+        if !self.parse_pattern_identifier() {
+            self.recover_in_node(&[
+                SyntaxKind::Comma,
+                SyntaxKind::RParen,
+                SyntaxKind::FatArrow,
+                SyntaxKind::RBrace,
+            ]);
         }
         self.builder.finish_node();
     }

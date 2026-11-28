@@ -1,0 +1,10 @@
+# nudo-tree v1
+SourceFile 0..13
+  EnumDecl 0..13
+    KeywordEnum "enum" 0..4
+    Whitespace " " 4..5
+    Ident "Empty" 5..10
+    Whitespace " " 10..11
+    LBrace "{" 11..12
+    RBrace "}" 12..13
+  Eof "" 13..13

@@ -1,0 +1,58 @@
+# nudo-tree v1
+SourceFile 0..107
+  EnumDecl 0..25
+    KeywordEnum "enum" 0..4
+    Whitespace " " 4..5
+    Ident "Status" 5..11
+    Whitespace " " 11..12
+    LBrace "{" 12..13
+    Whitespace "\n    " 13..18
+    Variant 18..23
+      Ident "Ready" 18..23
+    Whitespace "\n" 23..24
+    RBrace "}" 24..25
+  Whitespace "\n\n" 25..27
+  FunctionDecl 27..107
+    KeywordFn "fn" 27..29
+    Whitespace " " 29..30
+    Ident "inspect" 30..37
+    ParameterList 37..52
+      LParen "(" 37..38
+      Parameter 38..51
+        Ident "value" 38..43
+        Colon ":" 43..44
+        Whitespace " " 44..45
+        PathType 45..51
+          Path 45..51
+            Ident "Status" 45..51
+      RParen ")" 51..52
+    Whitespace " " 52..53
+    Block 53..107
+      LBrace "{" 53..54
+      Whitespace "\n    " 54..59
+      MatchExpression 59..105
+        KeywordMatch "match" 59..64
+        Whitespace " " 64..65
+        PathExpression 65..70
+          Path 65..70
+            Ident "value" 65..70
+        Whitespace " " 70..71
+        LBrace "{" 71..72
+        Whitespace "\n        " 72..81
+        MatchArm 81..99
+          Pattern 81..87
+            Path 81..87
+              Ident "Status" 81..87
+          Error 87..94
+            ColonColon "::" 87..89
+            Ident "Ready" 89..94
+          Whitespace " " 94..95
+          FatArrow "=>" 95..97
+          Whitespace " " 97..98
+          LiteralExpression 98..99
+            IntLiteral "1" 98..99
+        Whitespace "\n    " 99..104
+        RBrace "}" 104..105
+      Whitespace "\n" 105..106
+      RBrace "}" 106..107
+  Eof "" 107..107

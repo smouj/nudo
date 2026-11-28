@@ -10,8 +10,9 @@
 "Implemented" means the reference parser accepts exactly the productions below
 and rejects the rest, with `NDO1001` and the expected/found pair. It does not
 mean the language is finished: the productions marked provisional can still
-change, and each change needs a NEP. Nothing is type-checked (M3) and nothing
-runs (M4).
+change, and each change needs a NEP. The partial type checker implements
+accepted M3.2 rules but is not wired into `nudo check`; programs do not run yet
+(M4).
 
 ## Where the grammar lives
 

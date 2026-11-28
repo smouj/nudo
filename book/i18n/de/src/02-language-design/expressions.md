@@ -1,7 +1,7 @@
 # 02.2 — Ausdrücke und Präzedenz
 
 > **Status:** Implementiert / Spezifiziert / Geplant (IMPLEMENTED / SPECIFIED / PLANNED)
-> **Zusammenfassung:** Der Parser implementiert die Grammatik; der Typchecker prüft außerdem Operatoren und `if`-Zweige. Für `match` und Indizierung fehlen noch semantische Entscheidungen.
+> **Zusammenfassung:** Der Parser implementiert die Grammatik; der Typchecker prüft außerdem Operatoren, `if`-Zweige und typisiertes Enum-`match`. Für die Indizierung fehlt noch eine semantische Entscheidung.
 
 Präzedenz ist keine Formatierungsfrage. `a + b * c` muss in jeder konformen
 Implementierung genau eine Bedeutung haben, und der Parser erzeugt genau diese
@@ -59,3 +59,29 @@ legt die zulässigen Operatortypen und das Ergebnis von Bedingungen fest:
 Zur Laufzeit werden der übersprungene Operand einer Kurzschlussauswertung und
 der nicht gewählte Zweig nicht ausgeführt. Die statische Effektprüfung
 berücksichtigt sie dennoch alle, damit eine Deklaration für jede Eingabe gilt.
+
+## Typisiertes Enum-Matching
+
+[NEP-0020](https://github.com/smouj/nudo/blob/main/neps/0020-typed-enum-matching.md)
+definiert `match` für benutzerdefinierte Enums und das eingebaute
+`Result<T, E>`. Jeder Zweig nennt eine deklarierte Variante oder verwendet `_`;
+Payloads werden nach Position mit ihren deklarierten Typen gebunden, nachdem die
+generischen Argumente eingesetzt wurden. Alle Varianten müssen abgedeckt sein,
+sofern kein erreichbarer Wildcard die übrigen Fälle abdeckt. Unbekannte Namen
+sind Fehler und werden niemals zu Bindungen. Ohne erwarteten Ergebnistyp müssen
+die Zweige exakt denselben Typ haben; mit einem erwarteten Typ gelten die normalen
+Zuweisungsregeln für jeden Ausdruck. Der Typechecker meldet Muster-, Abdeckungs-
+und Zweigfehler und prüft dennoch jeden Zweigkörper weiter.
+
+```nudo
+fn describe(value: Result<Int, Text>) -> Text {
+    match value {
+        Ok(number) => "success"
+        Err(reason) => reason
+    }
+}
+```
+
+Parser und Typechecker haben Konformitätsfälle für generische Payloads,
+`Result`, Wildcards, ungültige Muster, Fehlerbehandlung und Zweigtypen. Der
+Typechecker ist noch nicht in `nudo check` eingebunden.

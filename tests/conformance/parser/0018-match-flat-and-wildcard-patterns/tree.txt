@@ -1,0 +1,221 @@
+# nudo-tree v1
+SourceFile 0..369
+  EnumDecl 0..69
+    KeywordEnum "enum" 0..4
+    Whitespace " " 4..5
+    Ident "Outcome" 5..12
+    GenericParameterList 12..18
+      Lt "<" 12..13
+      Ident "T" 13..14
+      Comma "," 14..15
+      Whitespace " " 15..16
+      Ident "E" 16..17
+      Gt ">" 17..18
+    Whitespace " " 18..19
+    LBrace "{" 19..20
+    Whitespace "\n    " 20..25
+    Variant 25..37
+      Ident "Ok" 25..27
+      LParen "(" 27..28
+      Field 28..36
+        Ident "value" 28..33
+        Colon ":" 33..34
+        Whitespace " " 34..35
+        PathType 35..36
+          Path 35..36
+            Ident "T" 35..36
+      RParen ")" 36..37
+    Whitespace "\n    " 37..42
+    Variant 42..55
+      Ident "Err" 42..45
+      LParen "(" 45..46
+      Field 46..54
+        Ident "error" 46..51
+        Colon ":" 51..52
+        Whitespace " " 52..53
+        PathType 53..54
+          Path 53..54
+            Ident "E" 53..54
+      RParen ")" 54..55
+    Whitespace "\n    " 55..60
+    Variant 60..67
+      Ident "Pending" 60..67
+    Whitespace "\n" 67..68
+    RBrace "}" 68..69
+  Whitespace "\n\n" 69..71
+  EnumDecl 71..121
+    KeywordEnum "enum" 71..75
+    Whitespace " " 75..76
+    Ident "Status" 76..82
+    Whitespace " " 82..83
+    LBrace "{" 83..84
+    Whitespace "\n    " 84..89
+    Variant 89..94
+      Ident "Ready" 89..94
+    Whitespace "\n    " 94..99
+    Variant 99..119
+      Ident "Failed" 99..105
+      LParen "(" 105..106
+      Field 106..118
+        Ident "reason" 106..112
+        Colon ":" 112..113
+        Whitespace " " 113..114
+        PathType 114..118
+          Path 114..118
+            Ident "Text" 114..118
+      RParen ")" 118..119
+    Whitespace "\n" 119..120
+    RBrace "}" 120..121
+  Whitespace "\n\n" 121..123
+  FunctionDecl 123..259
+    KeywordFn "fn" 123..125
+    Whitespace " " 125..126
+    Ident "outcome" 126..133
+    ParameterList 133..160
+      LParen "(" 133..134
+      Parameter 134..159
+        Ident "value" 134..139
+        Colon ":" 139..140
+        Whitespace " " 140..141
+        GenericType 141..159
+          Path 141..148
+            Ident "Outcome" 141..148
+          Lt "<" 148..149
+          PathType 149..152
+            Path 149..152
+              Ident "Int" 149..152
+          Comma "," 152..153
+          Whitespace " " 153..154
+          PathType 154..158
+            Path 154..158
+              Ident "Text" 154..158
+          Gt ">" 158..159
+      RParen ")" 159..160
+    Whitespace " " 160..161
+    Arrow "->" 161..163
+    Whitespace " " 163..164
+    PathType 164..167
+      Path 164..167
+        Ident "Int" 164..167
+    Whitespace " " 167..168
+    Block 168..259
+      LBrace "{" 168..169
+      Whitespace "\n    " 169..174
+      MatchExpression 174..257
+        KeywordMatch "match" 174..179
+        Whitespace " " 179..180
+        PathExpression 180..185
+          Path 180..185
+            Ident "value" 180..185
+        Whitespace " " 185..186
+        LBrace "{" 186..187
+        Whitespace "\n        " 187..196
+        MatchArm 196..216
+          Pattern 196..206
+            Path 196..198
+              Ident "Ok" 196..198
+            LParen "(" 198..199
+            Pattern 199..205
+              Path 199..205
+                Ident "number" 199..205
+            RParen ")" 205..206
+          Whitespace " " 206..207
+          FatArrow "=>" 207..209
+          Whitespace " " 209..210
+          PathExpression 210..216
+            Path 210..216
+              Ident "number" 210..216
+        Whitespace "\n        " 216..225
+        MatchArm 225..236
+          Pattern 225..231
+            Path 225..228
+              Ident "Err" 225..228
+            LParen "(" 228..229
+            Pattern 229..230
+              Path 229..230
+                Ident "_" 229..230
+            RParen ")" 230..231
+          Whitespace " " 231..232
+          FatArrow "=>" 232..234
+          Whitespace " " 234..235
+          LiteralExpression 235..236
+            IntLiteral "0" 235..236
+        Whitespace "\n        " 236..245
+        MatchArm 245..251
+          Pattern 245..246
+            Path 245..246
+              Ident "_" 245..246
+          Whitespace " " 246..247
+          FatArrow "=>" 247..249
+          Whitespace " " 249..250
+          LiteralExpression 250..251
+            IntLiteral "1" 250..251
+        Whitespace "\n    " 251..256
+        RBrace "}" 256..257
+      Whitespace "\n" 257..258
+      RBrace "}" 258..259
+  Whitespace "\n\n" 259..261
+  FunctionDecl 261..369
+    KeywordFn "fn" 261..263
+    Whitespace " " 263..264
+    Ident "status" 264..270
+    ParameterList 270..285
+      LParen "(" 270..271
+      Parameter 271..284
+        Ident "value" 271..276
+        Colon ":" 276..277
+        Whitespace " " 277..278
+        PathType 278..284
+          Path 278..284
+            Ident "Status" 278..284
+      RParen ")" 284..285
+    Whitespace " " 285..286
+    Arrow "->" 286..288
+    Whitespace " " 288..289
+    PathType 289..292
+      Path 289..292
+        Ident "Int" 289..292
+    Whitespace " " 292..293
+    Block 293..369
+      LBrace "{" 293..294
+      Whitespace "\n    " 294..299
+      MatchExpression 299..367
+        KeywordMatch "match" 299..304
+        Whitespace " " 304..305
+        PathExpression 305..310
+          Path 305..310
+            Ident "value" 305..310
+        Whitespace " " 310..311
+        LBrace "{" 311..312
+        Whitespace "\n        " 312..321
+        MatchArm 321..333
+          Pattern 321..328
+            Path 321..326
+              Ident "Ready" 321..326
+            LParen "(" 326..327
+            RParen ")" 327..328
+          Whitespace " " 328..329
+          FatArrow "=>" 329..331
+          Whitespace " " 331..332
+          LiteralExpression 332..333
+            IntLiteral "0" 332..333
+        Whitespace "\n        " 333..342
+        MatchArm 342..361
+          Pattern 342..356
+            Path 342..348
+              Ident "Failed" 342..348
+            LParen "(" 348..349
+            Pattern 349..355
+              Path 349..355
+                Ident "reason" 349..355
+            RParen ")" 355..356
+          Whitespace " " 356..357
+          FatArrow "=>" 357..359
+          Whitespace " " 359..360
+          LiteralExpression 360..361
+            IntLiteral "1" 360..361
+        Whitespace "\n    " 361..366
+        RBrace "}" 366..367
+      Whitespace "\n" 367..368
+      RBrace "}" 368..369
+  Eof "" 369..369

@@ -1,0 +1,4 @@
+# nudo-typeck v1
+def 0009 function `unwrap_or` 1:4: Fn(Result<Int, Text>) -> Int
+def 0010 parameter `value` 1:14: Result<Int, Text>
+def 0011 local `number` 3:12: Int

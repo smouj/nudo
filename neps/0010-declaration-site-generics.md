@@ -113,7 +113,9 @@ struct Pair<A, B> {
 
 **Partially implemented.** The parser and HIR accept declaration-site
 parameters; `nudo-typeck` checks type-argument arity for user types, type
-parameters and intrinsic types with `NDO2017`, and implements bounded inference
-for generic calls and fields. Generic matching, `Result` handling and the
-remaining M3.2 rules are still pending, so `examples/04-results` remains a
-preview.
+parameters and intrinsic types with `NDO2017`, implements bounded inference
+for generic calls and fields, and substitutes generic enum payloads while
+checking patterns under NEP-0020. Intrinsic `Result` matching follows the same
+rules. `examples/04-results` remains a preview because enum-value construction
+and runtime execution do not exist, and the type checker is not wired into the
+CLI.

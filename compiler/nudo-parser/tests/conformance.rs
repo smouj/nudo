@@ -26,7 +26,7 @@ use nudo_syntax::dump_tree;
 
 /// The minimum number of cases the corpus must contain, so that deleting a
 /// case cannot make this test quietly pass.
-const MINIMUM_CASES: usize = 12;
+const MINIMUM_CASES: usize = 23;
 
 fn corpus_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/conformance/parser")

@@ -45,6 +45,7 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 | [0016](0016-omitted-function-result-types.md) | Omitted function result types | Accepted |
 | [0017](0017-boolean-comparison-conditionals.md) | Boolean, comparison and conditional expressions | Accepted |
 | [0019](0019-integer-literal-boundary.md) | Integer literal boundary | Accepted |
+| [0020](0020-typed-enum-matching.md) | Typed enum matching | Implemented |
 
 NEPs 0002 and 0007–0011 are the **semantic gates of M3**, taken together and
 before `nudo-typeck` exists, so that the checker is written against decided
@@ -57,7 +58,9 @@ M3.2 gate for operator domains and conditional result types. [NEP-0016](0016-omi
 settles the M3.2 function-result contract: an omitted annotation means `Unit`.
 [NEP-0019](0019-integer-literal-boundary.md) settles the signed integer literal
 boundary, including the one spelling of `Int::MIN` that requires magnitude
-`2^63`.
+`2^63`. [NEP-0020](0020-typed-enum-matching.md) settles enum-only `match`,
+explicit wildcard and payload patterns, exhaustive coverage, and arm result
+typing, including intrinsic `Result<T, E>`.
 
 ## States
 

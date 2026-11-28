@@ -31,12 +31,12 @@ size are current facts, so those rows state them directly.
 
 | Concern | NUDO | Python | Rust | Go | TypeScript |
 | ------- | ---- | ------ | ---- | -- | ---------- |
-| Static typing | **Partial** — primitives, calls, fields and name resolution work; generic instantiation and enum-match typing are incomplete | Dynamic, optional annotations | Full, with inference and traits | Static, structural interfaces | Static, erased at runtime |
+| Static typing | **Partial** — primitives, calls, fields, bounded generic inference and typed enum matching are checked; type checking is not yet wired into `nudo check` | Dynamic, optional annotations | Full, with inference and traits | Static, structural interfaces | Static, erased at runtime |
 | Memory model | **Undecided** — no garbage-collection or runtime allocation model is specified; NEP-0009 rules out a borrow checker | Reference counting + cycle collector | Ownership and borrowing | Garbage collected | Garbage collected (engine) |
 | Nullability | **Proposed** — absence is written as `T?`; the types chapter is still proposed | `None` everywhere | `Option<T>` | Nil pointers for some types | `strictNullChecks` |
 | Error handling | **Specified** — `Result<T, E>` intrinsic, no `?`, traps distinct from failures (NEP-0008) | Exceptions | `Result` + `?` | `error` returns | Exceptions, or `Result` conventions |
 | Generics | **Partial** — syntax is accepted and parsed; type-checker instantiation and inference remain incomplete (NEP-0010, NEP-0013) | Duck typing / `typing` | Generics + traits | Generics since 1.18 | Generics, erased |
-| Pattern matching | **Partial** — `match` syntax and HIR are implemented; enum-variant typing remains undecided and is not implemented | `match` since 3.10 | `match`, exhaustive | Limited `switch`, no destructuring | Discriminated unions by convention |
+| Pattern matching | **Partial** — exhaustive enum and `Result<T, E>` matching with typed flat payloads is implemented in the type checker; nested patterns and non-enum patterns are outside the accepted design | `match` since 3.10 | `match`, exhaustive | Limited `switch`, no destructuring | Discriminated unions by convention |
 | Immutability | **Specified** — bindings immutable by rule, no `mut` (NEP-0009) | No | Opt-in `let` / `mut` | No | `const` only |
 | Effects | **Proposed** — the effects chapter and NEP-0004 are not accepted; checking is planned for M5 | No | No (traits approximate) | No | No |
 | Capabilities / permissions | **Proposed** — the capability chapter is proposed and NEP-0003 is Draft; no call checks exist | Library or OS | Library or OS | Library or OS | Library or OS |

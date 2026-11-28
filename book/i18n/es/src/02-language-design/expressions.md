@@ -1,7 +1,7 @@
 # 02.2 — Expresiones y precedencia
 
 > **Status:** Implementado / Especificado / Planificado (IMPLEMENTED / SPECIFIED / PLANNED)
-> **Summary:** El parser implementa la gramática; el comprobador también valida los tipos de operadores y las ramas de `if`. `match` y la indexación aún necesitan decisiones semánticas.
+> **Summary:** El parser implementa la gramática; el comprobador también valida los operadores, las ramas de `if` y el `match` tipado de enumeraciones. La indexación aún necesita una decisión semántica.
 
 La precedencia no es una minucia de formato. `a + b * c` debe tener un único
 significado en toda implementación conforme, y el parser produce exactamente esa
@@ -59,3 +59,29 @@ define los dominios de los operadores y los tipos resultantes de las condiciones
 En ejecución, no se evalúan el operando omitido por cortocircuito ni la rama no
 seleccionada. La comprobación estática de efectos considera todos ellos, para que
 la declaración siga siendo válida con cualquier entrada.
+
+## Coincidencia tipada de enumeraciones
+
+[NEP-0020](https://github.com/smouj/nudo/blob/main/neps/0020-typed-enum-matching.md)
+define `match` para enumeraciones de usuario y para el `Result<T, E>` integrado.
+Cada rama nombra una variante declarada o usa `_`; los payloads se enlazan por
+posición con sus tipos declarados, después de sustituir los argumentos genéricos.
+Hay que cubrir todas las variantes, salvo que un comodín alcanzable cubra las
+restantes. Los nombres desconocidos son errores y nunca se convierten en enlaces.
+Sin un tipo de resultado esperado, las ramas deben tener exactamente el mismo
+tipo; con uno, cada cuerpo sigue las reglas normales de asignación. El comprobador
+diagnostica los errores de patrones, cobertura y ramas, y sigue revisando cada
+cuerpo.
+
+```nudo
+fn describe(value: Result<Int, Text>) -> Text {
+    match value {
+        Ok(number) => "success"
+        Err(reason) => reason
+    }
+}
+```
+
+El parser y el comprobador tienen casos de conformidad para payloads genéricos,
+`Result`, comodines, patrones inválidos, recuperación y tipos de rama. El
+comprobador aún no está conectado a `nudo check`.

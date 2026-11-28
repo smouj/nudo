@@ -160,16 +160,19 @@ for arity (`NDO2005`), argument types (`NDO2004`) and callability (`NDO2006`);
 malformed calls still check matched arguments and nested errors in excess arguments.
 Nominal declarations now carry their structure in HIR; field access is typed
 with `NDO2007`, and generic calls use argument- and context-driven inference, with
-generic field types substituted from the receiver. `if` conditions are `Bool`;
+generic field types substituted from the receiver. Enum `match` now resolves
+variants, binds generic payloads, checks exhaustive coverage (including
+`Result<T, E>`), and applies the accepted arm-result rules in NEP-0020. `if`
+conditions are `Bool`;
 branch expressions are checked recursively, with an expected result type reaching
 generic inference. Conditional result rules and operator domains are now
 specified and checked under NEP-0017, and invalid operator operands report one
 `NDO2018` at the operator. Deferred expression forms also check their children for supported
 rules. Numeric arithmetic typing and stable diagnostics for unresolved generic
 parameters (NEP-0015) are in place. The remaining slices are sequence/index
-typing, match typing and exhaustiveness, nominal construction, and
-`Result<T, E>`. Draft-gated rules stay unimplemented until their semantics are
-accepted; until then, the checker stays silent rather than inventing semantics.
+typing and nominal construction. Draft-gated rules stay unimplemented until
+their semantics are accepted; until then, the checker stays silent rather than
+inventing semantics.
 See
 [`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
 
@@ -213,12 +216,13 @@ rules of their own.
 * [x] Stable generic-inference diagnostics: `NDO2008` for unresolved call
       parameters and `NDO2009` for function parameters absent from the signature
       (NEP-0015)
-* [ ] `match` typing: variant validation, payload binding, arm type agreement
-      and exhaustiveness; current HIR stores only the head and flat binding
-      definitions, not wildcard structure or ordered payload patterns (NEP-0020;
-      **Draft**)
-* [ ] `Result<T, E>` as an intrinsic type, using the same exhaustive `match`
-      rules as every other enum
+* [x] `match` typing: variant validation, flat payload binding with generic
+      substitution, wildcard coverage, arm type agreement, exhaustiveness and
+      error recovery (NEP-0020); conformance covers valid, invalid and recovery
+      cases
+* [x] Intrinsic `Result<T, E>` patterns use `Ok(T)` and `Err(E)` under the same
+      exhaustive rules as every user enum; producing a `Result` from `verify`
+      remains gated by NEP-0018
 * [x] Function types and calls; no implicit numeric conversion
 * [x] `if` conditions are `Bool`; branches use an expected type or must agree
       exactly, and an `if` without `else` has type `Unit` (NEP-0017)
@@ -241,9 +245,6 @@ diagnostic contracts are accepted; a Draft NEP is not an implementation target.
 
 **BLOCKED_BY_SPEC — do not implement until the named decision is accepted:**
 
-* **`match` and `Result<T, E>`:** variant resolution, payload binding, arm
-  agreement and exhaustiveness are proposed in NEP-0020 (Draft); `Result`
-  checking depends on those rules.
 * **Sequence and index typing:** the grammar accepts `a[i]` and `[T]`, but the
   element type, index type and out-of-range behavior need an accepted NEP.
 * **Nominal construction:** the grammar has no struct or enum construction

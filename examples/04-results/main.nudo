@@ -4,9 +4,9 @@
 //
 //     nudo check examples/04-results/main.nudo
 //
-// The file uses only syntax and names the pre-alpha toolchain accepts. It does
-// not run, and nothing here is type-checked: the type checker is milestone M3
-// and the interpreter is M4.
+// The file uses syntax accepted by the pre-alpha toolchain. It does not run:
+// the interpreter is M4. The type checker supports the accepted match and
+// Result rules, but `nudo check` does not invoke it yet.
 //
 // NUDO has no exceptions, and no `return` either (NEP-0012). A failure is a
 // value the caller must handle, and `match` must be exhaustive; a function's
@@ -15,7 +15,7 @@
 //
 // One half of the story is a comment rather than an invented API: *building* a
 // failure — using an enum variant as a value, `Outcome::Err("...")`, or the
-// intrinsic `Result::Err` — is not resolved by name resolution yet (M3.2).
+// intrinsic `Result::Err` — has no construction syntax or resolution rule yet.
 // Handling a failure is, and that is what this example shows.
 
 enum Outcome<T, E> {

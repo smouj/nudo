@@ -181,6 +181,23 @@ undecided, so assignment has nothing to assign to yet.
 
 No implicit numeric conversion, no truthiness, and `match` must be exhaustive.
 
+### Match patterns
+
+The syntax is limited to an explicit wildcard or one unqualified variant name.
+Payload positions are flat binding names or `_`; a zero-payload variant may be
+written with or without empty parentheses. Nested patterns, literals and
+qualified variant names are syntax errors. The type checker resolves names and
+checks payload counts and exhaustive coverage under
+[NEP-0020](../neps/0020-typed-enum-matching.md).
+
+```nudo
+match outcome {
+    Ok(value) => value
+    Err(_) => 0
+    _ => 1
+}
+```
+
 ## The agentic expressions — provisional
 
 ```nudo

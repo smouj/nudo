@@ -184,6 +184,30 @@ pub mod codes {
     pub const INTEGER_LITERAL_OUT_OF_RANGE: DiagnosticCode =
         DiagnosticCode::new("NDO2010", "INTEGER_LITERAL_OUT_OF_RANGE");
 
+    /// A `match` scrutinee is not an enum or `Result<T, E>`.
+    pub const MATCH_REQUIRES_ENUM: DiagnosticCode =
+        DiagnosticCode::new("NDO2011", "MATCH_REQUIRES_ENUM");
+
+    /// A match pattern names no variant of the scrutinee's enum.
+    pub const INVALID_MATCH_PATTERN: DiagnosticCode =
+        DiagnosticCode::new("NDO2012", "INVALID_MATCH_PATTERN");
+
+    /// A variant pattern has a different number of payload patterns than fields.
+    pub const WRONG_VARIANT_PATTERN_ARITY: DiagnosticCode =
+        DiagnosticCode::new("NDO2013", "WRONG_VARIANT_PATTERN_ARITY");
+
+    /// A match leaves one or more enum variants uncovered.
+    pub const NON_EXHAUSTIVE_MATCH: DiagnosticCode =
+        DiagnosticCode::new("NDO2014", "NON_EXHAUSTIVE_MATCH");
+
+    /// A match arm cannot be reached after an earlier pattern.
+    pub const UNREACHABLE_MATCH_ARM: DiagnosticCode =
+        DiagnosticCode::new("NDO2015", "UNREACHABLE_MATCH_ARM");
+
+    /// Match arm bodies disagree when there is no expected result type.
+    pub const MATCH_ARM_TYPE_MISMATCH: DiagnosticCode =
+        DiagnosticCode::new("NDO2016", "MATCH_ARM_TYPE_MISMATCH");
+
     /// A named type was supplied a different number of arguments than it declares.
     pub const WRONG_TYPE_ARGUMENT_COUNT: DiagnosticCode =
         DiagnosticCode::new("NDO2017", "WRONG_TYPE_ARGUMENT_COUNT");
@@ -220,6 +244,12 @@ pub mod codes {
         TYPE_PARAMETER_NOT_INFERRED,
         TYPE_PARAMETER_NOT_IN_SIGNATURE,
         INTEGER_LITERAL_OUT_OF_RANGE,
+        MATCH_REQUIRES_ENUM,
+        INVALID_MATCH_PATTERN,
+        WRONG_VARIANT_PATTERN_ARITY,
+        NON_EXHAUSTIVE_MATCH,
+        UNREACHABLE_MATCH_ARM,
+        MATCH_ARM_TYPE_MISMATCH,
         WRONG_TYPE_ARGUMENT_COUNT,
         INVALID_OPERATOR_TYPES,
         IF_BRANCH_TYPE_MISMATCH,
@@ -248,6 +278,12 @@ pub mod codes {
         TYPE_PARAMETER_NOT_INFERRED,
         TYPE_PARAMETER_NOT_IN_SIGNATURE,
         INTEGER_LITERAL_OUT_OF_RANGE,
+        MATCH_REQUIRES_ENUM,
+        INVALID_MATCH_PATTERN,
+        WRONG_VARIANT_PATTERN_ARITY,
+        NON_EXHAUSTIVE_MATCH,
+        UNREACHABLE_MATCH_ARM,
+        MATCH_ARM_TYPE_MISMATCH,
         WRONG_TYPE_ARGUMENT_COUNT,
         INVALID_OPERATOR_TYPES,
         IF_BRANCH_TYPE_MISMATCH,

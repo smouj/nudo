@@ -930,7 +930,7 @@ impl<'t> MatchArm<'t> {
     }
 }
 
-/// A pattern: a path, optionally with nested patterns.
+/// A pattern: an enum variant or `_`, optionally with flat payload patterns.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Pattern<'t> {
     syntax: SyntaxNode<'t>,

@@ -54,8 +54,9 @@ cargo run --package nudo-cli -- check --dump-tokens fixtures/valid/hello.nudo
 cargo run --package nudo-cli -- check --dump-tree fixtures/valid/hello.nudo
 ```
 
-Expect `check` to lex and parse. It is milestones M1 and M2; see
-[`ROADMAP.md`](ROADMAP.md). Nothing is type-checked and nothing runs.
+Expect `check` to lex, parse and resolve names. It does not invoke the partial
+M3.2 type checker, which is exercised by its own tests and conformance corpus;
+programs do not run yet (M4). See [`ROADMAP.md`](ROADMAP.md).
 
 ### Measure
 

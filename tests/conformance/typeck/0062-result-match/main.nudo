@@ -1,0 +1,6 @@
+fn unwrap_or(value: Result<Int, Text>) -> Int {
+    match value {
+        Ok(number) => number
+        Err(_) => 0
+    }
+}

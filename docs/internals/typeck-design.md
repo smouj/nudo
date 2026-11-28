@@ -88,6 +88,7 @@ fill in cases instead of redesigning the centre:
 | Generic calls | Direct function-item parameters are inferred from arguments in source order, then a known expected result; unresolved parameters use `NDO2008`, signature-absent parameters use `NDO2009`, and dependent cascades are suppressed |
 | Operators | Arithmetic requires matching numeric types, `%` is `Int`-only, Boolean operators require `Bool`, equality accepts matching primitive views, and ordering accepts matching `Int` or `Float`; the supported `Verified<T>`-to-`T` view applies; invalid domains report `NDO2018` at the operator |
 | Conditionals | Branches use a known expected type or must have exactly matching types; an `if` without `else` requires a `Unit` then-branch; an uncontextualised mismatch reports `NDO2019` |
+| Enum `match` | User enums and intrinsic `Result<T, E>` resolve variants, bind flat payloads after generic substitution, check wildcard/exhaustive coverage and apply the accepted arm-result rules (`NDO2011`–`NDO2016`) |
 | Trust assignment | The resolved built-in `Verified<T>` is usable where `T` is expected; `Generated<T>` is not, and the relation does not widen nested generic arguments |
 | One diagnostic shape | `expected` and `found` as structure, never as prose to re-parse |
 
@@ -105,19 +106,16 @@ note: found: `Bool`
 
 Every omission is a named next step, and each one is **silent** rather than
 wrong: unsupported expression results type as `Error`, and `Error` reports
-nothing. Indexing, `match`, and agentic expressions still recursively check
-their child expressions, so a supported call or annotation error inside them is
-not hidden.
+nothing. Indexing and agentic expressions still recursively check their child
+expressions, so a supported call or annotation error inside them is not hidden.
 
 | Not yet | Arrives with |
 | ------- | ------------ |
 | Sequence and index typing, including out-of-range behavior | a specification decision |
 | Arithmetic evaluation | the interpreter; overflow and division traps are specified by NEP-0007 |
-| Enum pattern resolution, payload binding, exhaustiveness and arm result types | NEP-0020 (**Draft**); do not implement before acceptance |
 | Building a nominal value: **the grammar has no construction syntax at all**, so it needs a NEP before it can be implemented | when the language decides |
-| `Result<T, E>` and exhaustive `match` behavior | after the match rules are accepted and implemented |
 | Effects | M5 |
-| `verify`, provenance tracking, and `Result<T, E>` exhaustiveness for trust values | M3.3 and later slices |
+| `verify` and provenance tracking | M3.3 and later slices |
 
 Two rules are worth stating as *absences*, because they are decisions rather than
 gaps:
@@ -130,15 +128,13 @@ gaps:
 
 ## Why the checker is not wired into `nudo check` yet
 
-`check` currently lexes, parses and resolves, and the checker runs beside it in
-its own tests and corpus but not inside it. Calls are checked now, so the
-question is live; what still argues for waiting is that structs, enums and the
-trust types type as unknown, and the examples in `examples/` are *about* those.
-Wiring it in today would add a `TYPE` stage that reports on primitives and calls
-and stays silent about the interesting half — so a clean run would mean less than
-a reader would assume. It is wired when the structural rules land, and the
-terminal layer gains its `TYPE` row at that moment, rendered from work actually
-done.
+`check` currently lexes, parses and resolves; the type checker runs beside it in
+its own tests and corpus. The checker now covers accepted structural rules,
+including generic enum payloads and exhaustive `Result` matching, but this
+change does not integrate it into the CLI. That integration needs its own slice
+for stage ordering, diagnostic rendering, exit status and documented command
+behavior. Until then, `nudo check` reports only lexical, syntax and name
+diagnostics, and its clean result makes no claim about type correctness.
 
 Until then the checker is exercised by its own tests and by the `typeck`
 conformance corpus, which is a corpus like any other: reviewed as a diff.

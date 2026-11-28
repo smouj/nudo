@@ -1,0 +1,73 @@
+# nudo-tree v1
+SourceFile 0..122
+  EnumDecl 0..35
+    KeywordEnum "enum" 0..4
+    Whitespace " " 4..5
+    Ident "Maybe" 5..10
+    Whitespace " " 10..11
+    LBrace "{" 11..12
+    Whitespace "\n    " 12..17
+    Variant 17..33
+      Ident "Some" 17..21
+      LParen "(" 21..22
+      Field 22..32
+        Ident "value" 22..27
+        Colon ":" 27..28
+        Whitespace " " 28..29
+        PathType 29..32
+          Path 29..32
+            Ident "Int" 29..32
+      RParen ")" 32..33
+    Whitespace "\n" 33..34
+    RBrace "}" 34..35
+  Whitespace "\n\n" 35..37
+  FunctionDecl 37..122
+    KeywordFn "fn" 37..39
+    Whitespace " " 39..40
+    Ident "inspect" 40..47
+    ParameterList 47..61
+      LParen "(" 47..48
+      Parameter 48..60
+        Ident "value" 48..53
+        Colon ":" 53..54
+        Whitespace " " 54..55
+        PathType 55..60
+          Path 55..60
+            Ident "Maybe" 55..60
+      RParen ")" 60..61
+    Whitespace " " 61..62
+    Block 62..122
+      LBrace "{" 62..63
+      Whitespace "\n    " 63..68
+      MatchExpression 68..120
+        KeywordMatch "match" 68..73
+        Whitespace " " 73..74
+        PathExpression 74..79
+          Path 74..79
+            Ident "value" 74..79
+        Whitespace " " 79..80
+        LBrace "{" 80..81
+        Whitespace "\n        " 81..90
+        MatchArm 90..114
+          Pattern 90..101
+            Path 90..94
+              Ident "Some" 90..94
+            LParen "(" 94..95
+            Pattern 95..101
+              Path 95..101
+                Ident "Nested" 95..101
+          Error 101..109
+            LParen "(" 101..102
+            Ident "inner" 102..107
+            RParen ")" 107..108
+            RParen ")" 108..109
+          Whitespace " " 109..110
+          FatArrow "=>" 110..112
+          Whitespace " " 112..113
+          LiteralExpression 113..114
+            IntLiteral "1" 113..114
+        Whitespace "\n    " 114..119
+        RBrace "}" 119..120
+      Whitespace "\n" 120..121
+      RBrace "}" 121..122
+  Eof "" 122..122

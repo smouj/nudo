@@ -34,8 +34,8 @@ test pass is forbidden — see [`../AGENTS.md`](../AGENTS.md).
 | ------- | -------- | ----- |
 | [`lexical-structure.md`](lexical-structure.md) | Encoding, whitespace, comments, tokens, literals | **Implemented** (M1) |
 | [`grammar.md`](grammar.md) | Where the grammar lives and how to read it | **Implemented** (M2) |
-| [`declarations.md`](declarations.md) | Items: functions, structs, enums, agents, tasks, tools | Function signature/body typing implemented (M3.2); agentic meanings proposed |
-| [`expressions.md`](expressions.md) | Expressions, statements, control flow | Syntax and core operator/conditional semantics implemented (M2/M3.2); `match`, indexing and agentic semantics pending |
+| [`declarations.md`](declarations.md) | Items: functions, structs, enums, agents, tasks, tools | Function signature/body typing and enum matching implemented (M3.2; NEP-0020); nominal construction and agentic meanings pending |
+| [`expressions.md`](expressions.md) | Expressions, statements, control flow | Syntax, core operator/conditional rules and typed enum/`Result` matching implemented (M2/M3.2; NEP-0017 and NEP-0020); indexing and agentic semantics pending |
 | [`types.md`](types.md) | The type system, including trust types | Partly decided; checking in progress (M3.2–M3.3) |
 | [`generics.md`](generics.md) | Generic parameters, bounds and inference | Rules accepted; type-checker implementation partial (M3.2) |
 | [`modules.md`](modules.md) | Modules, packages, manifests, visibility | Proposed |

@@ -49,16 +49,17 @@
 //! * **Conditionals.** Conditions are `Bool`; branch values use an expected
 //!   type when one is available and otherwise must agree exactly. An `if`
 //!   without `else` has type `Unit` and requires a `Unit` then-branch.
+//! * **Enum matching.** `match` accepts user enums and `Result<T, E>`, checks
+//!   flat payload bindings, wildcard coverage and arm result types.
 //! * **One diagnostic.** `NDO2004`, with `expected` and `found` as structure
 //!   rather than as a sentence to re-parse.
 //!
 //! # What it deliberately does not check yet
 //!
-//! Each omission is a named next step rather than a hole: indexing, `match`,
-//! `verify`, provenance tracking, `Result<T, E>` exhaustiveness, and effects
-//! remain. Unsupported expression results type as [`Type::Error`], which is
-//! compatible with everything and therefore reports nothing: silence, not a
-//! wrong answer.
+//! Each omission is a named next step rather than a hole: indexing, `verify`,
+//! provenance tracking, and effects remain. Unsupported expression results
+//! type as [`Type::Error`], which is compatible with everything and therefore
+//! reports nothing: silence, not a wrong answer.
 
 pub mod types;
 
@@ -69,8 +70,8 @@ use std::{
 
 use nudo_diagnostics::{Diagnostic, Diagnostics, codes};
 use nudo_hir::{
-    Def, DefId, DefKind, ExprId, ExprKind, Hir, IntegerMagnitude, LiteralKind, StmtKind, TypeRef,
-    TypeRefKind,
+    Arm, Def, DefId, DefKind, ExprId, ExprKind, Hir, IntegerMagnitude, LiteralKind, MatchPattern,
+    PayloadPattern, StmtKind, TypeRef, TypeRefKind,
 };
 use nudo_source::SourceId;
 use nudo_span::Span;
@@ -601,11 +602,7 @@ impl Checker<'_> {
                 right,
             } => self.type_of_binary(&operator, operator_span, left, right),
             ExprKind::Match { scrutinee, arms } => {
-                self.type_of_expression(scrutinee);
-                for arm in arms {
-                    self.type_of_expression(arm.body);
-                }
-                Type::Error
+                self.type_of_match(scrutinee, &arms, expected, expression.span)
             }
             ExprKind::Ask { prompt, .. } => {
                 if let Some(prompt) = prompt {
@@ -696,6 +693,310 @@ impl Checker<'_> {
             .with_help("make both branches produce the same type, or add an expected type"),
         );
         Type::Error
+    }
+
+    /// Types an enum match without choosing a result type from arm order.
+    fn type_of_match(
+        &mut self,
+        scrutinee: ExprId,
+        arms: &[Arm],
+        expected: Option<&Type>,
+        match_span: Span,
+    ) -> Type {
+        let scrutinee_type = self.type_of_expression(scrutinee);
+        let scrutinee_span = self
+            .hir
+            .expr(scrutinee)
+            .map_or_else(zero_span, |expression| expression.span);
+        let scrutinee_has_error = self.contains_error_type(&scrutinee_type);
+        let variants = if scrutinee_has_error {
+            None
+        } else {
+            self.enum_variants(&scrutinee_type)
+        };
+        let mut has_error =
+            scrutinee_has_error || expected.is_some_and(|ty| self.contains_error_type(ty));
+
+        if !scrutinee_has_error && variants.is_none() {
+            self.diagnostics.push(
+                Diagnostic::error(codes::MATCH_REQUIRES_ENUM, "match requires an enum")
+                    .with_location(self.source, scrutinee_span)
+                    .with_note(format!("found: `{scrutinee_type}`"))
+                    .with_help("match a value whose type is an enum or `Result<T, E>`"),
+            );
+            has_error = true;
+        }
+
+        let variant_count = variants.as_ref().map_or(0, Vec::len);
+        let variant_indices = variants
+            .as_ref()
+            .map(|variants| {
+                variants
+                    .iter()
+                    .enumerate()
+                    .map(|(index, (name, _))| (name.as_str(), index))
+                    .collect::<HashMap<_, _>>()
+            })
+            .unwrap_or_default();
+        let mut covered = vec![0_u64; variant_count.div_ceil(64)];
+        let mut covered_count = 0;
+        let mut wildcard_seen = false;
+        let mut inferred_arm_type: Option<Type> = None;
+
+        for arm in arms {
+            let after_wildcard = wildcard_seen && variants.is_some();
+            if after_wildcard {
+                let span = match &arm.pattern {
+                    MatchPattern::Wildcard { span } => *span,
+                    MatchPattern::Variant { name_span, .. } => *name_span,
+                };
+                self.report_unreachable_match_arm(
+                    span,
+                    "a preceding `_` matches every remaining variant",
+                );
+                has_error = true;
+            }
+
+            match &arm.pattern {
+                MatchPattern::Wildcard { span } => {
+                    if variants.is_some() && !after_wildcard && covered_count == variant_count {
+                        self.report_unreachable_match_arm(
+                            *span,
+                            "every enum variant is already covered",
+                        );
+                        has_error = true;
+                    }
+                    wildcard_seen = true;
+                    covered.fill(u64::MAX);
+                    covered_count = variant_count;
+                }
+                MatchPattern::Variant {
+                    name,
+                    name_span,
+                    span,
+                    payloads,
+                } => {
+                    let variant = variant_indices.get(name.as_str()).copied();
+                    let payload_types = match (variants.as_ref(), variant) {
+                        (Some(variants), Some(index)) => {
+                            let bit = 1_u64 << (index % 64);
+                            let word = &mut covered[index / 64];
+                            let previously_covered = *word & bit != 0;
+                            if !after_wildcard && previously_covered {
+                                self.report_unreachable_match_arm(
+                                    *name_span,
+                                    "this variant is already covered by an earlier arm",
+                                );
+                                has_error = true;
+                            } else if !after_wildcard {
+                                *word |= bit;
+                                covered_count += 1;
+                            }
+                            Some(variants[index].1.as_slice())
+                        }
+                        (Some(_), None) => {
+                            self.diagnostics.push(
+                                Diagnostic::error(
+                                    codes::INVALID_MATCH_PATTERN,
+                                    "unknown variant in match",
+                                )
+                                .with_location(self.source, *name_span)
+                                .with_note(format!("found enum: `{scrutinee_type}`"))
+                                .with_help("use a variant declared by the matched enum"),
+                            );
+                            has_error = true;
+                            None
+                        }
+                        (None, _) => None,
+                    };
+
+                    if let Some(payload_types) = payload_types {
+                        if payloads.len() != payload_types.len() {
+                            let error_span = if payloads.len() > payload_types.len() {
+                                match &payloads[payload_types.len()] {
+                                    PayloadPattern::Binding { span, .. }
+                                    | PayloadPattern::Wildcard { span } => *span,
+                                }
+                            } else {
+                                *span
+                            };
+                            self.diagnostics.push(
+                                Diagnostic::error(
+                                    codes::WRONG_VARIANT_PATTERN_ARITY,
+                                    "variant pattern has the wrong payload count",
+                                )
+                                .with_location(self.source, error_span)
+                                .with_note(format!(
+                                    "expected payload patterns: {}",
+                                    payload_types.len()
+                                ))
+                                .with_note(format!("found payload patterns: {}", payloads.len()))
+                                .with_help(
+                                    "bind or discard exactly one pattern for each payload field",
+                                ),
+                            );
+                            has_error = true;
+                        }
+                        for (index, payload) in payloads.iter().enumerate() {
+                            let ty = payload_types.get(index).cloned().unwrap_or(Type::Error);
+                            if self.contains_error_type(&ty) {
+                                has_error = true;
+                            }
+                            if let PayloadPattern::Binding { definition, .. } = payload {
+                                if let Some(slot) =
+                                    self.definition_types.get_mut(definition.index() as usize)
+                                {
+                                    *slot = Some(ty);
+                                }
+                            }
+                        }
+                    } else {
+                        for payload in payloads {
+                            if let PayloadPattern::Binding { definition, .. } = payload {
+                                if let Some(slot) =
+                                    self.definition_types.get_mut(definition.index() as usize)
+                                {
+                                    *slot = Some(Type::Error);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            let body_span = self
+                .hir
+                .expr(arm.body)
+                .map_or_else(zero_span, |expression| expression.span);
+            let body_type = if let Some(expected) = expected {
+                let body_type = self.type_of_expression_with_expected(arm.body, Some(expected));
+                let assignable = self.is_assignable(&body_type, expected);
+                self.expect(expected, &body_type, body_span);
+                if !assignable || self.contains_error_type(&body_type) {
+                    has_error = true;
+                }
+                body_type
+            } else {
+                self.type_of_expression(arm.body)
+            };
+
+            if self.contains_error_type(&body_type) {
+                has_error = true;
+            } else if expected.is_none() {
+                if let Some(first_type) = &inferred_arm_type {
+                    if first_type != &body_type {
+                        self.diagnostics.push(
+                            Diagnostic::error(
+                                codes::MATCH_ARM_TYPE_MISMATCH,
+                                "match arms have different types",
+                            )
+                            .with_location(self.source, body_span)
+                            .with_note(format!("expected: `{first_type}`"))
+                            .with_note(format!("found: `{body_type}`"))
+                            .with_help("make every arm produce the same type, or give the match an expected type"),
+                        );
+                        has_error = true;
+                    }
+                } else {
+                    inferred_arm_type = Some(body_type);
+                }
+            }
+        }
+
+        if let Some(variants) = &variants {
+            if covered_count < variant_count {
+                let missing = variants
+                    .iter()
+                    .enumerate()
+                    .filter(|(index, _)| covered[*index / 64] & (1_u64 << (*index % 64)) == 0)
+                    .map(|(_, (name, _))| name.as_str())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                self.diagnostics.push(
+                    Diagnostic::error(
+                        codes::NON_EXHAUSTIVE_MATCH,
+                        "this match does not cover every variant",
+                    )
+                    .with_location(self.source, match_span)
+                    .with_note(format!("missing variants: {missing}"))
+                    .with_help("add a pattern for each missing variant, or use a final `_` for the remaining variants"),
+                );
+                has_error = true;
+            }
+        }
+
+        if has_error {
+            Type::Error
+        } else if let Some(expected) = expected {
+            expected.clone()
+        } else {
+            inferred_arm_type.unwrap_or(Type::Error)
+        }
+    }
+
+    /// Returns declaration-order variants and their payload types for a match.
+    fn enum_variants(&self, ty: &Type) -> Option<Vec<(String, Vec<Type>)>> {
+        let Type::Named {
+            definition,
+            arguments,
+            ..
+        } = ty
+        else {
+            return None;
+        };
+        let id = definition.resolved()?;
+        let definition = self.hir.def(id)?;
+
+        if definition.kind == DefKind::BuiltinType && definition.name == "Result" {
+            if arguments.len() != 2 {
+                return None;
+            }
+            return Some(vec![
+                ("Ok".to_string(), vec![arguments[0].clone()]),
+                ("Err".to_string(), vec![arguments[1].clone()]),
+            ]);
+        }
+        if definition.kind != DefKind::Enum || definition.type_parameters.len() != arguments.len() {
+            return None;
+        }
+
+        let substitutions = definition
+            .type_parameters
+            .iter()
+            .copied()
+            .zip(arguments.iter().cloned())
+            .collect::<HashMap<_, _>>();
+        Some(
+            definition
+                .variants
+                .iter()
+                .map(|variant| {
+                    let fields = variant
+                        .fields
+                        .iter()
+                        .map(|field| {
+                            field.ty.as_ref().map_or(Type::Error, |annotation| {
+                                let ty = self.type_of_annotation(annotation);
+                                self.substitute_type(&ty, &substitutions)
+                            })
+                        })
+                        .collect();
+                    (variant.name.clone(), fields)
+                })
+                .collect(),
+        )
+    }
+
+    fn report_unreachable_match_arm(&mut self, span: Span, reason: &str) {
+        self.diagnostics.push(
+            Diagnostic::error(
+                codes::UNREACHABLE_MATCH_ARM,
+                "this match arm is unreachable",
+            )
+            .with_location(self.source, span)
+            .with_note(reason)
+            .with_help("remove the arm or change earlier patterns so this arm can be reached"),
+        );
     }
 
     /// Types unary operators and reports invalid domains at the operator token.
@@ -1533,6 +1834,195 @@ mod tests {
             .flatten()
             .map(std::string::ToString::to_string)
             .collect()
+    }
+
+    #[test]
+    fn generic_enum_payloads_are_substituted_and_wildcards_cover_remaining_variants() {
+        let program = "enum Maybe<T> {\n    Some(value: T)\n    None\n}\n\n\
+             fn unwrap(value: Maybe<Int>) -> Int {\n    match value {\n        Some(number) => number\n        None => 0\n    }\n}\n\n\
+             fn with_wildcard(value: Maybe<Int>) -> Int {\n    match value {\n        None => 0\n        _ => 1\n    }\n}\n";
+        let (_, _, hir, result) = checked_with_hir(program);
+        assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+        let number = hir
+            .defs()
+            .iter()
+            .enumerate()
+            .find(|(_, definition)| definition.name == "number")
+            .expect("payload binding exists");
+        assert_eq!(
+            result.type_of_def(DefId::from_index(number.0 as u32)),
+            Some(&Type::Int),
+            "the enum's `T` payload is substituted with `Int`"
+        );
+    }
+
+    #[test]
+    fn result_patterns_bind_their_instantiated_payload_types() {
+        let program = "fn describe(value: Result<Int, Text>) -> Text {\n\
+             match value {\n    Ok(number) => \"success\"\n    Err(reason) => reason\n}\n}\n";
+        let (_, _, hir, result) = checked_with_hir(program);
+        assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+        let reason = hir
+            .defs()
+            .iter()
+            .enumerate()
+            .find(|(_, definition)| definition.name == "reason")
+            .expect("error payload binding exists");
+        assert_eq!(
+            result.type_of_def(DefId::from_index(reason.0 as u32)),
+            Some(&Type::Text)
+        );
+    }
+
+    #[test]
+    fn non_enum_matches_report_one_type_error_without_pattern_cascades() {
+        let program = "fn inspect(value: Int) -> Int {\n\
+             match value {\n    Missing => 1\n}\n}\n";
+        let (sources, id, result) = checked(program);
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.code().id())
+                .collect::<Vec<_>>(),
+            ["NDO2011"]
+        );
+        let diagnostic = &result.diagnostics.as_slice()[0];
+        assert_eq!(
+            diagnostic.help(),
+            Some("match a value whose type is an enum or `Result<T, E>`")
+        );
+        let file = sources.get(id).expect("source exists");
+        assert_eq!(
+            file.span_text(diagnostic.span().expect("scrutinee span")),
+            Some("value")
+        );
+    }
+
+    #[test]
+    fn missing_match_variants_follow_declaration_order() {
+        let program = "enum Direction {\n    North\n    East\n    South\n    West\n}\n\n\
+             fn rank(value: Direction) -> Int {\n    match value {\n        East => 1\n        West => 3\n    }\n}\n";
+        let (_, _, result) = checked(program);
+        assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
+        assert_eq!(result.diagnostics.as_slice()[0].code().id(), "NDO2014");
+        assert_eq!(
+            result.diagnostics.as_slice()[0].notes(),
+            &["missing variants: North, South".to_string()]
+        );
+    }
+
+    #[test]
+    fn match_pattern_and_body_errors_are_reported_and_recover_as_error() {
+        let program = "enum Flag {\n    On\n    Off\n}\n\n\
+             fn inspect(value: Flag) -> Int {\n    match value {\n        Missing => true + 1\n        On => 1\n    }\n}\n";
+        let (_, _, hir, result) = checked_with_hir(program);
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.code().id())
+                .collect::<Vec<_>>(),
+            ["NDO2012", "NDO2018", "NDO2014"]
+        );
+        let function = hir
+            .defs()
+            .iter()
+            .find(|definition| definition.name == "inspect")
+            .expect("function exists");
+        let body = hir
+            .expr(function.value.expect("function has a body"))
+            .unwrap();
+        let ExprKind::Block {
+            value: Some(match_id),
+            ..
+        } = body.kind
+        else {
+            panic!("function body is a block ending in the match");
+        };
+        assert_eq!(result.type_of_expr(match_id), Some(&Type::Error));
+    }
+
+    #[test]
+    fn match_payload_arity_and_missing_variants_have_precise_diagnostics() {
+        let program = "enum Pair {\n    Both(left: Int, right: Bool)\n    Other\n}\n\n\
+             fn too_few(value: Pair) -> Int {\n    match value {\n        Both(left) => left\n        Other => 0\n    }\n}\n\n\
+             fn too_many(value: Pair) -> Int {\n    match value {\n        Both(left, right, _) => left\n        Other => 0\n    }\n}\n\n\
+             fn incomplete(value: Pair) -> Int {\n    match value {\n        Other => 0\n    }\n}\n";
+        let (sources, id, result) = checked(program);
+        let diagnostics = result.diagnostics.as_slice();
+        assert_eq!(diagnostics.len(), 3, "{diagnostics:?}");
+        assert_eq!(diagnostics[0].code().id(), "NDO2013");
+        assert_eq!(diagnostics[1].code().id(), "NDO2013");
+        assert_eq!(diagnostics[2].code().id(), "NDO2014");
+        assert!(
+            diagnostics[2]
+                .notes()
+                .iter()
+                .any(|note| note == "missing variants: Both"),
+            "{:?}",
+            diagnostics[2].notes()
+        );
+        let file = sources.get(id).expect("source exists");
+        assert_eq!(
+            file.span_text(
+                diagnostics[0]
+                    .span()
+                    .expect("excess or missing payload span")
+            ),
+            Some("Both(left)")
+        );
+        assert_eq!(
+            file.span_text(diagnostics[1].span().expect("first excess payload span")),
+            Some("_")
+        );
+        assert_eq!(
+            diagnostics[1].notes(),
+            &[
+                "expected payload patterns: 2".to_string(),
+                "found payload patterns: 3".to_string()
+            ]
+        );
+    }
+
+    #[test]
+    fn duplicate_and_unreachable_match_arms_are_reported() {
+        let program = "enum One {\n    Only\n}\n\n\
+             enum Two {\n    First\n    Second\n}\n\n\
+             fn redundant(value: One) -> Int {\n    match value {\n        Only => 1\n        _ => 2\n    }\n}\n\n\
+             fn after_wildcard(value: Two) -> Int {\n    match value {\n        First => 1\n        _ => 2\n        Second => 3\n    }\n}\n\n\
+             fn duplicate(value: Two) -> Int {\n    match value {\n        First => 1\n        First => 2\n        _ => 3\n    }\n}\n";
+        let (_, _, result) = checked(program);
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.code().id())
+                .collect::<Vec<_>>(),
+            ["NDO2015", "NDO2015", "NDO2015"]
+        );
+    }
+
+    #[test]
+    fn match_arm_types_must_agree_without_context_and_use_context_when_available() {
+        let program = "enum Flag {\n    Yes\n    No\n}\n\n\
+             fn inferred(value: Flag) {\n    let result = match value {\n        Yes => 1\n        No => true\n    };\n}\n\n\
+             fn contextual(value: Flag, checked: Verified<Int>) -> Int {\n    match value {\n        Yes => checked\n        No => 0\n    }\n}\n\n\
+             fn expected_mismatch(value: Flag) -> Int {\n    match value {\n        Yes => 1\n        No => true\n    }\n}\n";
+        let (_, _, result) = checked(program);
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.code().id())
+                .collect::<Vec<_>>(),
+            ["NDO2004", "NDO2016"]
+        );
+        let diagnostic = &result.diagnostics.as_slice()[1];
+        assert_eq!(
+            diagnostic.notes(),
+            &["expected: `Int`".to_string(), "found: `Bool`".to_string()]
+        );
     }
 
     #[test]

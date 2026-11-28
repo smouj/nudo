@@ -37,4 +37,4 @@ Quien llama puede olvidarse de inspeccionar una bandera. Los tipos distintos per
 
 ## Qué queda pendiente
 
-La operación de runtime, las declaraciones de verificadores comprobables estáticamente, un tipo estable de error, los registros de procedencia y las trazas siguen planificados o propuestos. Se puede nombrar <code>Result&lt;T, E&gt;</code> con los argumentos de tipo requeridos, pero la comprobación de <code>match</code> y el tratamiento exhaustivo aún no están implementados.
+El comprobador admite <code>match</code> exhaustivo sobre el <code>Result&lt;T, E&gt;</code> integrado, con <code>Ok(T)</code> y <code>Err(E)</code> igual que las variantes de una enumeración de usuario. La operación <code>verify</code> aún no puede producir este tipo: su ejecución en runtime, las declaraciones de verificadores comprobables estáticamente, un tipo estable de error, la procedencia y las trazas siguen planificados o propuestos.

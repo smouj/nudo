@@ -17,6 +17,14 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **M3.2: typed enum matching.** Accepted NEP-0020 implements exhaustive
+  `match` for user enums and intrinsic `Result<T, E>`, with explicit wildcard
+  and flat payload patterns, generic payload substitution, arm result checking,
+  stable diagnostics (`NDO2011`–`NDO2016`) and error recovery. Conformance pins
+  parser restrictions, valid and invalid matches, reachability, spans and
+  deterministic coverage diagnostics. The type checker remains separate from
+  `nudo check` until its CLI integration slice.
+
 * **M3.2: integer literal boundaries are checked.** NEP-0019 accepts the exact
   magnitude needed to write `Int::MIN` only directly under unary `-`; all other
   invalid magnitudes use `NDO2010`. HIR performs one bounded, allocation-free
@@ -59,13 +67,11 @@ would be a promise the project cannot keep.
   function type shares its argument or parameter types instead of copying those
   arrays.
 
-* **HIR records what a `match` arm matches.** An arm now carries its pattern's
-  head as written, the definitions the pattern introduces and its body. It is
-  recorded rather than decided on purpose: whether a head is a variant of the
-  scrutinee's enum or a new binding is a question only the scrutinee's *type* can
-  answer, and that type lives in the checker. This is the prerequisite for typing
-  `match`, exhaustiveness and payload binding; guessing from capitalisation in the
-  semantic layer would have invented a language rule in the wrong place.
+* **HIR preserves match patterns for type checking.** Each arm carries an
+  explicit wildcard or unresolved variant name, ordered payload bindings and
+  wildcards, source spans, and its body. Variant lookup belongs to the type
+  checker, where the scrutinee type is known; an unknown variant is an error,
+  never a binding. NEP-0020 adds exhaustive checking and payload typing.
 
 * **M3.2: nominal structure and field access.** HIR now records what a `struct`
   and an `enum` are made of - fields and variants with their types, lowered in the
@@ -73,7 +79,8 @@ would be a promise the project cannot keep.
   own fields - and the checker types `article.title` from the field's annotation.
   A field the type does not have is `NDO2007`, naming the field and listing what
   the type does have; reading a field of a value that has none says the same thing
-  in the same code. Reading an enum's payload stays silent until `match` exists.
+  in the same code. NEP-0020 now types enum payload bindings when matching a
+  value; constructing nominal values still needs a syntax and semantic decision.
   **Construction is not implemented, and cannot be**: the grammar has no syntax
   that builds a nominal value, so it is a NEP's decision rather than a checker
   task.
@@ -81,10 +88,9 @@ would be a promise the project cannot keep.
 * **M3.2: calls are checked.** A call takes the type of its signature's result,
   checks its arity (`NDO2005`), checks each argument against its parameter
   (`NDO2004`, reported at the argument because that is what to change), and
-  reports calling something that is not a function (`NDO2006`). A call to a
-  *generic* function is typed as unknown and says nothing: instantiation is the
-  next slice, and comparing an argument against `T` would invent a rule that does
-  not exist.
+  reports calling something that is not a function (`NDO2006`). Generic calls
+  infer from arguments and an expected result under NEP-0013; `NDO2008` and
+  `NDO2009` diagnose unresolved or signature-absent parameters under NEP-0015.
 
 * **M3.2, first slice: the type checker.** `nudo-typeck` consumes HIR — never a
   syntax tree, never an AST, never a byte of source — and types primitives and
