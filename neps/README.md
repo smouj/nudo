@@ -49,6 +49,7 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 | [0020](0020-typed-enum-matching.md) | Typed enum matching | Implemented |
 | [0021](0021-sequence-indexing-and-bounds.md) | Sequence indexing and bounds | Discussion |
 | [0022](0022-nominal-value-construction.md) | Nominal value construction | Discussion |
+| [0023](0023-direct-calls-and-console-output.md) | M4 execution, direct calls and console output | Discussion |
 
 NEPs 0002 and 0007–0011 are the **semantic gates of M3**, taken together and
 before `nudo-typeck` exists, so that the checker is written against decided
@@ -80,6 +81,11 @@ implementation until acceptance.
 struct and enum value construction for M3.2, including field completeness,
 generic inference and the trust-type boundary. It authorizes no implementation
 until acceptance.
+
+[NEP-0023](0023-direct-calls-and-console-output.md) is in Discussion to settle
+the `nudo run` entry point, M4 runtime diagnostics, direct-call evaluation order
+and the primitive `print` contract. Its rules are not accepted until the
+maintainer decides.
 
 NEP-0004 is in Discussion to settle exact effect signatures, body inference,
 function-value effects and M5 diagnostics. It defers runtime grants to M8 and
