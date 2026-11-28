@@ -224,18 +224,21 @@ enum FieldIndex {
     Indexed(Vec<usize>),
 }
 
-struct EnumVariantType {
-    name: String,
+struct EnumVariantType<'hir> {
+    name: &'hir str,
     payload_start: usize,
     payload_len: usize,
 }
 
-struct EnumVariants {
-    variants: Vec<EnumVariantType>,
+struct EnumVariants<'hir> {
+    variants: Vec<EnumVariantType<'hir>>,
     payload_types: Vec<Type>,
 }
 
-impl Checker<'_> {
+/// Small enums are cheaper to scan than to index for each match expression.
+const LINEAR_MATCH_VARIANT_LIMIT: usize = 16;
+
+impl<'hir> Checker<'hir> {
     /// The type a definition declares, if it declares one.
     fn signature_of(&self, definition: &Def) -> Option<Type> {
         match definition.kind {
@@ -749,17 +752,18 @@ impl Checker<'_> {
         let variant_count = variants
             .as_ref()
             .map_or(0, |variants| variants.variants.len());
-        let variant_indices = variants
-            .as_ref()
-            .map(|variants| {
+        let variant_indices = if variant_count > LINEAR_MATCH_VARIANT_LIMIT {
+            variants.as_ref().map(|variants| {
                 variants
                     .variants
                     .iter()
                     .enumerate()
-                    .map(|(index, variant)| (variant.name.as_str(), index))
+                    .map(|(index, variant)| (variant.name, index))
                     .collect::<HashMap<_, _>>()
             })
-            .unwrap_or_default();
+        } else {
+            None
+        };
         let mut covered = vec![0_u64; variant_count.div_ceil(64)];
         let mut covered_count = 0;
         let mut wildcard_seen = false;
@@ -798,7 +802,16 @@ impl Checker<'_> {
                     span,
                     payloads,
                 } => {
-                    let variant = variant_indices.get(name.as_str()).copied();
+                    let variant = if let Some(indices) = &variant_indices {
+                        indices.get(name.as_str()).copied()
+                    } else {
+                        variants.as_ref().and_then(|variants| {
+                            variants
+                                .variants
+                                .iter()
+                                .position(|variant| variant.name == name)
+                        })
+                    };
                     let payload_types = match (variants.as_ref(), variant) {
                         (Some(variants), Some(index)) => {
                             let bit = 1_u64 << (index % 64);
@@ -934,7 +947,7 @@ impl Checker<'_> {
                     .iter()
                     .enumerate()
                     .filter(|(index, _)| covered[*index / 64] & (1_u64 << (*index % 64)) == 0)
-                    .map(|(_, variant)| variant.name.as_str())
+                    .map(|(_, variant)| variant.name)
                     .collect::<Vec<_>>()
                     .join(", ");
                 self.diagnostics.push(
@@ -960,7 +973,7 @@ impl Checker<'_> {
     }
 
     /// Returns declaration-order variants and their payload types for a match.
-    fn enum_variants(&self, ty: &Type) -> Option<EnumVariants> {
+    fn enum_variants(&self, ty: &Type) -> Option<EnumVariants<'hir>> {
         let Type::Named {
             definition,
             arguments,
@@ -979,12 +992,12 @@ impl Checker<'_> {
             return Some(EnumVariants {
                 variants: vec![
                     EnumVariantType {
-                        name: "Ok".to_string(),
+                        name: "Ok",
                         payload_start: 0,
                         payload_len: 1,
                     },
                     EnumVariantType {
-                        name: "Err".to_string(),
+                        name: "Err",
                         payload_start: 1,
                         payload_len: 1,
                     },
@@ -1019,7 +1032,7 @@ impl Checker<'_> {
                 payload_types.push(ty);
             }
             variants.push(EnumVariantType {
-                name: variant.name.clone(),
+                name: &variant.name,
                 payload_start,
                 payload_len: payload_types.len() - payload_start,
             });
