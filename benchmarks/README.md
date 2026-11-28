@@ -40,8 +40,9 @@ harness rather than the parser.
 | `text-literals` | 2 000 text literals with escapes |
 | `comments` | 2 000 comment-heavy blocks, line and block |
 | `enum-match-large` | 1 000 generic enum variants, each with one payload and an exhaustive match arm |
+| `fields-wide` | 64-field record read by 1 000 typed accessor functions |
 
-Each case runs at every stage above, so the table has twenty-four rows. Inputs are
+Each case runs at every stage above, so the table has twenty-eight rows. Inputs are
 generated deterministically before timing, and a run reports each stage's
 observed output count as `units`.
 

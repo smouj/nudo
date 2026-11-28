@@ -248,6 +248,7 @@ fn build_cases() -> Vec<Case> {
         ("text-literals", synthetic_text(2_000)),
         ("comments", synthetic_comments(2_000)),
         ("enum-match-large", synthetic_enum_match(1_000)),
+        ("fields-wide", synthetic_field_accesses(64, 1_000)),
     ] {
         cases.push(Case {
             case,
@@ -503,6 +504,23 @@ fn synthetic_enum_match(variants: usize) -> String {
         ));
     }
     source.push_str("    }\n}\n");
+    source
+}
+
+/// A wide nominal record read repeatedly through typed field accesses.
+fn synthetic_field_accesses(fields: usize, accessors: usize) -> String {
+    let mut source = String::with_capacity(fields * 24 + accessors * 52);
+    source.push_str("struct WideRecord {\n");
+    for index in 0..fields {
+        source.push_str(&format!("    field_{index}: Int\n"));
+    }
+    source.push_str("}\n\n");
+    for index in 0..accessors {
+        let field = index % fields;
+        source.push_str(&format!(
+            "fn read_{index}(record: WideRecord) -> Int {{ record.field_{field} }}\n"
+        ));
+    }
     source
 }
 
@@ -1234,6 +1252,28 @@ mod tests {
         assert!(
             checked.diagnostics.is_empty(),
             "match benchmark source must typecheck: {:?}",
+            checked.diagnostics
+        );
+    }
+
+    #[test]
+    fn wide_field_access_benchmark_input_typechecks_cleanly() {
+        let source = synthetic_field_accesses(8, 16);
+        let mut sources = SourceMap::new();
+        let id = sources.add("fields-wide.nudo", source);
+        let file = sources.get(id).expect("just added");
+        let parsed = parse(file);
+        assert!(!parsed.has_errors(), "field benchmark source must parse");
+        let resolved = lower(parsed.tree(), id);
+        assert!(
+            resolved.diagnostics.is_empty(),
+            "field benchmark source must resolve: {:?}",
+            resolved.diagnostics
+        );
+        let checked = check(&resolved.hir, id);
+        assert!(
+            checked.diagnostics.is_empty(),
+            "field benchmark source must typecheck: {:?}",
             checked.diagnostics
         );
     }
