@@ -70,8 +70,8 @@ use std::{
 
 use nudo_diagnostics::{Diagnostic, Diagnostics, codes};
 use nudo_hir::{
-    Arm, Def, DefId, DefKind, ExprId, ExprKind, Hir, IntegerMagnitude, LiteralKind, MatchPattern,
-    PayloadPattern, StmtKind, TypeRef, TypeRefKind,
+    Arm, Def, DefId, DefKind, ExprId, ExprKind, Field, Hir, IntegerMagnitude, LiteralKind,
+    MatchPattern, PayloadPattern, StmtKind, TypeRef, TypeRefKind,
 };
 use nudo_source::SourceId;
 use nudo_span::Span;
@@ -127,6 +127,7 @@ pub fn check(hir: &Hir, source: SourceId) -> TypeckResult {
         definition_types: vec![None; hir.defs().len()],
         expression_types: vec![None; last_expression.map_or(0, |last| last as usize + 1)],
         invalid_type_refs: HashSet::new(),
+        field_indices: HashMap::new(),
         diagnostics: Diagnostics::new(),
     };
 
@@ -214,7 +215,13 @@ struct Checker<'a> {
     definition_types: Vec<Option<Type>>,
     expression_types: Vec<Option<Type>>,
     invalid_type_refs: HashSet<Span>,
+    field_indices: HashMap<DefId, FieldIndex>,
     diagnostics: Diagnostics,
+}
+
+enum FieldIndex {
+    Scanning { linear_comparisons: usize },
+    Indexed(Vec<usize>),
 }
 
 struct EnumVariantType {
@@ -1429,29 +1436,29 @@ impl Checker<'_> {
             return Type::Error;
         };
 
+        if !self
+            .hir
+            .def(id)
+            .is_some_and(|definition| definition.kind == DefKind::Struct)
+        {
+            return Type::Error;
+        }
+        let field_index = self.field_index(id, name);
+
         // Everything read out of the definition is copied first: reporting a
         // diagnostic needs `&mut self`, and a borrow of the HIR would outlive it.
-        let (is_struct, type_parameters, found) = {
+        let (type_parameters, found) = {
             let Some(definition) = self.hir.def(id) else {
                 return Type::Error;
             };
-            match definition.kind {
-                DefKind::Struct => (
-                    true,
-                    definition.type_parameters.clone(),
-                    definition
-                        .fields
-                        .iter()
-                        .find(|field| field.name == name)
-                        .and_then(|field| field.ty.clone()),
-                ),
-                _ => (false, Vec::new(), None),
-            }
+            (
+                definition.type_parameters.clone(),
+                field_index
+                    .and_then(|index| definition.fields.get(index))
+                    .and_then(|field| field.ty.clone()),
+            )
         };
 
-        if !is_struct {
-            return Type::Error;
-        }
         if let Some(annotation) = found {
             if type_parameters.len() != arguments.len() {
                 // Type-argument arity is checked in its own slice. Until then,
@@ -1480,6 +1487,46 @@ impl Checker<'_> {
         };
         self.report_unknown_field(name, &receiver_type, name_span, &available);
         Type::Error
+    }
+
+    /// Finds a struct field, indexing only wide structs after the linear-search
+    /// work is estimated to cover the one-time sort. Cold or shallow use stays
+    /// allocation-light; hot use shares a sorted vector and uses binary search.
+    fn field_index(&mut self, definition: DefId, name: &str) -> Option<usize> {
+        const INDEX_THRESHOLD: usize = 16;
+
+        let fields = &self.hir.def(definition)?.fields;
+        if fields.len() < INDEX_THRESHOLD {
+            return fields.iter().position(|field| field.name == name);
+        }
+
+        if let Some(FieldIndex::Indexed(indices)) = self.field_indices.get(&definition) {
+            return find_indexed_field(fields, indices, name);
+        }
+
+        let previous_comparisons = match self.field_indices.get(&definition) {
+            Some(FieldIndex::Scanning { linear_comparisons }) => *linear_comparisons,
+            Some(FieldIndex::Indexed(_)) | None => 0,
+        };
+        let found = fields.iter().position(|field| field.name == name);
+        let comparisons = found.map_or(fields.len(), |index| index + 1);
+        let total_comparisons = previous_comparisons.saturating_add(comparisons);
+        let sort_budget = fields.len().saturating_mul(fields.len().ilog2() as usize);
+
+        if total_comparisons >= sort_budget {
+            let indices = sorted_field_indices(fields);
+            self.field_indices
+                .insert(definition, FieldIndex::Indexed(indices));
+            found
+        } else {
+            self.field_indices.insert(
+                definition,
+                FieldIndex::Scanning {
+                    linear_comparisons: total_comparisons,
+                },
+            );
+            found
+        }
     }
 
     /// Reports a field a value does not have.
@@ -1832,6 +1879,23 @@ impl Checker<'_> {
                 .with_help(help),
         );
     }
+}
+
+fn sorted_field_indices(fields: &[Field]) -> Vec<usize> {
+    let mut indices = (0..fields.len()).collect::<Vec<_>>();
+    indices.sort_unstable_by(|left, right| {
+        fields[*left]
+            .name
+            .cmp(&fields[*right].name)
+            .then_with(|| left.cmp(right))
+    });
+    indices
+}
+
+fn find_indexed_field(fields: &[Field], indices: &[usize], name: &str) -> Option<usize> {
+    let position = indices.partition_point(|index| fields[*index].name.as_str() < name);
+    let index = *indices.get(position)?;
+    (fields[index].name == name).then_some(index)
 }
 
 #[cfg(test)]
@@ -2801,6 +2865,22 @@ mod tests {
             "{:?}",
             named_types(&checked(program).2)
         );
+    }
+
+    #[test]
+    fn indexed_field_lookup_preserves_the_first_source_match() {
+        let field = |name: &str| Field {
+            name: name.to_string(),
+            ty: None,
+            span: zero_span(),
+        };
+        let fields = vec![field("duplicate"), field("middle"), field("duplicate")];
+        let indices = sorted_field_indices(&fields);
+
+        for name in ["duplicate", "middle", "missing"] {
+            let linear = fields.iter().position(|field| field.name == name);
+            assert_eq!(find_indexed_field(&fields, &indices, name), linear);
+        }
     }
 
     #[test]
