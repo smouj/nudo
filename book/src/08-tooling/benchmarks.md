@@ -10,9 +10,12 @@ do not exist yet.
 
 ## Workloads and stage boundaries
 
-The suite generates four deterministic synthetic inputs: function declarations,
-let bindings, text literals and comment-heavy source. Each is measured at four
-stages, for sixteen rows:
+The suite generates six deterministic synthetic inputs: function declarations,
+generic and ordinary calls, let bindings, text literals, comment-heavy source,
+and a large generic enum with an exhaustive payload match. The last workload has
+1,000 variants and arms, so it exercises variant lookup, generic payload
+substitution, coverage and result-type checking. Each input is measured at four
+stages, for twenty-four rows:
 
 | Stage | Timed work |
 | --- | --- |

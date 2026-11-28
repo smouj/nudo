@@ -8,7 +8,7 @@ Das Benchmarkprogramm misst Compilerstufen, die heute existieren. Es misst keine
 
 ## Arbeitslasten und Stufengrenzen
 
-Die Suite erzeugt vier deterministische synthetische Eingaben: Funktionsdeklarationen, let-Bindungen, Textliterale und kommentarlastigen Quellcode. Jede wird in vier Stufen gemessen, insgesamt also sechzehn Zeilen:
+Die Suite erzeugt sechs deterministische synthetische Eingaben: Funktionsdeklarationen, generische und gewöhnliche Aufrufe, let-Bindungen, Textliterale, kommentarlastigen Quellcode und ein großes generisches Enum mit vollständigem Payload-Match. Die letzte Arbeitslast hat 1.000 Varianten und Arme; sie misst Variantensuche, generische Payload-Substitution, Abdeckung und Prüfung des Ergebnistyps. Jede Eingabe wird in vier Stufen gemessen, insgesamt also vierundzwanzig Zeilen:
 
 | Stufe | Gemessene Arbeit |
 | --- | --- |
