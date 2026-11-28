@@ -12,6 +12,7 @@ El sistema de tipos está especificado en los capítulos del lenguaje y en las N
 | --- | --- |
 | Tipos primitivos y literales | Se representan <code>Int</code>, <code>Float</code>, <code>Bool</code>, <code>Text</code> y <code>Unit</code> |
 | Anotaciones y firmas de función | Los valores se comparan con los tipos escritos; se comprueban los tipos de función y las llamadas |
+| Resultados de función | Si se omite el tipo de resultado, es <code>Unit</code>; las funciones que devuelven un valor declaran su tipo y los desacuerdos del cuerpo usan <code>NDO2004</code> |
 | Llamadas | La aridad usa <code>NDO2005</code>, los argumentos incompatibles <code>NDO2004</code> y los valores no invocables <code>NDO2006</code> |
 | Llamadas genéricas | Los parámetros de tipo se infieren a partir de los argumentos y de los tipos de resultado esperados que ya se conocen, en orden de origen; los parámetros genéricos no inferibles usan <code>NDO2008</code> y los parámetros de función ausentes de la firma usan <code>NDO2009</code> |
 | Tipos con nombre | La aridad de argumentos de tipo usa <code>NDO2017</code>; se comprueban la identidad nominal y el acceso a campos admitido |

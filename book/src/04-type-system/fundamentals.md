@@ -15,6 +15,7 @@ The CLI does not invoke the checker yet.
 | --- | --- |
 | Primitive and literal types | <code>Int</code>, <code>Float</code>, <code>Bool</code>, <code>Text</code> and <code>Unit</code> are represented |
 | Annotations and function signatures | Values are compared with written types; function types and calls are checked |
+| Function results | An omitted result annotation means <code>Unit</code>; value-returning functions declare their result type; body mismatches use <code>NDO2004</code> |
 | Calls | Arity uses <code>NDO2005</code>, incompatible arguments use <code>NDO2004</code>, and non-callable values use <code>NDO2006</code> |
 | Generic calls | Type parameters are inferred from arguments and already-known expected result types, in source order; unresolved call parameters use <code>NDO2008</code> and unused function parameters use <code>NDO2009</code> |
 | Named types | Type-argument arity uses <code>NDO2017</code>; nominal identity and supported field access are checked |

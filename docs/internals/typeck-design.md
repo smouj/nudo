@@ -80,7 +80,7 @@ fill in cases instead of redesigning the centre:
 | Named type arity | Resolved structs, enums, type parameters and intrinsic types require their declared type-argument count; `NDO2017` points at the type use |
 | Blocks | a block's type is its final expression's, or `Unit` when it has none |
 | Names | a path takes the type of the definition it resolved to |
-| Functions | a body is compared with the written return type; with none written, the body's type *is* the result type |
+| Functions | signatures are known before bodies; an omitted result means `Unit`, and the body is checked against that result (`NDO2004` on mismatch) |
 | `if` | the condition is `Bool`; an expected result checks both branches, otherwise branch types must match exactly; an `if` without `else` is `Unit` |
 | Field access | `article.title` takes the field's type after substituting the receiver's generic arguments; a built-in `Verified<T>` receiver uses the supported view of `T`; `NDO2007` points at a missing field's name |
 | Calls | arity (`NDO2005`, reported at the argument list), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`, reported at the callee); a built-in `Verified<Fn(...) -> ...>` can be called through its supported `Fn` view; malformed calls still check matched arguments against their parameters and excess argument expressions for nested errors |

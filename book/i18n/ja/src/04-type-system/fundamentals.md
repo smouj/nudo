@@ -12,6 +12,7 @@
 | --- | --- |
 | プリミティブ型とリテラル型 | <code>Int</code>、<code>Float</code>、<code>Bool</code>、<code>Text</code>、<code>Unit</code> を表現 |
 | 注釈と関数シグネチャー | 値を記述された型と比較し、関数型と呼び出しを検査 |
+| 関数の結果 | 結果型注釈を省略すると <code>Unit</code>。値を返す関数は結果型を宣言し、本文の不一致には <code>NDO2004</code> を使用 |
 | 呼び出し | 引数の個数には <code>NDO2005</code>、互換性のない引数には <code>NDO2004</code>、呼び出せない値には <code>NDO2006</code> |
 | ジェネリック呼び出し | 引数およびすでに判明している期待戻り値型からソース順に推論。推論できない型パラメーターは <code>NDO2008</code>、関数シグネチャーで使われない型パラメーターは <code>NDO2009</code> で診断 |
 | 名前付き型 | 型引数の個数には <code>NDO2017</code> を使い、nominal identity と対応済みフィールドアクセスを検査 |

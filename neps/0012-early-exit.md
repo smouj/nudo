@@ -6,7 +6,7 @@
 | Created | 2026-09-18 |
 | Accepted | 2026-09-18 |
 | Supersedes | — |
-| Superseded by | — |
+| Superseded by | [NEP-0016](0016-omitted-function-result-types.md), for omitted function-result typing only |
 | Specification chapters | [`spec/declarations.md`](../spec/declarations.md), [`spec/expressions.md`](../spec/expressions.md), [`spec/grammar.md`](../spec/grammar.md) |
 | Related NEPs | NEP-0005, NEP-0008, NEP-0009 |
 

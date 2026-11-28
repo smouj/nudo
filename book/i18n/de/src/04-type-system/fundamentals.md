@@ -12,6 +12,7 @@ Das Typsystem ist in den Sprachkapiteln und angenommenen NEPs spezifiziert. Das 
 | --- | --- |
 | Primitive und Literaltypen | <code>Int</code>, <code>Float</code>, <code>Bool</code>, <code>Text</code> und <code>Unit</code> werden repräsentiert |
 | Annotationen und Funktionssignaturen | Werte werden mit angegebenen Typen verglichen; Funktionstypen und Aufrufe werden geprüft |
+| Funktionsergebnisse | Ohne Ergebnisannotation ist das Ergebnis <code>Unit</code>; Funktionen mit Rückgabewert schreiben ihren Ergebnistyp, Abweichungen im Rumpf verwenden <code>NDO2004</code> |
 | Aufrufe | Arität verwendet <code>NDO2005</code>, inkompatible Argumente <code>NDO2004</code>, nicht aufrufbare Werte <code>NDO2006</code> |
 | Generische Aufrufe | Typparameter werden aus Argumenten und bereits bekannten erwarteten Ergebnistypen in Quellreihenfolge hergeleitet; nicht herleitbare Typparameter eines Aufrufs verwenden <code>NDO2008</code>, Signaturparameter ohne Verwendung <code>NDO2009</code> |
 | Benannte Typen | Die Typargument-Arität verwendet <code>NDO2017</code>; nominale Identität und unterstützter Feldzugriff werden geprüft |

@@ -185,7 +185,7 @@ the dependency rules between them.
 | HIR and name resolution | Implemented and tested (milestone M3.1) |
 | `nudo check` | Implemented: reads `.nudo` files, reports lexical, syntax and name diagnostics |
 | `nudo --version`, `nudo --help` | Implemented |
-| Type checker | In progress (M3.2–M3.3): primitives, calls, bounded generic inference, fields, operator domains, `if` results and accepted `Verified<T> → T` assignment; sequence indexing, `match`, `Result` checking and `verify` remain pending; not wired into `nudo check` yet |
+| Type checker | In progress (M3.2–M3.3): primitives, calls, bounded generic inference, `Unit` for omitted function results, fields, operator domains, `if` results and accepted `Verified<T> → T` assignment; sequence indexing, `match`, `Result` checking and `verify` remain pending; not wired into `nudo check` yet |
 | Effects | Planned (M5) |
 | Interpreter, WASM backend | Planned |
 | Agents, tools, models, policies | Designed only |
