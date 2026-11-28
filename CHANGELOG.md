@@ -17,6 +17,11 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **NEP-0018: statically checkable verifiers.** The missing M3.3 proposal is
+  recorded in Discussion with a bounded, direct-call design for verifier
+  typing, deterministic bodies, failures, and provenance. The proposal is not
+  accepted and authorizes no implementation yet.
+
 * **Large enum-match performance workload.** The reproducible benchmark suite
   now measures type checking for a 1,000-variant generic enum with payload
   bindings and exhaustive arms, as NEP-0020 requires before stabilisation. Its
