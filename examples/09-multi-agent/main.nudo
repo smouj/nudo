@@ -22,9 +22,7 @@ agent Researcher {
     role:
         "Find and check sources."
 
-    tools:
-        web::search
-        web::open
+    tools: web::search, web::open
 
     allow:
         Network
@@ -37,8 +35,7 @@ agent Editor {
     role:
         "Turn research into an article."
 
-    tools:
-        web::search
+    tools: web::search
 
     allow:
         Network
