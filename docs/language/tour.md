@@ -88,8 +88,8 @@ agent Researcher {
         "Research reliable information."
 
     tools:
-        web.search
-        web.open
+        web::search
+        web::open
 
     allow:
         Network
