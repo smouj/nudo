@@ -795,41 +795,37 @@ impl Lowerer {
 
         // Pass 1 hoists every item, so a function may call one declared below
         // it. This is the whole reason lowering has two passes.
-        for item in &items {
-            self.declare_item(*item);
-        }
+        // Keep each ID aligned with its syntax node; searching the growing
+        // definition arena for every item would make this pass quadratic.
+        let item_definitions: Vec<Option<DefId>> =
+            items.iter().map(|item| self.declare_item(*item)).collect();
 
         // Pass 2 lowers the bodies, now that every name in the file is known.
-        for item in &items {
-            self.lower_item_body(*item);
+        for (item, def_id) in items.iter().zip(item_definitions) {
+            self.lower_item_body(*item, def_id);
         }
     }
 
     // ---------------------------------------------------------------- items --
 
-    fn declare_item(&mut self, node: SyntaxNode<'_>) {
-        let Some(kind) = item_kind(node.kind()) else {
-            return;
-        };
+    fn declare_item(&mut self, node: SyntaxNode<'_>) -> Option<DefId> {
+        let kind = item_kind(node.kind())?;
         let Some(name) = item_name_token(node) else {
             // The parser already reported the missing name.
-            return;
+            return None;
         };
         let ty = match kind {
             DefKind::Const | DefKind::Binding => self.lower_annotation(node),
             _ => None,
         };
-        self.declare(name.text().to_string(), kind, name.span(), ty);
+        Some(self.declare(name.text().to_string(), kind, name.span(), ty))
     }
 
-    fn lower_item_body(&mut self, node: SyntaxNode<'_>) {
+    fn lower_item_body(&mut self, node: SyntaxNode<'_>, def_id: Option<DefId>) {
         let Some(kind) = item_kind(node.kind()) else {
             return;
         };
-        let Some(name) = item_name_token(node) else {
-            return;
-        };
-        let Some(def_id) = self.find_def(name.text(), name.span()) else {
+        let Some(def_id) = def_id else {
             return;
         };
 
@@ -943,13 +939,6 @@ impl Lowerer {
             });
         }
         fields
-    }
-
-    fn find_def(&self, name: &str, span: Span) -> Option<DefId> {
-        self.defs
-            .iter()
-            .position(|def| def.name == name && def.span == span)
-            .map(|index| DefId(index as u32))
     }
 
     // ---------------------------------------------------------------- types --
