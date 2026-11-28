@@ -17,6 +17,11 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **NEP-0021: sequence indexing and bounds.** The M3.2 proposal defines a
+  zero-based Int index, a typed bounds result, and O(1) access without a
+  per-access allocation. It remains in Discussion; no indexing rule is
+  implemented before maintainer acceptance.
+
 * **NEP-0018: statically checkable verifiers.** The missing M3.3 proposal is
   recorded in Discussion with a bounded, direct-call design for verifier
   typing, deterministic bodies, failures, and provenance. The proposal is not
