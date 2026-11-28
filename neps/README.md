@@ -47,6 +47,7 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 | [0018](0018-statically-checkable-verifiers.md) | Statically checkable verifiers | Discussion |
 | [0019](0019-integer-literal-boundary.md) | Integer literal boundary | Accepted |
 | [0020](0020-typed-enum-matching.md) | Typed enum matching | Implemented |
+| [0021](0021-sequence-indexing-and-bounds.md) | Sequence indexing and bounds | Discussion |
 
 NEPs 0002 and 0007–0011 are the **semantic gates of M3**, taken together and
 before `nudo-typeck` exists, so that the checker is written against decided
@@ -67,6 +68,10 @@ typing, including intrinsic `Result<T, E>`.
 the missing verifier declaration, deterministic body, failure, and provenance
 contract for M3.3. It remains a proposal; no verification rule may be
 implemented until the maintainer accepts it.
+
+[NEP-0021](0021-sequence-indexing-and-bounds.md) is in Discussion to settle
+sequence element typing and bounds behavior for M3.2. It likewise authorizes no
+implementation until acceptance.
 
 ## States
 

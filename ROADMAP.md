@@ -211,8 +211,9 @@ rules of their own.
       accepts matching `Int` or `Float`, and invalid domains report `NDO2018`
       at the operator; `if` branches use an expected type or agree exactly,
       while an `if` without `else` has type `Unit`
-* [ ] Sequence and index typing, including its runtime bounds behavior; a NEP
-      must settle this before implementation
+* [ ] Sequence and index typing, including its runtime bounds behavior
+      ([NEP-0021](neps/0021-sequence-indexing-and-bounds.md);
+      **Discussion**, not yet an implementation target)
 * [x] Stable generic-inference diagnostics: `NDO2008` for unresolved call
       parameters and `NDO2009` for function parameters absent from the signature
       (NEP-0015)
@@ -247,6 +248,8 @@ diagnostic contracts are accepted; a Draft NEP is not an implementation target.
 
 * **Sequence and index typing:** the grammar accepts `a[i]` and `[T]`, but the
   element type, index type and out-of-range behavior need an accepted NEP.
+  [NEP-0021](neps/0021-sequence-indexing-and-bounds.md) is in Discussion and
+  does not authorize implementation.
 * **Nominal construction:** the grammar has no struct or enum construction
   syntax; a NEP must decide it before implementation.
 * **Agent, task and tool types:** their declaration semantics remain proposed
