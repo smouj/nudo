@@ -6,7 +6,11 @@ and no nightly toolchain:
 ```sh
 cargo run --release --package nudo-bench
 cargo run --release --package nudo-bench -- --iterations 1000 --warmup 100
+cargo run --release --package nudo-bench -- --case-filter enum-match-exhaustive
 ```
+
+`--case-filter` runs every case whose name contains the supplied text. This
+lets you repeat a focused measurement without timing unrelated front-end work.
 
 Every run records the commit, whether the tree was dirty, the Rust version, the
 operating system, the architecture, the CPU model when the host exposes it (or
