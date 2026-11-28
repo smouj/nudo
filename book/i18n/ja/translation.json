@@ -20,7 +20,7 @@
   "06-security/threat-model.md": "2ef62e0c8d3687ef01e58e5458e6226123d6399f8def65f8a186b9359cdeed22",
   "07-runtime/budgets-approvals.md": "ba39552019ceb02af602ab8bae2973331a8d25bb3026150c1b84e2dcf9ded0d2",
   "07-runtime/trace-provenance.md": "5fbbc20dce1bacab7266c1ddfe65fb610d8f3c7cfcbe334620da8342e229635f",
-  "08-tooling/benchmarks.md": "d41caedf15f17e9cc1dbb727ae000e5a5ceed804aa6fbf0ededc5ad6a321236f",
+  "08-tooling/benchmarks.md": "ba36a344c2bf6340119f5f24d275b7ab196bcd5d09c7f6a5adc1c629c12b48dc",
   "08-tooling/cli.md": "6a8d77234236751fb004e5a00d118710a303312fc5a8ebec8ad0d024ed11ff0b",
   "09-interoperability/mcp-a2a-wasm.md": "1995f5c89b89a6fbff81bc6e8e4577836c718a6b6ffacca98cb6006b678875ba",
   "10-internals/repository-architecture.md": "bc977346097fd25af2eafb7ae1578b1f632d98f2068ac2b410d77f31c0799c42",

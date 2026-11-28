@@ -17,6 +17,12 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **Large enum-match performance workload.** The reproducible benchmark suite
+  now measures type checking for a 1,000-variant generic enum with payload
+  bindings and exhaustive arms, as NEP-0020 requires before stabilisation. Its
+  deterministic input is prepared before the timed region; no benchmark
+  dependency or performance claim is added.
+
 * **M3.2: typed enum matching.** Accepted NEP-0020 implements exhaustive
   `match` for user enums and intrinsic `Result<T, E>`, with explicit wildcard
   and flat payload patterns, generic payload substitution, arm result checking,

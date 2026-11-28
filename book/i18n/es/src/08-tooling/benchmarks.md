@@ -8,7 +8,7 @@ El programa de benchmarks mide fases del compilador que existen hoy. No mide la 
 
 ## Cargas de trabajo y límites de las fases
 
-La suite genera cuatro entradas sintéticas y deterministas: declaraciones de funciones, bindings let, literales de texto y código con muchos comentarios. Cada una se mide en cuatro fases, para un total de dieciséis filas:
+La suite genera seis entradas sintéticas y deterministas: declaraciones de funciones, llamadas genéricas y ordinarias, bindings let, literales de texto, código con muchos comentarios y un enum genérico grande con un `match` exhaustivo de payloads. Esta última carga tiene 1.000 variantes y brazos; ejercita la búsqueda de variantes, la sustitución de tipos genéricos, la cobertura y la comprobación del tipo de resultado. Cada entrada se mide en cuatro fases, para un total de veinticuatro filas:
 
 | Fase | Trabajo medido |
 | --- | --- |

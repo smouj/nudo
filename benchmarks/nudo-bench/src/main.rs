@@ -247,6 +247,7 @@ fn build_cases() -> Vec<Case> {
         ("bindings", synthetic_bindings(5_000)),
         ("text-literals", synthetic_text(2_000)),
         ("comments", synthetic_comments(2_000)),
+        ("enum-match-large", synthetic_enum_match(1_000)),
     ] {
         cases.push(Case {
             case,
@@ -482,6 +483,26 @@ fn synthetic_comments(count: usize) -> String {
             "// comment {index} explaining nothing in particular\nlet c{index} = {index};\n/* block {index} */\n"
         ));
     }
+    source
+}
+
+/// A generic enum with one payload-bearing variant and one arm per entry.
+///
+/// This workload exercises variant indexing, generic payload substitution,
+/// coverage tracking and arm result checks in a single deterministic input.
+fn synthetic_enum_match(variants: usize) -> String {
+    let mut source = String::with_capacity(variants * 100);
+    source.push_str("enum BenchCase<T> {\n");
+    for index in 0..variants {
+        source.push_str(&format!("    Case{index}(value: T)\n"));
+    }
+    source.push_str("}\n\nfn classify(value: BenchCase<Int>) -> Int {\n    match value {\n");
+    for index in 0..variants {
+        source.push_str(&format!(
+            "        Case{index}(payload_{index}) => payload_{index}\n"
+        ));
+    }
+    source.push_str("    }\n}\n");
     source
 }
 
@@ -1191,6 +1212,28 @@ mod tests {
         assert!(
             checked.diagnostics.is_empty(),
             "call benchmark source must typecheck: {:?}",
+            checked.diagnostics
+        );
+    }
+
+    #[test]
+    fn large_enum_match_benchmark_input_typechecks_cleanly() {
+        let source = synthetic_enum_match(32);
+        let mut sources = SourceMap::new();
+        let id = sources.add("enum-match.nudo", source);
+        let file = sources.get(id).expect("just added");
+        let parsed = parse(file);
+        assert!(!parsed.has_errors(), "match benchmark source must parse");
+        let resolved = lower(parsed.tree(), id);
+        assert!(
+            resolved.diagnostics.is_empty(),
+            "match benchmark source must resolve: {:?}",
+            resolved.diagnostics
+        );
+        let checked = check(&resolved.hir, id);
+        assert!(
+            checked.diagnostics.is_empty(),
+            "match benchmark source must typecheck: {:?}",
             checked.diagnostics
         );
     }
