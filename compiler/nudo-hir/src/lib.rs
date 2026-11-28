@@ -392,6 +392,8 @@ pub enum ExprKind {
     Unary {
         /// The operator, as written.
         operator: String,
+        /// The operator token's exact source span for diagnostics.
+        operator_span: Span,
         /// The operand.
         operand: ExprId,
     },
@@ -399,6 +401,8 @@ pub enum ExprKind {
     Binary {
         /// The operator, as written.
         operator: String,
+        /// The operator token's exact source span for diagnostics.
+        operator_span: Span,
         /// The left operand.
         left: ExprId,
         /// The right operand.
@@ -1170,17 +1174,24 @@ impl Lowerer {
                 ExprKind::Index { base, index }
             }
             SyntaxKind::UnaryExpression => {
-                let operator = node
+                let operator_token = node
                     .child_tokens()
                     .into_iter()
-                    .find(|token| !token.kind().is_trivia())
-                    .map_or_else(String::new, |token| token.text().to_string());
+                    .find(|token| !token.kind().is_trivia());
+                let operator =
+                    operator_token.map_or_else(String::new, |token| token.text().to_string());
+                let operator_span =
+                    operator_token.map_or_else(|| node.span(), |token| token.span());
                 let operand = node
                     .child_nodes()
                     .into_iter()
                     .find(|child| is_expression(child.kind()))
                     .and_then(|child| self.lower_expression(child))?;
-                ExprKind::Unary { operator, operand }
+                ExprKind::Unary {
+                    operator,
+                    operator_span,
+                    operand,
+                }
             }
             SyntaxKind::BinaryExpression => {
                 let mut parts = node
@@ -1190,13 +1201,17 @@ impl Lowerer {
                     .filter_map(|child| self.lower_expression(child));
                 let left = parts.next()?;
                 let right = parts.next()?;
-                let operator = node
+                let operator_token = node
                     .child_tokens()
                     .into_iter()
-                    .find(|token| !token.kind().is_trivia())
-                    .map_or_else(String::new, |token| token.text().to_string());
+                    .find(|token| !token.kind().is_trivia());
+                let operator =
+                    operator_token.map_or_else(String::new, |token| token.text().to_string());
+                let operator_span =
+                    operator_token.map_or_else(|| node.span(), |token| token.span());
                 ExprKind::Binary {
                     operator,
+                    operator_span,
                     left,
                     right,
                 }

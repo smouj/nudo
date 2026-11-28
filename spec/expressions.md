@@ -1,10 +1,8 @@
 # Expressions and statements
 
-**State: the expression grammar is implemented** (M2). Precedence,
-associativity and the shape of a block are what the parser accepts and what
-`tests/conformance/parser` pins. The agentic expressions at the end of this
-chapter are still provisional: their productions are implemented as written, but
-their form can change through the NEPs named there.
+**State: expression syntax is implemented; core operator and conditional rules
+are accepted and implemented** (NEP-0017). `match`, indexing and the agentic
+expressions at the end of this chapter still need their semantic gates.
 
 ## Shape
 
@@ -65,6 +63,29 @@ Rules that follow, and are normative:
   division behavior are fixed by [NEP-0007](../neps/0007-integer-semantics.md).
 * **No truthiness.** A condition is a `Bool`.
 
+### Operator types and evaluation
+
+These rules are normative ([NEP-0017](../neps/0017-boolean-comparison-conditionals.md)):
+
+* `!` accepts an operand assignable to `Bool` and returns `Bool`. `&&` and
+  `||` accept two operands assignable to `Bool` and return `Bool`; they evaluate
+  left to right and short-circuit.
+* `==` and `!=` accept operands with the same primitive view among `Int`,
+  `Float`, `Bool` and `Text`. Text equality compares UTF-8 contents exactly,
+  without Unicode normalization. Functions and named types are not comparable.
+* `<`, `>`, `<=` and `>=` accept two operands with the same primitive view,
+  either `Int` or `Float`. Integer ordering is signed. Text has no ordering
+  operation.
+* Float equality and ordering follow IEEE-754: NaN is unequal to itself and is
+  unordered; positive and negative zero compare equal.
+* The built-in `Verified<T>` is usable as `T` in operator inputs under the
+  ordinary assignment rule. This view does not apply to `Generated<T>` or add
+  any other conversion.
+* No operator converts operands or uses user-defined overloads. A type-domain
+  error is reported at the operator as `NDO2018`.
+* Static effect analysis considers both sides of a short-circuit operator and
+  both branches of an `if`, whether or not runtime evaluation reaches them.
+
 **There is no assignment expression.** An assignment needs a mutable binding, and
 whether NUDO has mutable bindings at all is an open question
 ([`declarations.md`](declarations.md)). When that is answered, assignment takes
@@ -112,6 +133,14 @@ match status {
 ```
 
 * `if` is an expression, not a statement.
+* The condition is evaluated first and must be `Bool`. With an `else`, only the
+  selected branch runs. An expected type checks both branches using ordinary
+  assignment rules; without one, their types must be identical. The conditional
+  does not infer a common supertype or choose based on branch order. A mismatch
+  without an expected type is `NDO2019`, reported at the `else` branch.
+* Without an `else`, the `then` branch must have type `Unit`, and the whole `if`
+  has type `Unit`.
+* An `else if` follows these same rules.
 * `match` must be exhaustive, and uniformly so: an unhandled variant is an
 error whatever the enum is, including `Result<Verified<T>, E>`. NUDO has no
 must-use rule in this edition, so an ignored `Result` is not an error

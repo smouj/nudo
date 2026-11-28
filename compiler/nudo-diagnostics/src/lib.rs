@@ -184,6 +184,14 @@ pub mod codes {
     pub const WRONG_TYPE_ARGUMENT_COUNT: DiagnosticCode =
         DiagnosticCode::new("NDO2017", "WRONG_TYPE_ARGUMENT_COUNT");
 
+    /// An operator has operand types outside the operator's defined domain.
+    pub const INVALID_OPERATOR_TYPES: DiagnosticCode =
+        DiagnosticCode::new("NDO2018", "INVALID_OPERATOR_TYPES");
+
+    /// The branches of an `if` have different types without an expected type.
+    pub const IF_BRANCH_TYPE_MISMATCH: DiagnosticCode =
+        DiagnosticCode::new("NDO2019", "IF_BRANCH_TYPE_MISMATCH");
+
     // ---------------------------------------------------------------- 8xxx --
     /// The file being compiled does not use the `.nudo` extension.
     pub const UNEXPECTED_FILE_EXTENSION: DiagnosticCode =
@@ -208,6 +216,8 @@ pub mod codes {
         TYPE_PARAMETER_NOT_INFERRED,
         TYPE_PARAMETER_NOT_IN_SIGNATURE,
         WRONG_TYPE_ARGUMENT_COUNT,
+        INVALID_OPERATOR_TYPES,
+        IF_BRANCH_TYPE_MISMATCH,
         UNEXPECTED_FILE_EXTENSION,
     ];
 
@@ -233,6 +243,8 @@ pub mod codes {
         TYPE_PARAMETER_NOT_INFERRED,
         TYPE_PARAMETER_NOT_IN_SIGNATURE,
         WRONG_TYPE_ARGUMENT_COUNT,
+        INVALID_OPERATOR_TYPES,
+        IF_BRANCH_TYPE_MISMATCH,
         UNEXPECTED_FILE_EXTENSION,
     ];
 

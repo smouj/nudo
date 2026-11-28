@@ -1,0 +1,11 @@
+fn choose(flag: Bool, left: Int, right: Int) -> Int {
+    if flag { left } else { right }
+}
+
+fn nested(flag: Bool, left: Int, right: Int) -> Int {
+    if flag { left } else if flag { right } else { 0 }
+}
+
+fn unit(flag: Bool) {
+    if flag { } else { }
+}

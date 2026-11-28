@@ -1,7 +1,7 @@
 # 02.2 — Expresiones y precedencia
 
-> **Status:** Implementado (IMPLEMENTED)  
-> **Summary:** La precedencia, la asociatividad y la prohibición de la recursión por la izquierda están decididas, se aplican y las implementa el parser.
+> **Status:** Implementado / Especificado / Planificado (IMPLEMENTED / SPECIFIED / PLANNED)
+> **Summary:** El parser implementa la gramática; el comprobador también valida los tipos de operadores y las ramas de `if`. `match` y la indexación aún necesitan decisiones semánticas.
 
 La precedencia no es una minucia de formato. `a + b * c` debe tener un único
 significado en toda implementación conforme, y el parser produce exactamente esa
@@ -37,3 +37,25 @@ compilación, no un descubrimiento esperando a ocurrir.
 
 El formateador debería imprimir suficiente sintaxis para preservar el significado
 sin depender de la intuición humana.
+
+## Reglas principales de operadores e `if`
+
+[NEP-0017](https://github.com/smouj/nudo/blob/main/neps/0017-boolean-comparison-conditionals.md)
+define los dominios de los operadores y los tipos resultantes de las condiciones:
+
+- `!`, `&&` y `||` usan `Bool`; `&&` y `||` cortocircuitan de izquierda a
+  derecha. Un operando no válido produce `NDO2018` en el operador.
+- La igualdad compara vistas primitivas coincidentes de `Int`, `Float`, `Bool`
+  o `Text`. El orden solo está definido para `Int` o `Float` coincidentes. No
+  hay conversiones numéricas ni sobrecargas definidas por el usuario. La vista
+  aceptada de `Verified<T>` como `T` también se aplica a los operadores.
+- Las comparaciones de `Float` siguen IEEE-754: NaN no es igual a sí mismo y no
+  tiene orden; el cero positivo y el negativo son iguales.
+- La condición de `if` es `Bool`. Con `else`, un tipo esperado comprueba ambas
+  ramas; sin él, ambas deben tener exactamente el mismo tipo. El desacuerdo
+  produce `NDO2019` en la rama `else`.
+- Un `if` sin `else` tiene tipo `Unit` y su rama `then` también debe ser `Unit`.
+
+En ejecución, no se evalúan el operando omitido por cortocircuito ni la rama no
+seleccionada. La comprobación estática de efectos considera todos ellos, para que
+la declaración siga siendo válida con cualquier entrada.

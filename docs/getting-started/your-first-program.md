@@ -28,9 +28,10 @@ checked 1 file: 0 errors and 0 warnings
 ```
 
 **What that actually means.** `nudo check` reads the file, lexes it, parses it,
-and reports lexical and syntax diagnostics. A clean run means "no lexical or
-syntax diagnostics" — not "this program is correct", and not "this program
-runs". There is no type checker and no interpreter yet
+and reports lexical, syntax and name-resolution diagnostics. A clean run means
+"no front-end diagnostics" — not "this program is type-correct", and not "this
+program runs". A partial type checker exists with its own tests, but it is not
+yet wired into the CLI; there is no interpreter yet
 ([`../../ROADMAP.md`](../../ROADMAP.md), M3–M4).
 
 ## See what the compiler sees

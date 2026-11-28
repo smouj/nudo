@@ -1,0 +1,16 @@
+# nudo-typeck v1
+def 0009 function `logical` 1:4: Fn(Bool, Bool) -> Bool
+def 0010 function `integers` 5:4: Fn(Int, Int) -> Bool
+def 0011 function `floats` 9:4: Fn(Float, Float) -> Bool
+def 0012 function `texts` 13:4: Fn(Text, Text) -> Bool
+def 0013 function `booleans` 17:4: Fn(Bool, Bool) -> Bool
+def 0014 parameter `a` 1:12: Bool
+def 0015 parameter `b` 1:21: Bool
+def 0016 parameter `a` 5:13: Int
+def 0017 parameter `b` 5:21: Int
+def 0018 parameter `a` 9:11: Float
+def 0019 parameter `b` 9:21: Float
+def 0020 parameter `a` 13:10: Text
+def 0021 parameter `b` 13:19: Text
+def 0022 parameter `a` 17:13: Bool
+def 0023 parameter `b` 17:22: Bool

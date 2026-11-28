@@ -1,0 +1,4 @@
+fn invalid(number: Int, decimal: Float, text: Text) {
+    let mixed = number == decimal;
+    let ordering = text < text;
+}

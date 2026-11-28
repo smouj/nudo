@@ -18,8 +18,8 @@ The CLI does not invoke the checker yet.
 | Calls | Arity uses <code>NDO2005</code>, incompatible arguments use <code>NDO2004</code>, and non-callable values use <code>NDO2006</code> |
 | Generic calls | Type parameters are inferred from arguments and already-known expected result types, in source order; unresolved call parameters use <code>NDO2008</code> and unused function parameters use <code>NDO2009</code> |
 | Named types | Type-argument arity uses <code>NDO2017</code>; nominal identity and supported field access are checked |
-| Arithmetic | Matching numeric operands support <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>; <code>%</code> is Int-only and unary <code>-</code> preserves numeric type |
-| Conditions | The condition of <code>if</code> must be <code>Bool</code>; branch expressions are still visited |
+| Operators | Arithmetic uses matching numeric views, <code>%</code> is Int-only, Boolean operators use <code>Bool</code>, equality accepts matching primitive views, and ordering accepts matching <code>Int</code> or <code>Float</code>; invalid domains use <code>NDO2018</code> |
+| Conditions | <code>if</code> conditions are <code>Bool</code>; an expected type checks both branches, otherwise they must agree exactly; without <code>else</code>, the result and then-branch are <code>Unit</code>; an uncontextualised mismatch uses <code>NDO2019</code> |
 | Trust assignment | The built-in <code>Verified&lt;T&gt;</code> can be used where <code>T</code> is expected in supported positions |
 
 Generic inference is deliberately bounded. It does not solve types across the
@@ -34,11 +34,10 @@ earlier error.
 
 ## Rules still incomplete
 
-The checker does not yet define a result type for <code>if</code>, agreement
-between branch values, all operators, indexing, nominal construction,
-<code>match</code> or <code>Result&lt;T, E&gt;</code> matching. Integer literal
-range checking, agents, tasks and tools have not been implemented in this
-checker.
+Sequence indexing and its runtime bounds behavior, nominal construction,
+<code>match</code> and <code>Result&lt;T, E&gt;</code> matching remain pending. Integer
+literal range checking, verifier execution and provenance, agents, tasks and
+tools have not been implemented in this checker.
 
 These omissions are deliberate. A rule is implemented only when its semantic
 and diagnostic contract is accepted. The roadmap and the specification record

@@ -1,9 +1,10 @@
 # Types
 
 **State: partly decided; type checking is in progress (M3.2–M3.3).** Primitive
-types, numeric conversion rules, declaration-site generics and bounded
-inference are accepted designs. Trust-type and some composite-type semantics
-remain open, as marked below and in the related NEPs.
+types, numeric conversion rules, declaration-site generics, bounded inference,
+operator domains and conditional result rules are accepted designs. Trust-type
+and some composite-type semantics remain open, as marked below and in the
+related NEPs.
 
 ## Design constraints
 
@@ -106,6 +107,11 @@ asked at different times, and one mechanism is better than two.
 * `Generated<T>` and `Verified<T>` are never inferred into each other. If
   inference would have to guess which one you meant, it is an error and it says
   so.
+
+Operator operand domains and conditional branch agreement are defined in
+[`expressions.md`](expressions.md#operator-types-and-evaluation) and
+[NEP-0017](../neps/0017-boolean-comparison-conditionals.md). They do not add
+implicit conversions or type variables.
 
 ## Subtyping
 

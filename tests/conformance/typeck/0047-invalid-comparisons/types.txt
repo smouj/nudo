@@ -1,0 +1,7 @@
+# nudo-typeck v1
+def 0009 function `invalid` 1:4: Fn(Int, Float, Text) -> Unit
+def 0010 parameter `number` 1:12: Int
+def 0011 parameter `decimal` 1:25: Float
+def 0012 parameter `text` 1:41: Text
+def 0013 binding `mixed` 2:9: <error>
+def 0014 binding `ordering` 3:9: <error>

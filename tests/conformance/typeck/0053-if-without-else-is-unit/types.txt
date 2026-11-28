@@ -1,0 +1,7 @@
+# nudo-typeck v1
+def 0009 function `valid` 1:4: Fn(Bool) -> Unit
+def 0010 function `invalid_condition` 5:4: Fn(Int) -> Unit
+def 0011 function `invalid_branch` 9:4: Fn(Bool) -> <error>
+def 0012 parameter `flag` 1:10: Bool
+def 0013 parameter `flag` 5:22: Int
+def 0014 parameter `flag` 9:19: Bool

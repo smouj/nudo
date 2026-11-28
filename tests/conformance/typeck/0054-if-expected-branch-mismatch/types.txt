@@ -1,0 +1,5 @@
+# nudo-typeck v1
+def 0009 function `choose` 1:4: Fn(Bool, Int, Text) -> Int
+def 0010 parameter `flag` 1:11: Bool
+def 0011 parameter `number` 1:23: Int
+def 0012 parameter `text` 1:36: Text

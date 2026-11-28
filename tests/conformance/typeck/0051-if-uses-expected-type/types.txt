@@ -1,0 +1,5 @@
+# nudo-typeck v1
+def 0009 function `choose` 1:4: Fn(Bool, Verified<Text>, Text) -> Text
+def 0010 parameter `flag` 1:11: Bool
+def 0011 parameter `verified` 1:23: Verified<Text>
+def 0012 parameter `plain` 1:49: Text

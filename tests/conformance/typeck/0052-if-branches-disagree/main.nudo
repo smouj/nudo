@@ -1,0 +1,3 @@
+fn invalid(flag: Bool) {
+    let value = if flag { 1 } else { "text" };
+}

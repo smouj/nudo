@@ -1,3 +1,3 @@
 # nudo-diagnostics v1
-error NDO2004 1:19
-error NDO2004 2:24
+error NDO2018 1:17
+error NDO2018 2:22

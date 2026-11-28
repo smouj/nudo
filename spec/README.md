@@ -35,7 +35,7 @@ test pass is forbidden — see [`../AGENTS.md`](../AGENTS.md).
 | [`lexical-structure.md`](lexical-structure.md) | Encoding, whitespace, comments, tokens, literals | **Implemented** (M1) |
 | [`grammar.md`](grammar.md) | Where the grammar lives and how to read it | **Implemented** (M2) |
 | [`declarations.md`](declarations.md) | Items: functions, structs, enums, agents, tasks, tools | Syntax implemented (M2); meaning proposed |
-| [`expressions.md`](expressions.md) | Expressions, statements, control flow | Syntax implemented (M2); agentic forms provisional |
+| [`expressions.md`](expressions.md) | Expressions, statements, control flow | Syntax and core operator/conditional semantics implemented (M2/M3.2); `match`, indexing and agentic semantics pending |
 | [`types.md`](types.md) | The type system, including trust types | Partly decided; checking in progress (M3.2–M3.3) |
 | [`generics.md`](generics.md) | Generic parameters, bounds and inference | Rules accepted; type-checker implementation partial (M3.2) |
 | [`modules.md`](modules.md) | Modules, packages, manifests, visibility | Proposed |

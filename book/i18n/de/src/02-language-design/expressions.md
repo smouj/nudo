@@ -1,7 +1,7 @@
 # 02.2 — Ausdrücke und Präzedenz
 
-> **Status:** Implementiert (IMPLEMENTED)  
-> **Summary:** Präzedenz, Assoziativität und das Verbot von Linksrekursion sind entschieden, durchgesetzt und vom Parser implementiert.
+> **Status:** Implementiert / Spezifiziert / Geplant (IMPLEMENTED / SPECIFIED / PLANNED)
+> **Zusammenfassung:** Der Parser implementiert die Grammatik; der Typchecker prüft außerdem Operatoren und `if`-Zweige. Für `match` und Indizierung fehlen noch semantische Entscheidungen.
 
 Präzedenz ist keine Formatierungsfrage. `a + b * c` muss in jeder konformen
 Implementierung genau eine Bedeutung haben, und der Parser erzeugt genau diese
@@ -36,3 +36,26 @@ davon. Das ist jetzt ein Build-Fehler und keine Entdeckung, die noch bevorsteht.
 
 Der Formatter sollte genug Syntax ausgeben, um Bedeutung zu erhalten, ohne sich auf
 menschliche Intuition zu verlassen.
+
+## Zentrale Regeln für Operatoren und `if`
+
+[NEP-0017](https://github.com/smouj/nudo/blob/main/neps/0017-boolean-comparison-conditionals.md)
+legt die zulässigen Operatortypen und das Ergebnis von Bedingungen fest:
+
+- `!`, `&&` und `||` verwenden `Bool`; `&&` und `||` werten von links nach
+  rechts mit Kurzschluss aus. Ungültige Operanden erzeugen `NDO2018` am Operator.
+- Gleichheit vergleicht übereinstimmende primitive Ansichten von `Int`,
+  `Float`, `Bool` oder `Text`. Ordnung ist nur für zwei `Int`- oder zwei
+  `Float`-Werte definiert. Es gibt keine Zahlenumwandlung und keine
+  benutzerdefinierten Überladungen. Die akzeptierte Ansicht `Verified<T>` als
+  `T` gilt auch für Operanden.
+- `Float`-Vergleiche folgen IEEE 754: NaN ist nicht gleich sich selbst und
+  ungeordnet; positives und negatives Null sind gleich.
+- Die Bedingung von `if` ist `Bool`. Mit `else` prüft ein erwarteter Typ beide
+  Zweige; andernfalls müssen sie genau denselben Typ haben. Eine Abweichung
+  erzeugt `NDO2019` am `else`-Zweig.
+- Ein `if` ohne `else` hat den Typ `Unit`; auch der `then`-Zweig muss `Unit` sein.
+
+Zur Laufzeit werden der übersprungene Operand einer Kurzschlussauswertung und
+der nicht gewählte Zweig nicht ausgeführt. Die statische Effektprüfung
+berücksichtigt sie dennoch alle, damit eine Deklaration für jede Eingabe gilt.

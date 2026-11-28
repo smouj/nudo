@@ -1,0 +1,11 @@
+# nudo-typeck v1
+def 0009 function `choose` 1:4: Fn(Bool, Int, Int) -> Int
+def 0010 function `nested` 5:4: Fn(Bool, Int, Int) -> Int
+def 0011 function `unit` 9:4: Fn(Bool) -> Unit
+def 0012 parameter `flag` 1:11: Bool
+def 0013 parameter `left` 1:23: Int
+def 0014 parameter `right` 1:34: Int
+def 0015 parameter `flag` 5:11: Bool
+def 0016 parameter `left` 5:23: Int
+def 0017 parameter `right` 5:34: Int
+def 0018 parameter `flag` 9:9: Bool

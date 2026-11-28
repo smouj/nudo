@@ -1,0 +1,19 @@
+fn logical(a: Bool, b: Bool) -> Bool {
+    a && !b || b
+}
+
+fn integers(a: Int, b: Int) -> Bool {
+    a == b && a != b && a < b && a <= b && a > b && a >= b
+}
+
+fn floats(a: Float, b: Float) -> Bool {
+    a == b && a != b && a < b && a <= b && a > b && a >= b
+}
+
+fn texts(a: Text, b: Text) -> Bool {
+    a == b && a != b
+}
+
+fn booleans(a: Bool, b: Bool) -> Bool {
+    a == b && a != b
+}

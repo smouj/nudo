@@ -51,8 +51,10 @@ Hir
   span it came from, and every `Reference` carries the span of the name. A call
   retains its argument-list span so `NDO2005` points at the arguments, and a
   field expression keeps the member-name span so `NDO2007` points at the missing
-  field rather than the receiver. A diagnostic written at M3 is still renderable
-  at M8.
+  field rather than the receiver. Unary and binary expressions retain the
+  operator token span so type diagnostics point at the operation without a
+  later stage rescanning source text. A diagnostic written at M3 is still
+  renderable at M8.
 * **A definition carries its structure.** A `struct`'s fields and an `enum`'s
   variants are recorded with their types, lowered in the declaration's own scope
   so that a declaration's type parameter is visible inside its own fields. The
