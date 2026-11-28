@@ -17,7 +17,7 @@ Syntax tree      compiler/nudo-syntax       ← implemented (M2)
 AST              compiler/nudo-ast          ← implemented (M2)
   ↓
 HIR              compiler/nudo-hir          ← implemented (M3)
-Typeck           compiler/nudo-typeck       ← partial accepted rules (M3.2; not wired into `check` yet)
+Typeck           compiler/nudo-typeck       ← partial accepted rules (M3.2; invoked by `nudo check`)
   ↓
 Effect checking  compiler/nudo-effects      ← planned (M5)
   ↓
@@ -66,7 +66,7 @@ on and that no other front end can reuse.
 The CLI's implemented source-checking path is:
 
 ```text
-.nudo → SourceFile → Lexer → Tokens → Parser → SyntaxTree → AST → HIR → Diagnostics
+.nudo → SourceFile → Lexer → Tokens → Parser → SyntaxTree → AST → HIR → Typeck → Diagnostics
 ```
 
 * `crates/nudo-source` — a file, its identity and its line index.
@@ -77,7 +77,8 @@ The CLI's implemented source-checking path is:
   lossless tree and typed wrappers.
 * `compiler/nudo-hir` — name resolution and diagnostics.
 * `compiler/nudo-typeck` — a partial accepted-rule checker with tests and
-  conformance; this crate is not yet invoked by `nudo check`.
+  conformance; `nudo check` invokes it after clean name resolution. Unsupported
+  or Draft-gated rules remain unimplemented.
 * `compiler/nudo-diagnostics` — the code registry and the caret renderer.
 * `cli/nudo-cli` — `check`, argument handling and exit codes.
 

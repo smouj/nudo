@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 610" role="img" aria-labelledby="pipeline-title pipeline-desc">
 <title id="pipeline-title">NUDO compiler pipeline and current CLI boundary</title>
-<desc id="pipeline-desc">Source loading, lexing, parsing, AST construction, HIR and name resolution are implemented. Type checking is partial and separate from the CLI. Effects, MIR, interpreter and WebAssembly are planned.</desc>
+<desc id="pipeline-desc">Source loading, lexing, parsing, AST construction, HIR and name resolution are implemented. The CLI invokes a partial type checker for accepted rules. Effects, MIR, interpreter and WebAssembly are planned.</desc>
 <style>
   .box { fill: none; stroke: currentColor; stroke-width: 1.4; rx: 7; }
   .done { stroke: var(--nudo-accent, #3F85FF); stroke-width: 2; }
@@ -38,20 +38,21 @@
   <path class="live" d="M288 118 L288 136"/>
   <path class="live" d="M288 182 L288 200"/>
   <path class="live" d="M288 246 L288 264"/>
-  <path class="flow" d="M288 310 L288 328" stroke-dasharray="4 4"/>
+  <path class="live" d="M288 310 L288 328"/>
   <path class="flow" d="M288 374 L288 392" stroke-dasharray="4 4"/>
   <path class="flow" d="M288 438 L288 456" stroke-dasharray="4 4"/>
   <path class="flow" d="M288 502 L288 520" stroke-dasharray="4 4"/>
 </g>
-<rect class="panel" x="610" y="112" width="340" height="226" rx="9"/>
+<rect class="panel" x="610" y="112" width="340" height="244" rx="9"/>
 <text class="label" x="632" y="142">What nudo check does today</text>
 <text class="sub" x="632" y="174">1. Loads each .nudo source file</text>
 <text class="sub" x="632" y="198">2. Lexes and parses the source</text>
 <text class="sub" x="632" y="222">3. Lowers accepted syntax to HIR</text>
 <text class="sub" x="632" y="246">4. Resolves names and reports diagnostics</text>
-<line class="flow" x1="632" y1="264" x2="924" y2="264"/>
-<text class="tag" x="632" y="288">CLI STOPS BEFORE TYPE CHECKING</text>
-<text class="sub" x="632" y="310">No NUDO program is executed.</text>
+<text class="sub" x="632" y="270">5. Checks implemented accepted type rules</text>
+<line class="flow" x1="632" y1="286" x2="924" y2="286"/>
+<text class="tag" x="632" y="310">TYPE CHECKING IS PARTIAL</text>
+<text class="sub" x="632" y="332">No NUDO program is executed.</text>
 <path class="flow" d="M548 287 C 580 287, 580 300, 610 300" stroke-dasharray="4 4"/>
 <text class="sub" x="28" y="590">Stages are roadmap boundaries as well as code boundaries; a planned box is not an available command.</text>
 </svg>

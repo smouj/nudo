@@ -13,7 +13,7 @@ der Provenienzpfad sind ein Designentwurf und heute nicht ausführbar.*
 
 <code>Generated&lt;T&gt;</code> und <code>Verified&lt;T&gt;</code> sind verschiedene Typen. Der Typechecker konvertiert nicht implizit zwischen ihnen, und ihre Typargumente bleiben invariant. Ein generiertes Ergebnis erfüllt daher keinen Parameter, der ausdrücklich den verifizierten Typ verlangt.
 
-Die angenommenen Regeln erlauben außerdem, das eingebaute <code>Verified&lt;T&gt;</code> an unterstützten Stellen zu verwenden, an denen <code>T</code> erwartet wird. Grundlage ist die aufgelöste Typidentität des eingebauten Typs; ein benutzerdefinierter Typ mit derselben Schreibweise erhält diese Regel nicht. Das Verhalten wird durch Typechecker-Konformitätsfälle abgedeckt, doch <code>nudo check</code> führt die Typprüfung noch nicht aus.
+Die angenommenen Regeln erlauben außerdem, das eingebaute <code>Verified&lt;T&gt;</code> an unterstützten Stellen zu verwenden, an denen <code>T</code> erwartet wird. Grundlage ist die aufgelöste Typidentität des eingebauten Typs; ein benutzerdefinierter Typ mit derselben Schreibweise erhält diese Regel nicht. Das Verhalten wird durch Typechecker-Konformitätsfälle abgedeckt, und die implementierten Regeln laufen unter <code>nudo check</code>. Die Operation <code>verify</code> bleibt bis zur Annahme und Implementierung ihres Vertrags nicht unterstützt.
 
 ## Die geplante Verifikationsoperation
 

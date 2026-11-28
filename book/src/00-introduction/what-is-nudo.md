@@ -24,11 +24,10 @@ features.
 
 ## What exists today
 
-The current CLI can load source files, tokenize them, parse them into a lossless
-syntax tree, resolve names and show those stages. The HIR and name-resolution
-crates are implemented. The type checker implements a partial set of accepted
-rules and has its own tests and conformance cases, but <code>nudo check</code>
-does not run it yet.
+The current CLI can load source files, tokenize and parse them into a lossless
+syntax tree, resolve names, and apply the accepted type rules implemented so
+far. The HIR, name-resolution and partial type-checking crates are implemented.
+The type checker also has its own tests and conformance cases.
 
 The current toolchain does not execute a NUDO program. There is no interpreter,
 effect checker, model provider, agent runtime, tool sandbox, provenance store or

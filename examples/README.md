@@ -19,10 +19,10 @@ $ nudo check examples/00-hello-world/main.nudo
 checked 1 file: 0 errors and 0 warnings
 ```
 
-"Clean" means no diagnostics from the stages the toolchain has: the file lexes,
-it parses, and since M3.1 it resolves. It does not mean the file is correct or
-that it runs — the partial type checker (M3.2) is not wired into `nudo check`,
-and there is no interpreter yet (M4).
+"Clean" means no diagnostics from implemented stages: lexical and syntax
+analysis, name resolution and the accepted type rules implemented so far. It
+does not mean every planned language rule is checked, or that the file runs;
+there is no interpreter yet (M4).
 
 ## Design previews
 

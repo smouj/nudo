@@ -127,6 +127,11 @@ fn check_reports_syntax_errors_that_lex_cleanly() {
     let output = nudo(&["check", path.to_str().expect("utf-8 path")]);
     assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
     assert!(stderr(&output).contains("NDO1001"));
+    assert!(
+        stdout(&output).contains("typeck: pending"),
+        "{}",
+        stdout(&output)
+    );
 }
 
 #[test]
@@ -217,6 +222,7 @@ fn check_help_documents_the_scope() {
     let text = stdout(&output);
     assert!(text.contains("Milestones M1-M3"));
     assert!(text.contains("--dump-tree"));
+    assert!(text.contains("checker is partial"));
 }
 
 #[test]
@@ -240,4 +246,32 @@ fn check_reports_an_unresolved_name() {
     assert_eq!(output.status.code(), Some(1));
     assert!(stderr(&output).contains("NDO2001"), "{}", stderr(&output));
     assert!(stderr(&output).contains("missing_name"));
+    assert!(
+        stdout(&output).contains("typeck: pending"),
+        "{}",
+        stdout(&output)
+    );
+}
+
+#[test]
+fn check_runs_the_partial_type_checker_on_resolved_programs() {
+    let path = repo_path("fixtures/invalid/type-mismatch.nudo");
+    let output = nudo(&["check", "--plain", path.to_str().expect("utf-8 path")]);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(
+        stdout(&output).contains("typeck: error"),
+        "{}",
+        stdout(&output)
+    );
+    assert!(stderr(&output).contains("NDO2004"), "{}", stderr(&output));
+    assert!(
+        stderr(&output).contains("expected: `Int`"),
+        "{}",
+        stderr(&output)
+    );
+    assert!(
+        stderr(&output).contains("found: `Text`"),
+        "{}",
+        stderr(&output)
+    );
 }

@@ -17,9 +17,9 @@ Für das Design beginne mit Philosophie und Vertrauen. Zum implementierten Compi
 
 ## Was heute funktioniert
 
-- <code>nudo check</code> lädt <code>.nudo</code>-Dateien, lexikalisiert und parst sie, löst Namen auf und meldet lexikalische, Syntax- und Namensauflösungsdiagnosen.
+- <code>nudo check</code> lädt <code>.nudo</code>-Dateien, lexikalisiert und parst sie, löst Namen auf und prüft die bisher implementierten angenommenen Typregeln.
 - <code>--dump-tokens</code>, <code>--dump-tree</code> und <code>--dump-resolutions</code> zeigen stabile Ansichten dieser Stufen.
-- Die Rust-Crates enthalten einen teilweise implementierten Typechecker. Seine implementierten Regeln werden mit Unit-Tests und dem Typkonformitätskorpus geprüft, der Checker ist aber noch nicht in <code>nudo check</code> eingebunden.
+- Die Rust-Crates enthalten einen teilweise implementierten Typechecker. Seine implementierten Regeln werden mit Unit-Tests und dem Typkonformitätskorpus geprüft; <code>nudo check</code> führt sie nach erfolgreichem Parsen und erfolgreicher Namensauflösung aus.
 - Die Benchmarksuite misst synthetische Arbeitslasten für Lexer, Parser, HIR-Absenkung und Typprüfung. Sie misst keine Ausführung von NUDO-Programmen.
 
 <code>nudo run</code>, <code>nudo build</code>, Interpreter, Effektprüfer, Agenten-Runtime, Tool-Aufruf, Policy-Durchsetzung, Provenienzspeicher und WebAssembly-Backend gibt es noch nicht.

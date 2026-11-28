@@ -5,8 +5,8 @@ milestone next to each feature before assuming it runs. Today the toolchain
 lexes, parses and resolves names: the lexer (M1), the parser and lossless syntax
 tree (M2) and name resolution in `nudo-hir` (M3.1) are implemented, and
 `nudo check` runs all three. A partial type checker covers accepted M3.2 rules
-and is exercised by tests and conformance, but the CLI does not call it yet;
-execution and later stages are still pending. The toolchain's full state is in
+and is exercised by tests and conformance; `nudo check` runs it after clean
+name resolution. Execution and later stages are still pending. The toolchain's full state is in
 [`../../ROADMAP.md`](../../ROADMAP.md).
 
 ## The shape of a program

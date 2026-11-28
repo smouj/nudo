@@ -13,9 +13,8 @@
 - <code>NDO2001</code>–<code>NDO2003</code> 覆盖名称解析错误，由 <code>nudo check</code> 发出。
 - <code>NDO2004</code>–<code>NDO2019</code> 覆盖已实现的类型检查规则。<code>NDO2010</code> 指向无法表示为 <code>Int</code> 的整数值；只有直接位于一元 <code>-</code> 下、用于表示 <code>Int::MIN</code> 时才允许精确值 <code>2^63</code>。根据 NEP-0020，<code>NDO2011</code>–<code>NDO2016</code> 覆盖 enum 和 <code>Result</code> 模式、payload 数量、穷尽性、可达性及分支类型。测试会固定结构化附注和源码位置。
 
-类型检查器尚不完整，也尚未接入 CLI。因此一次干净的
-<code>nudo check</code> 只表示词法、语法和名称解析阶段没有报告错误，
-不意味着源码通过了类型检查。
+类型检查器尚不完整，但名称解析成功后会由 CLI 调用。因此一次干净的
+<code>nudo check</code> 表示已实现的已接受规则没有报告错误；尚未支持或受 Draft NEP 限制的规则仍未检查。
 
 ## 计划中的诊断族
 

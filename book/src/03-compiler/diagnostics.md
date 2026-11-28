@@ -22,9 +22,9 @@ stage can report facts without formatting its own output.
   match patterns, payload arity, exhaustiveness, reachability and arm types. The
   type-checker tests pin structured notes and source locations for these rules.
 
-The type checker is partial and is not yet called by the CLI. A clean
-<code>nudo check</code> therefore reports that source passed lexing, parsing and
-name resolution; it does not mean the source passed type checking.
+The type checker is partial and is called by the CLI after clean name
+resolution. A clean <code>nudo check</code> means the implemented accepted
+rules reported no errors; unsupported and Draft-gated rules remain unchecked.
 
 ## Planned diagnostic families
 

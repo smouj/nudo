@@ -82,5 +82,5 @@ fn describe(value: Result<Int, Text>) -> Text {
 ```
 
 The parser and type checker have conformance cases for generic payloads,
-`Result`, wildcard coverage, invalid patterns, recovery and arm types. The
-checker is not wired into `nudo check` yet.
+`Result`, wildcard coverage, invalid patterns, recovery and arm types. The CLI
+runs the implemented accepted rules after clean name resolution.

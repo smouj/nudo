@@ -31,7 +31,7 @@ size are current facts, so those rows state them directly.
 
 | Concern | NUDO | Python | Rust | Go | TypeScript |
 | ------- | ---- | ------ | ---- | -- | ---------- |
-| Static typing | **Partial** — primitives, calls, fields, bounded generic inference and typed enum matching are checked; type checking is not yet wired into `nudo check` | Dynamic, optional annotations | Full, with inference and traits | Static, structural interfaces | Static, erased at runtime |
+| Static typing | **Partial** — primitives, calls, fields, bounded generic inference and typed enum matching run in `nudo check`; unsupported rules remain unchecked | Dynamic, optional annotations | Full, with inference and traits | Static, structural interfaces | Static, erased at runtime |
 | Memory model | **Undecided** — no garbage-collection or runtime allocation model is specified; NEP-0009 rules out a borrow checker | Reference counting + cycle collector | Ownership and borrowing | Garbage collected | Garbage collected (engine) |
 | Nullability | **Proposed** — absence is written as `T?`; the types chapter is still proposed | `None` everywhere | `Option<T>` | Nil pointers for some types | `strictNullChecks` |
 | Error handling | **Specified** — `Result<T, E>` intrinsic, no `?`, traps distinct from failures (NEP-0008) | Exceptions | `Result` + `?` | `error` returns | Exceptions, or `Result` conventions |

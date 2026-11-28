@@ -64,4 +64,4 @@ fn describe(value: Result<Int, Text>) -> Text {
 ```
 
 解析器和类型检查器的一致性用例覆盖泛型 payload、`Result`、通配符、无效模式、错误恢复和
-分支类型。类型检查器尚未接入 `nudo check`。
+分支类型。名称解析成功后，CLI 会检查已实现的已接受规则。

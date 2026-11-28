@@ -5,9 +5,9 @@
 //     nudo check examples/03-types/main.nudo
 //
 // This file uses accepted syntax: declarations, variants with fields, and a
-// `match` with patterns (spec/types.md, spec/declarations.md). The type checker
-// supports these rules, but `nudo check` does not invoke it yet. It does not run
-// because the interpreter is milestone M4.
+// `match` with patterns (spec/types.md, spec/declarations.md). `nudo check`
+// applies the accepted type rules implemented so far, including these match
+// rules. It does not run because the interpreter is milestone M4.
 
 struct User {
     name: Text

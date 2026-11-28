@@ -20,7 +20,9 @@ The accepted rules also allow the built-in <code>Verified&lt;T&gt;</code> to be
 used where <code>T</code> is expected in supported positions. This is based on
 the resolved built-in type identity; a user-defined type with the same spelling
 does not acquire that rule. The behavior is covered by type-checker conformance
-cases, but <code>nudo check</code> does not run type checking yet.
+cases, and the implemented rules run under <code>nudo check</code>. The
+<code>verify</code> operation itself remains unsupported until its verifier
+contract is accepted and implemented.
 
 ## The planned verification operation
 

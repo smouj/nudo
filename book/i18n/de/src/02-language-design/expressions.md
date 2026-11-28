@@ -83,5 +83,6 @@ fn describe(value: Result<Int, Text>) -> Text {
 ```
 
 Parser und Typechecker haben Konformitätsfälle für generische Payloads,
-`Result`, Wildcards, ungültige Muster, Fehlerbehandlung und Zweigtypen. Der
-Typechecker ist noch nicht in `nudo check` eingebunden.
+`Result`, Wildcards, ungültige Muster, Fehlerbehandlung und Zweigtypen. Die CLI
+wendet die implementierten angenommenen Regeln nach erfolgreicher
+Namensauflösung an.

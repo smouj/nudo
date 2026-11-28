@@ -12,14 +12,14 @@ Der folgende Status spiegelt die Roadmap des Repositorys wider. „Implementiert
 | M2 — Parser und Syntaxbaum | Abgeschlossen | Verlustfreie Syntax, Parser, typisierter AST und Syntaxdiagnostik |
 | M3.0 — Semantische Weichenstellungen | Abgeschlossen | Angenommene Entscheidungen in Spezifikation und NEPs festgehalten |
 | M3.1 — HIR und Namensauflösung | Abgeschlossen | HIR-Absenkung, Scopes, Namensauflösung und NDO2001–NDO2003 |
-| M3.2 — Typsystem | In Arbeit | Teilweiser Typechecker für angenommene Regeln, einschließlich typisiertem Enum- und <code>Result</code>-Matching; noch nicht von der CLI aufgerufen |
+| M3.2 — Typsystem | In Arbeit | Teilweiser Typechecker für angenommene Regeln, einschließlich typisiertem Enum- und <code>Result</code>-Matching; von der CLI aufgerufen |
 | M3.3 — Vertrauens-Typen | Teilweise | Typidentität und die angenommene Zuweisungsregel von Verified zum inneren Typ |
 | M4 — Interpreter | Geplant | Erstes durchgängiges Programm und <code>nudo run</code> |
 | M5 — Effektsystem | Geplant | Effektinferenz, -prüfung und Diagnostik; die Semantik ist weiterhin vorgeschlagen |
 
-Der CLI-Befehl <code>nudo check</code> lädt Quellcode, analysiert ihn lexikalisch und syntaktisch und löst Namen auf. Er kann Tokens, Syntaxbäume und Namensauflösungen anzeigen. Ein fehlerfreier Lauf bedeutet, dass diese Stufen keine Fehler gemeldet haben; er beweist nicht, dass das Programm typkorrekt, ausführbar oder zur Laufzeit sicher ist.
+Der CLI-Befehl <code>nudo check</code> lädt Quellcode, analysiert ihn lexikalisch und syntaktisch, löst Namen auf und prüft die bisher implementierten angenommenen Typregeln. Er kann Tokens, Syntaxbäume und Namensauflösungen anzeigen. Ein fehlerfreier Lauf bedeutet, dass die implementierten Stufen keine Fehler gemeldet haben; nicht unterstützte Regeln, Ausführbarkeit und Runtime-Sicherheit sind damit nicht nachgewiesen.
 
-Das Typechecker-Crate deckt primitive und Literaltypen, Annotationen, Aufrufe, begrenzte generische Inferenz, Feldzugriffe, ausgewählte Arithmetik, Bool-Bedingungen, typisiertes Enum- und <code>Result</code>-Matching sowie die angenommene Zuweisung von Vertrauens-Typen ab. Sein Konformitätskorpus prüft diese Regeln unabhängig von der CLI. Nicht unterstützte Regeln bleiben bewusst unvollständig, bis ihre semantischen Verträge bereit sind.
+Das Typechecker-Crate deckt primitive und Literaltypen, Annotationen, Aufrufe, begrenzte generische Inferenz, Feldzugriffe, ausgewählte Arithmetik, Bool-Bedingungen, typisiertes Enum- und <code>Result</code>-Matching sowie die angenommene Zuweisung von Vertrauens-Typen ab. Sein Konformitätskorpus prüft diese Regeln zusätzlich unabhängig von der CLI. Nicht unterstützte Regeln bleiben bewusst unvollständig, bis ihre semantischen Verträge bereit sind.
 
 M4 und M5 haben Abhängigkeiten. M4 benötigt die noch ausstehende Typ- und Vertrauensarbeit sowie einen echten Ausführungspfad. M5 benötigt diese Grundlagen und ein angenommenes Design des Effektsystems. Die Roadmap definiert den Abschluss über funktionierende Exit-Kriterien und Konformitätsbelege, nicht über ein Kalenderdatum.
 

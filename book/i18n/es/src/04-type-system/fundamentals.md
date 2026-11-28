@@ -2,9 +2,9 @@
 
 > **Status:** Implementado (IMPLEMENTED) / Especificado (SPECIFIED) / Planificado (PLANNED)
 >
-> **Summary:** NUDO tiene un comprobador parcial implementado para reglas de tipos aceptadas; el sistema de tipos completo sigue en desarrollo y aún no forma parte del comando <code>check</code> de la CLI.
+> **Summary:** NUDO tiene un comprobador parcial implementado para reglas de tipos aceptadas; el sistema completo sigue en desarrollo y la CLI ya ejecuta el subconjunto implementado.
 
-El sistema de tipos está especificado en los capítulos del lenguaje y en las NEP aceptadas. El crate de Rust <code>nudo-typeck</code> implementa un subconjunto creciente y consume HIR, no texto fuente. Sus pruebas y casos de conformidad ejercitan las reglas implementadas. La CLI aún no invoca el comprobador.
+El sistema de tipos está especificado en los capítulos del lenguaje y en las NEP aceptadas. El crate de Rust <code>nudo-typeck</code> implementa un subconjunto creciente y consume HIR, no texto fuente. Sus pruebas y casos de conformidad ejercitan las reglas implementadas. La CLI lo invoca tras resolver los nombres correctamente.
 
 ## Reglas implementadas por el comprobador actual
 
@@ -32,4 +32,4 @@ Estas omisiones son deliberadas. Una regla solo se implementa cuando se acepta s
 
 ## Qué significa una comprobación limpia de la CLI
 
-<code>nudo check</code> ejecuta las fases léxica, sintáctica y de resolución de nombres. Como el comprobador parcial de tipos no está conectado a ese comando, un resultado limpio de la CLI no demuestra que se hayan superado todas las reglas de tipos. El comprobador se ejercita actualmente mediante sus propias pruebas y el corpus de conformidad de tipos.
+<code>nudo check</code> ejecuta las fases léxica, sintáctica, de resolución de nombres y de comprobación parcial de tipos. Un resultado limpio significa que las reglas aceptadas implementadas no notificaron errores; las reglas no admitidas o sujetas a una NEP Draft siguen sin comprobarse. El comprobador también se ejercita mediante sus propias pruebas y el corpus de conformidad de tipos.

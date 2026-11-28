@@ -1,0 +1,5 @@
+// EXPECT: NDO2004
+
+fn expect_int() -> Int {
+    "text is not an integer"
+}

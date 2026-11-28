@@ -37,9 +37,9 @@ rank token in parentheses; see [i18n/README.md](i18n/README.md).
 
 [The current project status](src/00-introduction/status.md) reflects the
 toolchain today: the lexer, parser, typed AST, HIR and name resolution are
-implemented. The type-checking crate implements a partial set of accepted rules
-with its own tests, but the CLI does not call it yet. The interpreter, effect
-checker, agent runtime and WebAssembly backend are not available.
+implemented. The CLI invokes the type-checking crate for its partial set of
+accepted rules. The interpreter, effect checker, agent runtime and WebAssembly
+backend are not available.
 ## Layout
 
 | Path | Contents |

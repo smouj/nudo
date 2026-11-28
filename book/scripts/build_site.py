@@ -148,7 +148,7 @@ def main() -> int:
         shutil.copytree(built, target, dirs_exist_ok=True)
         pages = sum(1 for _, _, files in os.walk(target) for name in files if name.endswith(".html"))
         published.append(code)
-        print(f"    {code}: {pages} pages → book/output/site/{destination or ''}")
+        print(f"    {code}: {pages} pages -> book/output/site/{destination or ''}")
 
     if failures:
         print(f"\n{failures} language(s) failed", file=sys.stderr)

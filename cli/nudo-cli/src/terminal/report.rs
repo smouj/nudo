@@ -217,6 +217,7 @@ mod tests {
             Stage::new("LEX", "lex", Status::Success),
             Stage::new("PARSE", "parse", Status::Success),
             Stage::new("HIR", "hir", Status::Success),
+            Stage::new("TYPECK", "typeck", Status::Success),
         ]
     }
 
@@ -263,7 +264,7 @@ mod tests {
             "NUDO CHECK\n\n\
              src/main.nudo\n\
              ────────────────────────────────────────────────────────────\n\n\
-             ✓ SOURCE ── ✓ LEX ── ✓ PARSE ── ✓ HIR\n\n\
+             ✓ SOURCE ── ✓ LEX ── ✓ PARSE ── ✓ HIR ── ✓ TYPECK\n\n\
              SUMMARY\n  files     1\n  errors    0\n  warnings  0\n\
              ────────────────────────────────────────────────────────────\n\
              checked 1 file: 0 errors and 0 warnings\n",
@@ -278,7 +279,7 @@ mod tests {
         assert_eq!(
             rendered,
             "checking src/main.nudo\n\
-             source: ok\nlex: ok\nparse: ok\nhir: ok\n\
+             source: ok\nlex: ok\nparse: ok\nhir: ok\ntypeck: ok\n\
              checked 1 file: 0 errors and 0 warnings\n",
             "{rendered}"
         );
@@ -292,7 +293,7 @@ mod tests {
         assert_eq!(
             rendered,
             "NUDO CHECK\n\n\
-             [1/4] source ok\n[2/4] lex    ok\n[3/4] parse  ok\n[4/4] hir    ok\n\n\
+             [1/5] source ok\n[2/5] lex    ok\n[3/5] parse  ok\n[4/5] hir    ok\n[5/5] typeck ok\n\n\
              files       1\nerrors      0\nwarnings    0\n\n\
              checked 1 file: 0 errors and 0 warnings\n\nPASS\n",
             "{rendered}"
@@ -346,10 +347,12 @@ mod tests {
             Stage::new("LEX", "lex", Status::Success).with_detail("12 tokens"),
             Stage::new("PARSE", "parse", Status::Success),
             Stage::new("HIR", "hir", Status::Success).with_detail("4 definitions"),
+            Stage::new("TYPECK", "typeck", Status::Success),
         ];
         let rendered = stages_block(&narrow, &stages);
         assert_eq!(
-            rendered, "  ✓ source\n  ✓ lex    12 tokens\n  ✓ parse\n  ✓ hir    4 definitions\n\n",
+            rendered,
+            "  ✓ source\n  ✓ lex    12 tokens\n  ✓ parse\n  ✓ hir    4 definitions\n  ✓ typeck\n\n",
             "{rendered}"
         );
     }
@@ -401,7 +404,7 @@ mod tests {
         });
         let rendered = stages_block(&ascii, &pipeline());
         assert_eq!(
-            rendered, "+ SOURCE -- + LEX -- + PARSE -- + HIR\n\n",
+            rendered, "+ SOURCE -- + LEX -- + PARSE -- + HIR -- + TYPECK\n\n",
             "{rendered}"
         );
     }

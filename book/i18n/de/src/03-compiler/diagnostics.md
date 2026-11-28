@@ -11,7 +11,7 @@ Diagnostik gehört zum Spracherlebnis und ist kein Debug-Dump. Das Crate <code>n
 - <code>NDO2001</code>–<code>NDO2003</code> umfasst Namensauflösungsfehler, die <code>nudo check</code> ausgibt.
 - <code>NDO2004</code>–<code>NDO2019</code> betreffen implementierte Typprüfregeln. <code>NDO2010</code> markiert eine Ganzzahl-Magnitude, die keinen <code>Int</code> ergeben kann; genau <code>2^63</code> ist nur direkt unter unärem <code>-</code> für <code>Int::MIN</code> zulässig. Gemäß NEP-0020 decken <code>NDO2011</code>–<code>NDO2016</code> Enum- und <code>Result</code>-Muster, Payload-Arity, Vollständigkeit, Erreichbarkeit und Armtypen ab. Die Tests legen strukturierte Hinweise und Quellpositionen fest.
 
-Der Typechecker ist teilweise implementiert und wird noch nicht von der CLI aufgerufen. Ein fehlerfreies <code>nudo check</code> besagt daher, dass der Quellcode Lexing, Parsing und Namensauflösung bestanden hat; es bedeutet nicht, dass er die Typprüfung bestanden hat.
+Der Typechecker ist teilweise implementiert und wird von der CLI nach erfolgreicher Namensauflösung aufgerufen. Ein fehlerfreies <code>nudo check</code> bedeutet daher, dass die implementierten angenommenen Regeln keine Fehler gemeldet haben; nicht unterstützte und Draft-gesteuerte Regeln bleiben ungeprüft.
 
 ## Geplante Diagnosegruppen
 

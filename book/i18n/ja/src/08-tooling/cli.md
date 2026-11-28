@@ -1,7 +1,7 @@
 # 08.1 — Toolchain と CLI
 
 > **Status:** 実装済み (IMPLEMENTED) / 計画中 (PLANNED)
-> **Summary:** 現在の <code>nudo</code> コマンドはソース、構文、名前を検査します。型検査、実行、エフェクト、その他の toolchain は今後の作業です。
+> **Summary:** 現在の <code>nudo</code> コマンドはソース、構文、名前と実装済みの採用済み型規則を検査します。実行、エフェクト、その他の toolchain は今後の作業です。
 
 ## 実装済みコマンド
 
@@ -14,9 +14,9 @@ nudo --version
 nudo --help
 ~~~
 
-check コマンドは1つ以上のソースファイルを読み込み、字句解析と構文解析を行い、採用済み構文を HIR に lowering し、名前を解決して、字句・構文・名前解決の診断を報告します。通常形式または CI 向けの report も出力できます。
+check コマンドは1つ以上のソースファイルを読み込み、字句解析と構文解析を行い、採用済み構文を HIR に lowering し、名前を解決して、実装済みの採用済み型規則を検査します。通常形式または CI 向けの report も出力できます。
 
-その範囲は名前解決までです。成功してもプログラムが型的に正しい、実行可能であるとは限りません。部分的な型チェッカーは unit test と適合性ケースを持つ別の crate で、CLI からは呼び出されません。<code>nudo run</code>、<code>nudo build</code>、REPL、formatter、language server、package manager はまだありません。
+型検査の範囲は部分的です。未対応または Draft の規則は検査されず、このコマンドはプログラムを実行しません。<code>nudo run</code>、<code>nudo build</code>、REPL、formatter、language server、package manager はまだありません。
 
 終了コードは安定しています。0 は実装済みの段階で error 診断がなかったこと、1 は error が1つ以上報告されたこと、2 は使用法または入力のエラー、あるいは未実装コマンドを示します。
 

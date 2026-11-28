@@ -1,7 +1,7 @@
 # 08.1 — Toolchain und CLI
 
 > **Status:** Implementiert (IMPLEMENTED) / Geplant (PLANNED)
-> **Summary:** Der aktuelle Befehl <code>nudo</code> prüft Quellcode, Syntax und Namen; Typprüfung, Ausführung, Effekte und die übrige Toolchain bleiben künftige Arbeit.
+> **Summary:** Der aktuelle Befehl <code>nudo</code> prüft Quellcode, Syntax, Namen und die implementierte Teilmenge angenommener Typregeln; Ausführung, Effekte und die übrige Toolchain bleiben künftige Arbeit.
 
 ## Implementierte Befehle
 
@@ -14,9 +14,9 @@ nudo --version
 nudo --help
 ~~~
 
-Der Befehl check lädt eine oder mehrere Quelldateien, führt Lexing und Parsing aus, senkt akzeptierte Syntax auf HIR ab, löst Namen auf und meldet lexikalische, Syntax- und Namensauflösungsdiagnosen. Außerdem kann er einen normalen oder CI-orientierten Bericht ausgeben.
+Der Befehl check lädt eine oder mehrere Quelldateien, führt Lexing und Parsing aus, senkt akzeptierte Syntax auf HIR ab, löst Namen auf, prüft die implementierten angenommenen Typregeln und meldet Diagnosen. Außerdem kann er einen normalen oder CI-orientierten Bericht ausgeben.
 
-Sein Umfang endet bei der Namensauflösung. Ein fehlerfreies Ergebnis garantiert weder Typkorrektheit noch Ausführbarkeit des Programms. Der teilweise Typechecker ist ein separates Crate mit Unit-Tests und Konformitätsfällen; die CLI ruft ihn nicht auf. <code>nudo run</code>, <code>nudo build</code>, REPL, Formatter, Language Server und Paketmanager existieren noch nicht.
+Die Typabdeckung ist teilweise: Nicht unterstützte und Draft-gesteuerte Regeln bleiben ungeprüft, und der Befehl führt das Programm nicht aus. <code>nudo run</code>, <code>nudo build</code>, REPL, Formatter, Language Server und Paketmanager existieren noch nicht.
 
 Die Exit-Codes sind stabil: 0 bedeutet, dass die implementierten Stufen keine Fehlerdiagnose gemeldet haben; 1 bedeutet, dass mindestens ein Fehler gemeldet wurde; 2 bedeutet einen Nutzungs- oder Eingabefehler oder einen nicht implementierten Befehl.
 

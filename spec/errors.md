@@ -1,6 +1,6 @@
 # Diagnostics and error codes
 
-**State: the registry is in use** (milestones M1–M2). Codes marked *implemented*
+**State: the registry is in use** (milestones M1–M3.2). Codes marked *implemented*
 are emitted today; codes marked *reserved* are allocated so that nobody invents
 a competing one, and are not emitted by anything yet.
 

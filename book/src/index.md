@@ -28,12 +28,12 @@ working code from accepted rules and proposals.
 ## What works today
 
 - <code>nudo check</code> loads <code>.nudo</code> files, lexes and parses them,
-  resolves names, and reports lexical, syntax and name-resolution diagnostics.
+  resolves names and applies the accepted type rules implemented so far.
 - <code>--dump-tokens</code>, <code>--dump-tree</code> and
   <code>--dump-resolutions</code> expose stable views of those stages.
 - The Rust crates contain a partial type checker. Its implemented rules are
-  exercised by unit tests and the type-checking conformance corpus, but the
-  checker is not yet wired into <code>nudo check</code>.
+  exercised by unit tests and the type-checking conformance corpus, and run in
+  <code>nudo check</code> after clean parsing and name resolution.
 - The benchmark suite measures synthetic workloads across lexer, parser, HIR
   lowering and type checking. It does not measure execution of NUDO programs.
 

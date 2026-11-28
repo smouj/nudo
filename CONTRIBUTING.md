@@ -54,8 +54,8 @@ cargo run --package nudo-cli -- check --dump-tokens fixtures/valid/hello.nudo
 cargo run --package nudo-cli -- check --dump-tree fixtures/valid/hello.nudo
 ```
 
-Expect `check` to lex, parse and resolve names. It does not invoke the partial
-M3.2 type checker, which is exercised by its own tests and conformance corpus;
+Expect `check` to lex and parse, resolve names, then run the implemented subset
+of accepted type rules. Unsupported and Draft-gated rules remain unchecked;
 programs do not run yet (M4). See [`ROADMAP.md`](ROADMAP.md).
 
 ### Measure

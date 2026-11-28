@@ -52,6 +52,7 @@ dependencies = [
  "nudo-source",
  "nudo-span",
  "nudo-syntax",
+ "nudo-typeck",
 ]
 
 [[package]]

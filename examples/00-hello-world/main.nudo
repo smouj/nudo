@@ -4,8 +4,9 @@
 //
 //     nudo check examples/00-hello-world/main.nudo
 //
-// This file is lexed, parsed and name-resolved by `nudo check` today. It does
-// not run yet; `nudo run` is planned for M4.
+// This file is lexed, parsed, name-resolved and checked against the accepted
+// type rules implemented so far by `nudo check`. It does not run yet; `nudo run`
+// is planned for M4.
 
 fn main() -> Unit {
     let greeting = "hello, nudo";

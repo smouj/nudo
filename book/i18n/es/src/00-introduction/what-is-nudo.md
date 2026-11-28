@@ -16,7 +16,7 @@ NUDO explora cómo hacer visibles esos límites en el lenguaje y el runtime. Un 
 
 ## Qué existe hoy
 
-La CLI puede cargar archivos fuente, tokenizarlos, analizarlos en un árbol sintáctico sin pérdidas, resolver nombres y mostrar esas fases. Los crates de HIR y de resolución de nombres están implementados. El comprobador de tipos implementa un conjunto parcial de reglas aceptadas y tiene sus propias pruebas y casos de conformidad, pero <code>nudo check</code> todavía no lo ejecuta.
+La CLI puede cargar archivos fuente, tokenizarlos, analizarlos en un árbol sintáctico sin pérdidas, resolver nombres y aplicar las reglas de tipos aceptadas que están implementadas. Los crates de HIR, resolución de nombres y comprobación parcial de tipos están implementados. El comprobador también tiene sus propias pruebas y casos de conformidad.
 
 La toolchain actual no ejecuta programas NUDO. Todavía no hay intérprete, comprobador de efectos, proveedor de modelos, runtime de agentes, sandbox de herramientas, almacén de procedencia ni backend WASM. El <a href="status.md">estado del proyecto</a> y la <a href="https://github.com/smouj/nudo/blob/main/ROADMAP.md">hoja de ruta</a> distinguen el front end funcional de los subsistemas planificados.
 

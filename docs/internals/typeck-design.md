@@ -2,7 +2,8 @@
 
 **Status: first slice, bounded generic inference with NDO2008/NDO2009 recovery,
 and the M3.3 trust-type assignment rule implemented.**
-`nudo-typeck` is exercised by unit tests and by `tests/conformance/typeck`.
+`nudo-typeck` is invoked by `nudo check` after clean name resolution and is
+exercised by unit tests and `tests/conformance/typeck`.
 Deterministic robustness cases also check recovered HIR, diagnostic span bounds
 and repeatability. This document records what the checker does and the one
 architectural rule that makes "is HIR enough?" a question with a test.
@@ -126,18 +127,17 @@ gaps:
   ordinary `Named` types; the accepted `Verified<T>`-to-`T` assignment relation
   is checked by resolved built-in identity, and generic arguments stay invariant.
 
-## Why the checker is not wired into `nudo check` yet
+## CLI integration
 
-`check` currently lexes, parses and resolves; the type checker runs beside it in
-its own tests and corpus. The checker now covers accepted structural rules,
-including generic enum payloads and exhaustive `Result` matching, but this
-change does not integrate it into the CLI. That integration needs its own slice
-for stage ordering, diagnostic rendering, exit status and documented command
-behavior. Until then, `nudo check` reports only lexical, syntax and name
-diagnostics, and its clean result makes no claim about type correctness.
+`nudo check` runs this checker after parsing and clean name resolution. Its
+diagnostics use the same renderer and contribute to the command's exit status.
+The `TYPECK` stage is marked pending when parsing or name resolution fails, so
+the checker does not amplify an earlier error. Unsupported and Draft-gated
+rules remain silent and unimplemented; a clean result covers only the rules
+this checker currently supports.
 
-Until then the checker is exercised by its own tests and by the `typeck`
-conformance corpus, which is a corpus like any other: reviewed as a diff.
+The checker is also exercised directly by unit tests and by the `typeck`
+conformance corpus, which is reviewed as a diff like any other corpus.
 
 ## Alternatives considered
 
