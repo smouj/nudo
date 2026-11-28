@@ -57,6 +57,8 @@
 //!
 //! [design]: https://github.com/smouj/nudo/blob/main/docs/internals/hir-design.md
 
+use std::sync::Arc;
+
 use nudo_diagnostics::{Diagnostic, Diagnostics, codes};
 use nudo_source::{SourceFile, SourceId};
 use nudo_span::Span;
@@ -380,16 +382,17 @@ pub enum IntegerMagnitude {
 }
 
 /// A literal, as far as resolution is concerned.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LiteralKind {
     /// A decimal integer literal and its bounded magnitude.
     Int(IntegerMagnitude),
-    /// A floating-point literal.
-    Float,
-    /// A text literal.
-    Text,
-    /// `true` or `false`.
-    Bool,
+    /// A floating-point literal as its IEEE-754 bit pattern; `None` means the
+    /// lexer already diagnosed the token.
+    Float(Option<u64>),
+    /// A decoded UTF-8 text literal, or `None` after a lexical error.
+    Text(Option<Arc<str>>),
+    /// The value of `true` or `false`.
+    Bool(bool),
 }
 
 /// An expression, with the syntax that carries no meaning removed.
@@ -1622,11 +1625,55 @@ fn path_text(path: &SyntaxNode<'_>) -> String {
 fn literal_kind(kind: SyntaxKind, text: &str) -> Option<LiteralKind> {
     match kind {
         SyntaxKind::IntLiteral => Some(LiteralKind::Int(parse_integer_magnitude(text))),
-        SyntaxKind::FloatLiteral => Some(LiteralKind::Float),
-        SyntaxKind::TextLiteral => Some(LiteralKind::Text),
-        SyntaxKind::KeywordTrue | SyntaxKind::KeywordFalse => Some(LiteralKind::Bool),
+        SyntaxKind::FloatLiteral => Some(LiteralKind::Float(parse_float_bits(text))),
+        SyntaxKind::TextLiteral => {
+            Some(LiteralKind::Text(decode_text_literal(text).map(Arc::from)))
+        }
+        SyntaxKind::KeywordTrue => Some(LiteralKind::Bool(true)),
+        SyntaxKind::KeywordFalse => Some(LiteralKind::Bool(false)),
         _ => None,
     }
+}
+
+/// Parses a decimal float once, retaining its exact IEEE-754 representation.
+///
+/// The lexer reports malformed tokens. `None` is recovery data for a later
+/// stage when this helper is called on an already-diagnosed token.
+fn parse_float_bits(text: &str) -> Option<u64> {
+    let value = if text.bytes().any(|byte| byte == b'_') {
+        text.bytes()
+            .filter(|byte| *byte != b'_')
+            .map(char::from)
+            .collect::<String>()
+            .parse::<f64>()
+            .ok()?
+    } else {
+        text.parse::<f64>().ok()?
+    };
+    Some(value.to_bits())
+}
+
+/// Decodes a lexer-validated text token into its UTF-8 value.
+fn decode_text_literal(token: &str) -> Option<String> {
+    let body = token.strip_prefix('"')?.strip_suffix('"')?;
+    let mut value = String::with_capacity(body.len());
+    let mut characters = body.chars();
+    while let Some(character) = characters.next() {
+        if character != '\\' {
+            value.push(character);
+            continue;
+        }
+        value.push(match characters.next()? {
+            'n' => '\n',
+            'r' => '\r',
+            't' => '\t',
+            '\\' => '\\',
+            '"' => '"',
+            '0' => '\0',
+            _ => return None,
+        });
+    }
+    Some(value)
 }
 
 /// Parses decimal digits once, retaining no value larger than `2^63`.
@@ -1918,7 +1965,9 @@ mod tests {
             .filter(|def| {
                 def.value
                     .and_then(|value| result.hir.expr(value))
-                    .is_some_and(|expr| matches!(expr.kind, ExprKind::Literal(LiteralKind::Int(_))))
+                    .is_some_and(|expr| {
+                        matches!(&expr.kind, ExprKind::Literal(LiteralKind::Int(_)))
+                    })
             })
             .count();
         assert_eq!(literals, 2);
@@ -1949,6 +1998,36 @@ mod tests {
         assert_eq!(parse_integer_magnitude("1__0"), IntegerMagnitude::Invalid);
         assert_eq!(parse_integer_magnitude("1_"), IntegerMagnitude::Invalid);
         assert_eq!(parse_integer_magnitude("123abc"), IntegerMagnitude::Invalid);
+    }
+
+    #[test]
+    fn literals_keep_values_for_runtime_lowering() {
+        assert_eq!(
+            literal_kind(SyntaxKind::FloatLiteral, "1_999.95"),
+            Some(LiteralKind::Float(Some(1_999.95_f64.to_bits())))
+        );
+        assert_eq!(
+            literal_kind(SyntaxKind::TextLiteral, r#""escapes: \n \t \\ \" \0""#),
+            Some(LiteralKind::Text(Some(Arc::from(
+                "escapes: \n \t \\ \" \0"
+            ))))
+        );
+        assert_eq!(
+            literal_kind(SyntaxKind::KeywordTrue, "true"),
+            Some(LiteralKind::Bool(true))
+        );
+        assert_eq!(
+            literal_kind(SyntaxKind::KeywordFalse, "false"),
+            Some(LiteralKind::Bool(false))
+        );
+        assert_eq!(
+            literal_kind(SyntaxKind::TextLiteral, r#""bad\x""#),
+            Some(LiteralKind::Text(None))
+        );
+        assert_eq!(
+            literal_kind(SyntaxKind::FloatLiteral, "invalid"),
+            Some(LiteralKind::Float(None))
+        );
     }
 
     #[test]

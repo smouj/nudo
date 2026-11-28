@@ -42,8 +42,8 @@ a second implementation from the corpus alone. Met.
 
 **Known gaps, deliberately accepted:** keywords other than `fn` and `let` are
 not reserved; Unicode identifiers are an open question
-([`DESIGN.md`](DESIGN.md#open-questions)); a literal's *value* is not computed
-until the parser needs it.
+([`DESIGN.md`](DESIGN.md#open-questions)). The lexer preserves literal
+spelling; HIR computes values when later stages need their semantics.
 
 ## M2 — Parser and syntax tree — **done**
 
