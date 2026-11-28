@@ -67,7 +67,7 @@ the existing value namespace and follows its duplicate-name rules. Its ordinary
 function type is `Fn(T) -> Bool`, so code may call it or pass it as a function
 value. Such a call returns only `Bool`; only `verify ... with` can produce
 `Verified<T>`. An ordinary function name used after `with` is rejected as
-NDO2020.
+NDO2028.
 
 This is a proposal, not accepted syntax or runnable behavior. The sample uses
 Article and Generated<Article> to explain the boundary; other M3.2 gates still
@@ -142,9 +142,9 @@ name elsewhere.
 
 * An unresolved verifier name uses NDO2001.
 * A resolved name that is not a supported verifier function receives proposed
-  NDO2020, INVALID_VERIFIER_TARGET, at the verifier name.
+  NDO2028, INVALID_VERIFIER_TARGET, at the verifier name.
 * An operation or value path forbidden in a verifier body receives proposed
-  NDO2021, UNSUPPORTED_VERIFIER_BODY, at that operation or path.
+  NDO2029, UNSUPPORTED_VERIFIER_BODY, at that operation or path.
 * Parameter and result mismatches use NDO2004 with structured expected and
   found types. A prior error suppresses only diagnostics that depend on it.
 * On any verifier error, the verify expression recovers as Error so the same
