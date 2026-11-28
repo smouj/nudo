@@ -1,0 +1,10 @@
+# nudo-typeck v1
+def 0009 enum `Many` 1:6: <unknown>
+def 0010 function `all_variants` 69:4: Fn(Many) -> Int
+def 0011 function `wildcard_after_last` 139:4: Fn(Many) -> Int
+def 0012 function `missing_last_variant` 146:4: Fn(Many) -> Int
+def 0013 function `duplicate_last_variant` 215:4: Fn(Many) -> Int
+def 0014 parameter `value` 69:17: Many
+def 0015 parameter `value` 139:24: Many
+def 0016 parameter `value` 146:25: Many
+def 0017 parameter `value` 215:27: Many

@@ -1,0 +1,3 @@
+# nudo-diagnostics v1
+error NDO2014 147:5
+error NDO2015 218:9
