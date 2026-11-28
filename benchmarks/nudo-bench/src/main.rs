@@ -55,7 +55,13 @@ fn main() -> ExitCode {
         }
     };
 
-    let cases = build_cases();
+    let cases = match select_cases(build_cases(), options.case_filter.as_deref()) {
+        Ok(cases) => cases,
+        Err(error) => {
+            eprintln!("nudo-bench: {error}");
+            return ExitCode::from(2);
+        }
+    };
     let mut results = Vec::with_capacity(cases.len());
     for case in &cases {
         results.push(run_case(case, options.iterations, options.warmup));
@@ -121,6 +127,7 @@ struct Options {
     compare: Option<String>,
     threshold_percent: f64,
     label: Option<String>,
+    case_filter: Option<String>,
 }
 
 impl Options {
@@ -133,6 +140,7 @@ impl Options {
             compare: None,
             threshold_percent: DEFAULT_THRESHOLD_PERCENT,
             label: None,
+            case_filter: None,
         };
         let mut args = args.peekable();
         while let Some(arg) = args.next() {
@@ -168,6 +176,7 @@ impl Options {
                     options.threshold_percent = parsed;
                 }
                 "--label" => options.label = Some(value(&mut args, "--label")?),
+                "--case-filter" => options.case_filter = Some(value(&mut args, "--case-filter")?),
                 other => return Err(format!("unknown argument `{other}`")),
             }
         }
@@ -203,6 +212,7 @@ OPTIONS:
     --compare <PATH>    Compare this run against a JSON result and print Markdown
     --threshold <P>     Regression threshold in percent (default {DEFAULT_THRESHOLD_PERCENT})
     --label <TEXT>      Free-form label stored in the metadata
+    --case-filter <TEXT> Run cases whose names contain this text
     -h, --help          Print this help
 
 Stages measured: lex, parse, hir, typeck.
@@ -293,6 +303,24 @@ fn build_cases() -> Vec<Case> {
     }
 
     cases
+}
+
+fn select_cases(cases: Vec<Case>, filter: Option<&str>) -> Result<Vec<Case>, String> {
+    let Some(filter) = filter else {
+        return Ok(cases);
+    };
+    if filter.is_empty() {
+        return Err("`--case-filter` needs non-empty text".to_string());
+    }
+
+    let selected: Vec<_> = cases
+        .into_iter()
+        .filter(|case| case.case.contains(filter))
+        .collect();
+    if selected.is_empty() {
+        return Err(format!("no benchmark case name contains `{filter}`"));
+    }
+    Ok(selected)
 }
 
 // ------------------------------------------------------------ measurement ---
@@ -1248,6 +1276,62 @@ const fn utf8_width(first: u8) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn options_accept_case_filter() {
+        let options =
+            Options::parse(["--case-filter".to_string(), "enum-match".to_string()].into_iter())
+                .expect("case filter option is valid")
+                .expect("help was not requested");
+        assert_eq!(options.case_filter.as_deref(), Some("enum-match"));
+    }
+
+    #[test]
+    fn case_filter_selects_all_rows_with_matching_case_names() {
+        let cases = vec![
+            Case {
+                case: "enum-match-exhaustive-16",
+                stage: Stage::Typeck,
+                source: String::new(),
+            },
+            Case {
+                case: "enum-match-exhaustive-17",
+                stage: Stage::Typeck,
+                source: String::new(),
+            },
+            Case {
+                case: "functions",
+                stage: Stage::Lex,
+                source: String::new(),
+            },
+        ];
+
+        let selected = select_cases(cases, Some("enum-match-exhaustive"))
+            .expect("the filter matches boundary cases");
+        assert_eq!(selected.len(), 2);
+        assert!(
+            selected
+                .iter()
+                .all(|case| case.case.starts_with("enum-match-exhaustive"))
+        );
+    }
+
+    #[test]
+    fn case_filter_rejects_empty_or_unknown_names() {
+        let cases = vec![Case {
+            case: "functions",
+            stage: Stage::Lex,
+            source: String::new(),
+        }];
+        assert!(select_cases(cases, Some("")).is_err());
+
+        let cases = vec![Case {
+            case: "functions",
+            stage: Stage::Lex,
+            source: String::new(),
+        }];
+        assert!(select_cases(cases, Some("missing")).is_err());
+    }
 
     #[test]
     fn stages_report_the_units_they_count() {
