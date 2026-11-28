@@ -109,9 +109,9 @@ one visible consequence of the first: `verify (expr) with V` is rejected.
 
 * declaration-site generic parameters (`enum Outcome<T, E>`) are not in the
   grammar, so they are rejected — NEP-0006 says why;
-* the grammar's paths use `::` and its lists are comma-separated, while several
-  examples write `web.search` one per line. The parser follows the grammar, the
-  examples say they are previews, and the spelling needs a NEP to change;
+* accepted path and declaration-list spelling is fixed by NEP-0011 (`::` and
+  commas); `examples/06-tools` deliberately retains dotted tool names as a
+  negative example of rejected syntax;
 * `nudo-ast` exposes items and expressions, not every possible shape; it grows
   when a consumer needs it.
 

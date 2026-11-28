@@ -66,7 +66,6 @@ nada de ello.
   decide que la salida temprana es el valor de un bloque y no una sentencia. Un
   `return` suelto es un token inesperado y un `NDO1001`, fijado por
   `tests/conformance/parser/0017-no-return`.
-* Las rutas de la gramática usan `::` y sus listas están separadas por comas, mientras
-  que varios ejemplos del manual y de `examples/` escriben `web.search` uno por línea.
-  El parser sigue la gramática; los ejemplos dicen que son avances, y qué grafía
-  debería tener el lenguaje es un NEP, no un bug del parser.
+* NEP-0011 fija `::` para rutas y comas para listas de declaraciones. El ejemplo
+  con nombres separados por puntos de `examples/06-tools` es negativo a propósito
+  y no define otra grafía.

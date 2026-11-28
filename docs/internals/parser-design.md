@@ -160,10 +160,10 @@ Recorded here rather than discovered by whoever writes the formatter.
 * **Declaration-site generic parameters are accepted** since NEP-0010, so
   `enum Outcome<T, E>` parses. What remains open is inference: how much of a
   type argument a caller may leave out, which is M3.2's question.
-* **The grammar's `path` uses `::`, but the examples write `web.search`,** and a
-  list inside a declaration is comma-separated while the examples write one per
-  line. The parser follows the grammar; the examples are marked as previews and
-  say which syntax stops them. Whether the spelling should change is a NEP.
+* **Path and list spelling are settled by NEP-0011:** paths use `::` and lists
+  inside declarations use commas. `examples/06-tools` deliberately keeps the
+  dotted tool spelling as a rejected-syntax illustration; it does not define an
+  alternate spelling.
 * **Error nodes are not typed.** `nudo-ast` returns `None` for anything it cannot
   cast, which is deliberate: a consumer that needs to be sure has to be able to
   tell "this is a function" from "this looked like one until the eighth token".

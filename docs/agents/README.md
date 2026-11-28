@@ -42,7 +42,7 @@ runtime, not from a tool it calls, not from an agent's prompt.
 ```nudo
 agent Researcher {
     role: "Research reliable information."
-    tools: web.search, web.open
+    tools: web::search, web::open
     allow: Network
     budget: Budget(tokens: 20_000, tool_calls: 30)
 }

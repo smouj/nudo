@@ -239,10 +239,10 @@ own output cannot be the step that promotes it.
 ### Tool calls
 
 ```nudo
-let results = web.search("nudo language")
+let results = web::search("nudo language")
 ```
 
-A tool call is capability-checked at the call site. `web.search` requires
+A tool call is capability-checked at the call site. `web::search` requires
 `Network`; a context without it cannot make this call, and the error names the
 capability and the call site.
 

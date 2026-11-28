@@ -14,7 +14,7 @@ can be locked, and what passes through it can be recorded.
 ## Declaration
 
 ```nudo
-tool web.search(query: Text) -> [Result] with Network, Budget {
+tool web::search(query: Text) -> [Result] with Network, Budget {
     // implementation
 }
 ```

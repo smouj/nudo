@@ -23,8 +23,8 @@ agent Researcher {
         "Find and check sources."
 
     tools:
-        web.search
-        web.open
+        web::search
+        web::open
 
     allow:
         Network
@@ -38,7 +38,7 @@ agent Editor {
         "Turn research into an article."
 
     tools:
-        web.search
+        web::search
 
     allow:
         Network

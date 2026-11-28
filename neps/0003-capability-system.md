@@ -32,13 +32,13 @@ implementations of a dependency.
 ## Guide-level explanation
 
 ```nudo
-tool web.search(query: Text) -> [Result] with Network {
+tool web::search(query: Text) -> [Result] with Network {
     // may reach the network, and nothing else
 }
 
 agent Researcher {
     role: "Research reliable information."
-    tools: web.search
+    tools: web::search
     allow: Network
 }
 ```

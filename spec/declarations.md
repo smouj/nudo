@@ -122,7 +122,7 @@ not a claim. See [`agents/task.md`](agents/task.md).
 ## Tools
 
 ```nudo
-tool web.search(query: Text) -> [Result] with Network, Budget {
+tool web::search(query: Text) -> [Result] with Network, Budget {
     // …
 }
 ```

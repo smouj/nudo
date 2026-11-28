@@ -67,7 +67,6 @@ absichtlich nichts davon.
   legt fest, dass ein früher Ausstieg der Wert eines Blocks ist und keine Anweisung.
   Ein verirrtes `return` ist ein unerwartetes Token und ein `NDO1001`, festgehalten
   durch `tests/conformance/parser/0017-no-return`.
-* Die Pfade der Grammatik verwenden `::` und ihre Listen sind komma-getrennt, während
-  mehrere Beispiele im Handbuch und in `examples/` `web.search` je Zeile schreiben.
-  Der Parser folgt der Grammatik; die Beispiele sagen, dass sie Vorschauen sind, und
-  welche Schreibweise die Sprache haben sollte, ist ein NEP und kein Parser-Bug.
+* NEP-0011 legt `::` für Pfade und Kommas für Listen in Deklarationen fest. Das
+  Beispiel mit punktgetrennten Namen in `examples/06-tools` zeigt absichtlich die
+  abgelehnte Schreibweise und führt keine zweite Schreibweise ein.

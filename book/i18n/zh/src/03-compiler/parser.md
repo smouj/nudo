@@ -50,6 +50,5 @@ AST 为下游阶段给出语义形状（`Function`、`Call`、`Type`），
   EBNF 从未有过它，而 [NEP-0012](https://github.com/smouj/nudo/blob/main/neps/0012-early-exit.md)
   认定提前退出是块的值，而不是一条语句。一个多余的 `return` 是意外的记号，
   会产生 `NDO1001`，由 `tests/conformance/parser/0017-no-return` 钉住。
-* 文法的路径使用 `::`，其列表以逗号分隔，而手册中和 `examples/` 中的若干示例
-  却每行写一个 `web.search`。解析器遵循文法；那些示例声明自己是预览，
-  而该语言应采用哪种拼写是一个 NEP，而不是解析器的 bug。
+* NEP-0011 已确定路径使用 `::`，声明中的列表用逗号分隔。`examples/06-tools`
+  中带点的名称是故意保留的反例，用来展示被拒绝的写法，不会定义另一种拼写。

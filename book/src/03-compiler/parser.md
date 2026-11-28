@@ -63,7 +63,6 @@ about it.
   settles that early exit is a block's value rather than a statement. A stray
   `return` is an unexpected token and an `NDO1001`, pinned by
   `tests/conformance/parser/0017-no-return`.
-* The grammar's paths use `::` and its lists are comma-separated, while several
-  examples in the manual and in `examples/` write `web.search` one per line. The
-  parser follows the grammar; the examples say they are previews, and which
-  spelling the language should have is a NEP, not a parser bug.
+* NEP-0011 fixes paths to `::` and declaration lists to commas. The dotted-name
+  example in `examples/06-tools` is deliberately negative and does not define a
+  second spelling.
