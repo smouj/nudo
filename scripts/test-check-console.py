@@ -63,6 +63,26 @@ def load_checker(path, name):
     return module
 
 
+class BinarySelection(unittest.TestCase):
+    """The documented-output check runs the CLI Cargo built for this host."""
+
+    def test_windows_selects_the_executable_suffix(self):
+        checker = load_checker(CHECKER, "nudo_check_console_windows_binary")
+
+        self.assertEqual(
+            checker.cli_binary_path("repo", windows=True),
+            os.path.join("repo", "target", "debug", "nudo.exe"),
+        )
+
+    def test_unix_keeps_the_extensionless_executable_name(self):
+        checker = load_checker(CHECKER, "nudo_check_console_unix_binary")
+
+        self.assertEqual(
+            checker.cli_binary_path("repo", windows=False),
+            os.path.join("repo", "target", "debug", "nudo"),
+        )
+
+
 @unittest.skipUnless(
     shutil.which("git"), "git is required to determine repository content"
 )

@@ -2176,7 +2176,33 @@ mod tests {
     #[test]
     fn repeated_generic_arguments_must_agree() {
         let program = "fn same<T>(first: T, second: T) -> T {\n    first\n}\n\nfn main() {\n    let value = same(1, true);\n}\n";
-        assert_eq!(codes_for(program), vec!["NDO2004".to_string()]);
+        let (sources, id, result) = checked(program);
+        assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
+
+        let diagnostic = &result.diagnostics.as_slice()[0];
+        assert_eq!(diagnostic.code().id(), "NDO2004");
+        assert_eq!(diagnostic.message(), "type mismatch");
+        assert_eq!(
+            diagnostic.notes(),
+            &["expected: `Int`".to_string(), "found: `Bool`".to_string()]
+        );
+        assert_eq!(
+            diagnostic.help(),
+            Some("an annotation is a promise, and this value does not keep it")
+        );
+        assert_eq!(diagnostic.source(), Some(id));
+
+        let file = sources.get(id).expect("just added");
+        let span = diagnostic
+            .span()
+            .expect("the conflicting argument has a span");
+        assert_eq!(file.span_text(span), Some("true"));
+        let line_text = program.lines().nth(5).expect("call line");
+        let column = line_text.find("true").expect("conflicting argument") + 1;
+        assert_eq!(
+            file.line_col(span.start()).to_string(),
+            format!("6:{column}")
+        );
     }
 
     #[test]
@@ -2200,7 +2226,31 @@ mod tests {
     #[test]
     fn a_known_argument_type_wins_over_a_conflicting_expected_result() {
         let program = "fn identity<T>(value: T) -> T {\n    value\n}\n\nfn main() {\n    let answer: Text = identity(1);\n}\n";
-        assert_eq!(codes_for(program), vec!["NDO2004".to_string()]);
+        let (sources, id, result) = checked(program);
+        assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
+
+        let diagnostic = &result.diagnostics.as_slice()[0];
+        assert_eq!(diagnostic.code().id(), "NDO2004");
+        assert_eq!(diagnostic.message(), "type mismatch");
+        assert_eq!(
+            diagnostic.notes(),
+            &["expected: `Text`".to_string(), "found: `Int`".to_string()]
+        );
+        assert_eq!(
+            diagnostic.help(),
+            Some("an annotation is a promise, and this value does not keep it")
+        );
+        assert_eq!(diagnostic.source(), Some(id));
+
+        let file = sources.get(id).expect("just added");
+        let span = diagnostic.span().expect("the inferred call has a span");
+        assert_eq!(file.span_text(span), Some("identity(1)"));
+        let line_text = program.lines().nth(5).expect("call line");
+        let column = line_text.find("identity(1)").expect("inferred call") + 1;
+        assert_eq!(
+            file.line_col(span.start()).to_string(),
+            format!("6:{column}")
+        );
     }
 
     #[test]
