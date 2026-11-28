@@ -17,6 +17,12 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **NEP-0022: nominal value construction.** The M3.2 proposal defines complete
+  named struct construction, statically resolved enum variants, bounded generic
+  inference, error recovery and a non-forgeable trust-type boundary. It remains
+  in Discussion; no constructor syntax or behavior is implemented before
+  maintainer acceptance.
+
 * **NEP-0021: sequence indexing and bounds.** The M3.2 proposal defines a
   zero-based Int index, a typed bounds result, and O(1) access without a
   per-access allocation. It remains in Discussion; no indexing rule is

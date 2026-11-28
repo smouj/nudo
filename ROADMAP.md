@@ -196,8 +196,10 @@ rules of their own.
 * [ ] **Construction of a nominal value.** Nothing in the grammar builds one:
       there is no `struct-expression`, no `enum-literal` and no field initialiser,
       so a program can hold a nominal value (a parameter, a return) but cannot
-      make one. It needs a NEP - the syntax is a language decision, not a parser
-      gap - and it is recorded here rather than invented in the checker.
+      make one. [NEP-0022](neps/0022-nominal-value-construction.md) proposes
+      named, complete struct initializers and statically resolved enum
+      constructors. It remains in Discussion and authorizes no implementation
+      until accepted.
 * [x] Generic inference from call arguments and already-known expected result
       types, left to right and through nested named and function types, following
       [NEP-0013](neps/0013-generic-inference.md)
@@ -251,7 +253,8 @@ diagnostic contracts are accepted; a Draft NEP is not an implementation target.
   [NEP-0021](neps/0021-sequence-indexing-and-bounds.md) is in Discussion and
   does not authorize implementation.
 * **Nominal construction:** the grammar has no struct or enum construction
-  syntax; a NEP must decide it before implementation.
+  syntax. [NEP-0022](neps/0022-nominal-value-construction.md) is in Discussion
+  and must be accepted before implementation.
 * **Agent, task and tool types:** their declaration semantics remain proposed
   in the agent chapters; NEP-0001 (Draft) covers agent types.
 
