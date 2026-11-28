@@ -235,6 +235,51 @@ struct EnumVariants<'hir> {
     payload_types: Vec<Type>,
 }
 
+/// Tracks match coverage inline for up to 64 variants, allocating only for
+/// larger enums.
+struct MatchCoverage {
+    inline: u64,
+    words: Vec<u64>,
+}
+
+impl MatchCoverage {
+    fn new(variant_count: usize) -> Self {
+        let words = if variant_count > u64::BITS as usize {
+            vec![0; variant_count.div_ceil(u64::BITS as usize)]
+        } else {
+            Vec::new()
+        };
+        Self { inline: 0, words }
+    }
+
+    fn contains(&self, index: usize) -> bool {
+        if self.words.is_empty() {
+            self.inline & (1_u64 << index) != 0
+        } else {
+            self.words[index / u64::BITS as usize] & (1_u64 << (index % u64::BITS as usize)) != 0
+        }
+    }
+
+    fn insert(&mut self, index: usize) {
+        if self.words.is_empty() {
+            self.inline |= 1_u64 << index;
+        } else {
+            self.words[index / u64::BITS as usize] |= 1_u64 << (index % u64::BITS as usize);
+        }
+    }
+
+    fn cover_all(&mut self, variant_count: usize) {
+        if self.words.is_empty() {
+            self.inline = match variant_count {
+                64 => u64::MAX,
+                count => (1_u64 << count) - 1,
+            };
+        } else {
+            self.words.fill(u64::MAX);
+        }
+    }
+}
+
 /// Small enums are cheaper to scan than to index for each match expression.
 const LINEAR_MATCH_VARIANT_LIMIT: usize = 16;
 
@@ -764,7 +809,7 @@ impl<'hir> Checker<'hir> {
         } else {
             None
         };
-        let mut covered = vec![0_u64; variant_count.div_ceil(64)];
+        let mut covered = MatchCoverage::new(variant_count);
         let mut covered_count = 0;
         let mut wildcard_seen = false;
         let mut inferred_arm_type: Option<Type> = None;
@@ -793,7 +838,7 @@ impl<'hir> Checker<'hir> {
                         has_error = true;
                     }
                     wildcard_seen = true;
-                    covered.fill(u64::MAX);
+                    covered.cover_all(variant_count);
                     covered_count = variant_count;
                 }
                 MatchPattern::Variant {
@@ -814,9 +859,7 @@ impl<'hir> Checker<'hir> {
                     };
                     let payload_types = match (variants.as_ref(), variant) {
                         (Some(variants), Some(index)) => {
-                            let bit = 1_u64 << (index % 64);
-                            let word = &mut covered[index / 64];
-                            let previously_covered = *word & bit != 0;
+                            let previously_covered = covered.contains(index);
                             if !after_wildcard && previously_covered {
                                 self.report_unreachable_match_arm(
                                     *name_span,
@@ -824,7 +867,7 @@ impl<'hir> Checker<'hir> {
                                 );
                                 has_error = true;
                             } else if !after_wildcard {
-                                *word |= bit;
+                                covered.insert(index);
                                 covered_count += 1;
                             }
                             let variant = &variants.variants[index];
@@ -946,7 +989,7 @@ impl<'hir> Checker<'hir> {
                     .variants
                     .iter()
                     .enumerate()
-                    .filter(|(index, _)| covered[*index / 64] & (1_u64 << (*index % 64)) == 0)
+                    .filter(|(index, _)| !covered.contains(*index))
                     .map(|(_, variant)| variant.name)
                     .collect::<Vec<_>>()
                     .join(", ");
@@ -1991,6 +2034,28 @@ mod tests {
         assert_eq!(
             result.type_of_def(DefId::from_index(reason.0 as u32)),
             Some(&Type::Text)
+        );
+    }
+
+    #[test]
+    fn match_coverage_handles_exactly_64_variants_and_a_wildcard() {
+        let mut program = String::from("enum Word {\n");
+        for index in 0..64 {
+            program.push_str(&format!("    V{index:02}\n"));
+        }
+        program.push_str("}\n\nfn all(value: Word) -> Int {\n    match value {\n");
+        for index in 0..64 {
+            program.push_str(&format!("        V{index:02} => {index}\n"));
+        }
+        program.push_str(
+            "    }\n}\n\nfn last_then_wildcard(value: Word) -> Int {\n    match value {\n        V63 => 63\n        _ => 0\n    }\n}\n",
+        );
+
+        let (_, _, result) = checked(&program);
+        assert!(
+            result.diagnostics.is_empty(),
+            "64-way coverage should be exhaustive: {:?}",
+            result.diagnostics
         );
     }
 
