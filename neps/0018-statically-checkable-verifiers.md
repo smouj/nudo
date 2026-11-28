@@ -15,10 +15,11 @@
 
 This proposal gives the existing verify expression a statically resolved,
 deterministic verifier contract with a fixed typed failure, bounded checker
-work, and direct calls without a runtime registry or dynamic dispatch. It
-recommends reusing ordinary named functions with a restricted verifier body;
-the declaration form, accepted input types, and provenance boundary need review
-before this becomes an implementation contract.
+work, and direct calls without a runtime registry or dynamic dispatch. In line
+with accepted NEP-0002, it proposes a dedicated top-level `verifier`
+declaration with a restricted body. The exact syntax, accepted input types, and
+provenance boundary still need review before this becomes an implementation
+contract.
 
 ## Motivation
 
@@ -26,8 +27,8 @@ NEP-0002 already fixes the trust transition: verify returns
 Result<Verified<T>, VerificationError>, the verifier is named and deterministic,
 and success records which verifier was used. The parser and HIR represent
 verify, but the type checker deliberately treats it as unsupported. The M3.3
-roadmap names NEP-0018 as the missing gate, while no NEP-0018 file or index
-entry currently exists.
+roadmap names this NEP as the missing semantic gate; this proposal aligns its
+declaration form with NEP-0002's dedicated-verifier requirement.
 
 Without a declaration contract, implementations could disagree about whether
 the verifier is a function, a runtime lookup, a model call, or a conversion.
@@ -35,10 +36,10 @@ That is precisely the boundary where NUDO needs a narrow, reviewable rule.
 
 ## Guide-level explanation
 
-The proposed form reuses a statically named function:
+The proposed form declares a named, statically checked verifier:
 
 ~~~nudo
-fn ArticleVerifier(article: Article) -> Bool {
+verifier ArticleVerifier(article: Article) -> Bool {
     article.title != "" && article.body != ""
 }
 
@@ -55,11 +56,18 @@ fn publish_draft(draft: Generated<Article>) {
 }
 ~~~
 
-The name after with resolves at compile time to one verifier function. The
-function checks a value and returns Bool. A true result produces Ok with the
-same value as Verified<T>; false produces Err with a fixed
+The name after `with` resolves at compile time to one dedicated verifier
+declaration. It checks a value and returns Bool. A true result produces Ok with
+the same value as Verified<T>; false produces Err with a fixed
 VerificationError::Rejected value. The verifier runs once. The expression does
 not search a registry, use reflection, or dispatch through a trait object.
+
+`verifier` is proposed as a contextual declaration marker. A verifier occupies
+the existing value namespace and follows its duplicate-name rules. Its ordinary
+function type is `Fn(T) -> Bool`, so code may call it or pass it as a function
+value. Such a call returns only `Bool`; only `verify ... with` can produce
+`Verified<T>`. An ordinary function name used after `with` is rejected as
+NDO2020.
 
 This is a proposal, not accepted syntax or runnable behavior. The sample uses
 Article and Generated<Article> to explain the boundary; other M3.2 gates still
@@ -69,12 +77,18 @@ determine which complete programs can construct those values.
 
 ### Proposed verifier contract
 
-The recommended first implementation is deliberately limited:
+The first implementation is deliberately limited and keeps the dedicated
+declaration required by NEP-0002:
 
-* The verifier target is a statically resolved top-level function name, not a
-  function-valued expression or runtime-provided name.
-* It has exactly one non-generic parameter of type T and a declared Bool result.
-  Verifier type arguments are not inferred in this edition.
+* A verifier declaration has the form `verifier Name(input: T) -> Bool { ... }`.
+  It is top-level, has exactly one non-generic parameter, and has an explicit
+  `Bool` result. Its function value has type `Fn(T) -> Bool`; using it as a
+  function never constructs `Verified<T>`. The declaration has no effect
+  clause; its body must remain deterministic and effect-free.
+* The verifier target is a statically resolved top-level verifier name, not a
+  function-valued expression or runtime-provided name. It resolves in the
+  existing value namespace and must have `DefKind::Verifier`; this adds no
+  third namespace.
 * The verifier body is checked once per declaration. Each verify use checks
   only the resolved target and its signature; it does not re-traverse the body.
   The body may use deterministic value expressions,
@@ -102,8 +116,8 @@ The recommended first implementation is deliberately limited:
   user messages and user-defined error payloads are outside this slice.
 * The typed HIR records the verifier DefId on the verify expression. That pins
   verifier identity for conformance. At runtime, Verified<T> must retain that
-  identity with its value; the representation of the wrapper and the richer
-  input/provenance graph remain for M4 and M6, respectively.
+  identity with its value; the runtime representation and complete
+  input/provenance graph remain M6 work.
 * Result keeps NEP-0014's ordinary rules: match must cover Ok and Err, and no
   must-use rule is added.
 
@@ -111,6 +125,18 @@ The restricted body is a temporary first-edition boundary that makes
 determinism statically provable before the M5 effect checker exists. A later
 NEP may permit calls to functions whose effect-free contract is proven by the
 accepted effect system. It must not silently widen this subset.
+
+The declaration's grammar is proposed as:
+
+~~~ebnf
+verifier-declaration = "verifier", identifier, "(", parameter, ")",
+                       "->", type, block ;
+~~~
+
+The parser accepts the result-type position using the ordinary type grammar;
+the verifier checker requires it to resolve to `Bool`. The contextual word
+`verifier` starts this form only at item position and remains available as a
+name elsewhere.
 
 ### Diagnostics and recovery
 
@@ -135,7 +161,7 @@ direct statically resolved call and does not need a verifier registry,
 reflection, dynamic dispatch, or an allocation for verifier lookup. The
 predicate's own work still costs what its body requires. Result layout and
 provenance storage are not promised to be free; they must be measured with the
-M4/M6 runtime and bounded by the accepted provenance contract.
+M6 runtime and bounded by the accepted provenance contract.
 
 ### Conformance
 
@@ -143,9 +169,10 @@ The M3.3 cases should pin verifier resolution and signature shape, exact generic
 payload selection, type mismatch and forbidden-body diagnostics (including
 rejected references to top-level values), error recovery without cascades, the
 resolved verifier DefId in typed HIR, and exhaustive Result handling under
-NEP-0020. M3.3 has no execution engine, so runtime tests for successful
-verification and false-to-Err conversion belong to M4. Tests for the complete
-provenance graph remain in M6.
+NEP-0020. M3.3 has no execution engine, so it pins verifier identity in typed
+HIR rather than runtime provenance. Runtime tests for successful verification,
+false-to-Err conversion, and provenance belong to M6, when trust values are
+executable.
 
 ## What this makes impossible
 
@@ -169,15 +196,15 @@ auditable first slice; relaxing it needs an accepted effect contract.
 | Arbitrary function calls in verifier bodies | Determinism cannot be proved transitively until effect semantics are accepted and checked |
 | Verifier returns a user-defined error type | Requires nominal construction and adds type inference and runtime payload choices before the related M3.2 gate is settled |
 | A model acts as its own verifier | Confuses generated judgement with deterministic verification; NEP-0002 defers model verification |
-| A new verifier keyword and declaration kind | Gives a clear marker, but adds syntax and a second function-like declaration before ordinary named functions have been exhausted |
+| Reusing an ordinary function as a verifier | Blurs an ordinary callable with the dedicated verifier declaration required by accepted NEP-0002 |
 
 ## Impact
 
 | Area | Effect |
 | ---- | ------ |
 | Specification | Refine verify's verifier, input, failure, and typed-HIR contracts |
-| Grammar | No new grammar is required by the recommended ordinary-function form |
-| Compiler | Extend HIR with the resolved verifier identity and type verify expressions in nudo-typeck |
+| Grammar | Add a contextual top-level `verifier` declaration; `verify` expression syntax stays unchanged |
+| Compiler | Add `DefKind::Verifier`, preserve its resolved identity in typed HIR, and type verify expressions in nudo-typeck |
 | Conformance | Add M3.3 valid, invalid, recovery, identity, and Result cases |
 | Tooling | Expose verifier-specific diagnostics and spans to editors |
 | Security | Prevents model or effectful calls from silently promoting a value to Verified<T> |
@@ -186,18 +213,18 @@ auditable first slice; relaxing it needs an accepted effect contract.
 
 ## Open questions
 
-1. Is reusing an ordinary named function preferable to a dedicated verifier
-   declaration, despite the new keyword alternative being easier to identify?
+1. Is `verifier Name(input: T) -> Bool { ... }` a clear dedicated form, with
+   `verifier` contextual and stored in the existing value namespace?
 2. Should a verifier accept T, Generated<T>, and Verified<T> as proposed, or
    should the trust transition accept only Generated<T>?
 3. Is a single VerificationError::Rejected variant sufficient for M3.3, with
-   richer deterministic reasons deferred until nominal construction lands?
+   richer deterministic reasons left for a separate future NEP?
 4. Is a call-free body restricted to its input and local immutable bindings an
    acceptable deterministic first slice, with effect-checked helper calls
    deferred until after NEP-0004 is accepted?
-5. Should M3.3 conformance pin verifier identity in typed HIR, M4 test actual
-   success/failure, and M6 test the complete provenance graph, even though the
-   current roadmap groups verification failure and provenance under M3.3?
+5. Should M3.3 conformance pin verifier identity in typed HIR, with M6 testing
+   successful verification, failure and the complete provenance graph, and the
+   roadmap updated to place that runtime work in M6?
 
 An accepted NEP must close all five questions. No verifier behavior is
 implemented by this Discussion draft.
@@ -214,3 +241,4 @@ exists.
 ## Unresolved objections
 
 None recorded.
+
