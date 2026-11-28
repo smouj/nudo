@@ -3,12 +3,12 @@
 //! `examples/README.md` promises a reader two things:
 //!
 //! 1. the examples it lists as readable are read by the toolchain today;
-//! 2. every other one is a *preview*, and not accepted.
+//! 2. every other one is a *preview*, and not accepted by the full checker.
 //!
-//! Before M2 the second promise was checked by the lexer, which was a weak
-//! statement: a file can use only known tokens and still not be a program. Now
-//! it is checked properly — a preview must be **rejected by the parser**, and a
-//! readable example must produce no diagnostics at all.
+//! Syntax previews must be rejected by the parser. A semantic preview may use
+//! accepted grammar while its declaration or type rules remain gated; the CLI
+//! integration tests check that `nudo check` still rejects it. Readable
+//! examples must produce no parser diagnostics at all.
 
 use std::fs;
 use std::path::PathBuf;
@@ -28,6 +28,17 @@ const READABLE: &[&str] = &[
 /// Examples that illustrate proposed syntax: they must be rejected.
 const PREVIEWS: &[&str] = &[
     "05-agent",
+    "06-tools",
+    "07-generated-verified",
+    "08-policy",
+    "09-multi-agent",
+];
+
+/// Preview examples whose syntax is accepted but whose meaning remains gated.
+const SEMANTIC_PREVIEWS: &[&str] = &["05-agent"];
+
+/// Preview examples that must still be rejected by the parser.
+const SYNTAX_PREVIEWS: &[&str] = &[
     "06-tools",
     "07-generated-verified",
     "08-policy",
@@ -71,13 +82,29 @@ fn readable_examples_produce_no_diagnostics() {
 }
 
 #[test]
-fn previews_are_rejected_by_the_parser() {
-    for name in PREVIEWS {
+fn syntax_previews_are_rejected_by_the_parser() {
+    for name in SYNTAX_PREVIEWS {
         let parsed = parse_source(name, example_source(name));
         assert!(
             parsed.has_errors(),
             "examples/{name}/main.nudo is marked as a preview but the toolchain accepted it; \
              promote it to the readable table in examples/README.md if that is intended"
+        );
+    }
+}
+
+#[test]
+fn semantic_previews_may_parse_but_remain_gated() {
+    for name in SEMANTIC_PREVIEWS {
+        let text = example_source(name);
+        let parsed = parse_source(name, text.clone());
+        assert!(
+            !parsed.has_errors(),
+            "examples/{name}/main.nudo uses accepted syntax; update the preview classification if that changes"
+        );
+        assert!(
+            text.contains("PREVIEW — NOT ACCEPTED") && text.contains("NEP-0001"),
+            "examples/{name}/main.nudo must name its semantic gate"
         );
     }
 }

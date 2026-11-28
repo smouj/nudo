@@ -19,9 +19,7 @@ agent Researcher {
     role:
         "Research reliable information."
 
-    tools:
-        web::search
-        web::open
+    tools: web::search, web::open
 
     allow:
         Network
