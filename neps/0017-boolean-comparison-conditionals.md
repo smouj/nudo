@@ -10,7 +10,7 @@
 | Supersedes | — |
 | Superseded by | — |
 | Specification chapters | [`spec/expressions.md`](../spec/expressions.md), [`spec/types.md`](../spec/types.md), [`spec/errors.md`](../spec/errors.md) |
-| Related NEPs | NEP-0007, NEP-0008, NEP-0013, NEP-0014, NEP-0015 |
+| Related NEPs | NEP-0007, NEP-0008, NEP-0013, NEP-0014, NEP-0015, NEP-0019 |
 
 ## Summary
 
@@ -111,7 +111,8 @@ This proposal assigns two type-diagnostic codes:
 
 `NDO2008` and `NDO2009` are defined by NEP-0015 for generic-inference
 diagnostics. The M3 proposals allocate `NDO2010`–`NDO2016` to integer-literal
-and match diagnostics, and `NDO2017` is implemented for type-argument arity.
+and match diagnostics; NEP-0019 assigns `NDO2010` to out-of-range integer
+literal magnitudes, and `NDO2017` is implemented for type-argument arity.
 This proposal therefore uses the next available pair, `NDO2018` and `NDO2019`.
 
 The primary span for `NDO2018` is the operator token. The diagnostic includes

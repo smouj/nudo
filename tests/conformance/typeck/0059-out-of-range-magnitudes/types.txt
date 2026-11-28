@@ -1,0 +1,4 @@
+# nudo-typeck v1
+def 0009 binding `subtraction` 1:5: Int
+def 0010 binding `too_large_positive` 2:5: <error>
+def 0011 binding `too_large_negative` 3:5: <error>

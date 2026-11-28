@@ -14,6 +14,7 @@ The CLI does not invoke the checker yet.
 | Rule | Current behaviour |
 | --- | --- |
 | Primitive and literal types | <code>Int</code>, <code>Float</code>, <code>Bool</code>, <code>Text</code> and <code>Unit</code> are represented |
+| Integer literal boundaries | <code>Int::MAX</code> is accepted; magnitude <code>2^63</code> is accepted only directly under unary <code>-</code> to spell <code>Int::MIN</code>; larger or otherwise invalid magnitudes use <code>NDO2010</code> |
 | Annotations and function signatures | Values are compared with written types; function types and calls are checked |
 | Function results | An omitted result annotation means <code>Unit</code>; value-returning functions declare their result type; body mismatches use <code>NDO2004</code> |
 | Calls | Arity uses <code>NDO2005</code>, incompatible arguments use <code>NDO2004</code>, and non-callable values use <code>NDO2006</code> |
@@ -36,9 +37,9 @@ earlier error.
 ## Rules still incomplete
 
 Sequence indexing and its runtime bounds behavior, nominal construction,
-<code>match</code> and <code>Result&lt;T, E&gt;</code> matching remain pending. Integer
-literal range checking, verifier execution and provenance, agents, tasks and
-tools have not been implemented in this checker.
+<code>match</code> and <code>Result&lt;T, E&gt;</code> matching remain pending.
+Verifier execution and provenance, agents, tasks and tools have not been
+implemented in this checker.
 
 These omissions are deliberate. A rule is implemented only when its semantic
 and diagnostic contract is accepted. The roadmap and the specification record

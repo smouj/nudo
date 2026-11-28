@@ -69,7 +69,8 @@ use std::{
 
 use nudo_diagnostics::{Diagnostic, Diagnostics, codes};
 use nudo_hir::{
-    Def, DefId, DefKind, ExprId, ExprKind, Hir, LiteralKind, StmtKind, TypeRef, TypeRefKind,
+    Def, DefId, DefKind, ExprId, ExprKind, Hir, IntegerMagnitude, LiteralKind, StmtKind, TypeRef,
+    TypeRefKind,
 };
 use nudo_source::SourceId;
 use nudo_span::Span;
@@ -533,7 +534,9 @@ impl Checker<'_> {
         let kind = expression.kind.clone();
         let typed = match kind {
             ExprKind::Literal(literal) => match literal {
-                LiteralKind::Int => Type::Int,
+                LiteralKind::Int(magnitude) => {
+                    self.type_of_integer_literal(magnitude, expression.span)
+                }
                 LiteralKind::Float => Type::Float,
                 LiteralKind::Text => Type::Text,
                 LiteralKind::Bool => Type::Bool,
@@ -697,6 +700,11 @@ impl Checker<'_> {
 
     /// Types unary operators and reports invalid domains at the operator token.
     fn type_of_unary(&mut self, operator: &str, operator_span: Span, operand: ExprId) -> Type {
+        if operator == "-" && self.is_minimum_integer_magnitude(operand) {
+            self.set_expression_type(operand, Type::Int);
+            return Type::Int;
+        }
+
         let operand_type = self.type_of_expression(operand);
         if self.contains_error_type(&operand_type) {
             return Type::Error;
@@ -713,6 +721,55 @@ impl Checker<'_> {
         }
         self.report_invalid_operator_types(operator, operator_span, &[operand_type]);
         Type::Error
+    }
+
+    /// Types an integer magnitude, allowing `2^63` only in the dedicated unary
+    /// minus rule above.
+    fn type_of_integer_literal(&mut self, magnitude: IntegerMagnitude, span: Span) -> Type {
+        match magnitude {
+            IntegerMagnitude::Value(value) if value < (1_u64 << 63) => Type::Int,
+            IntegerMagnitude::Invalid => Type::Error,
+            IntegerMagnitude::Value(value) if value == (1_u64 << 63) => {
+                self.report_integer_literal_out_of_range(span, true);
+                Type::Error
+            }
+            IntegerMagnitude::Value(_) | IntegerMagnitude::OutOfRange => {
+                self.report_integer_literal_out_of_range(span, false);
+                Type::Error
+            }
+        }
+    }
+
+    /// Whether this expression is the `2^63` magnitude used directly under
+    /// unary minus. HIR has already erased parentheses around the literal.
+    fn is_minimum_integer_magnitude(&self, expression: ExprId) -> bool {
+        self.hir.expr(expression).is_some_and(|expression| {
+            matches!(
+                expression.kind,
+                ExprKind::Literal(LiteralKind::Int(IntegerMagnitude::Value(value)))
+                    if value == (1_u64 << 63)
+            )
+        })
+    }
+
+    fn set_expression_type(&mut self, expression: ExprId, ty: Type) {
+        if let Some(slot) = self.expression_types.get_mut(expression.index() as usize) {
+            *slot = Some(ty);
+        }
+    }
+
+    fn report_integer_literal_out_of_range(&mut self, span: Span, is_minimum_magnitude: bool) {
+        let diagnostic = Diagnostic::error(
+            codes::INTEGER_LITERAL_OUT_OF_RANGE,
+            "integer literal is outside the range of `Int`",
+        )
+        .with_location(self.source, span);
+        let help = if is_minimum_magnitude {
+            "write this magnitude as the direct operand of unary `-` to denote `Int::MIN`"
+        } else {
+            "use a magnitude no greater than `9223372036854775807`; exactly `9223372036854775808` is valid only directly under unary `-` to denote `Int::MIN`"
+        };
+        self.diagnostics.push(diagnostic.with_help(help));
     }
 
     /// Types unary and binary operators without coercion or overload search.
@@ -1490,6 +1547,88 @@ mod tests {
                 "{expected} is missing from {types:?}"
             );
         }
+    }
+
+    #[test]
+    fn integer_literal_boundaries_follow_signed_int() {
+        let program = "let maximum: Int = 9223372036854775807;\n\
+             let minimum: Int = -9223372036854775808;\n\
+             let parenthesized: Int = -((9_223_372_036_854_775_808));\n\
+             let twice_negated: Int = -(-9223372036854775808);\n";
+        let (_, _, hir, result) = checked_with_hir(program);
+        assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+        for (index, definition) in hir.defs().iter().enumerate() {
+            if definition.kind == DefKind::Binding {
+                assert_eq!(
+                    result.type_of_def(DefId::from_index(index as u32)),
+                    Some(&Type::Int),
+                    "{} must have type Int",
+                    definition.name
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn invalid_integer_magnitudes_report_at_the_literal_without_cascades() {
+        let program = "let positive = 9223372036854775808;\n\
+             let subtraction = 0 - 9223372036854775808;\n\
+             let too_large = -9223372036854775809;\n";
+        let (sources, id, result) = checked(program);
+        assert_eq!(
+            result
+                .diagnostics
+                .as_slice()
+                .iter()
+                .map(|diagnostic| diagnostic.code().id())
+                .collect::<Vec<_>>(),
+            ["NDO2010", "NDO2010", "NDO2010"]
+        );
+        let file = sources.get(id).expect("just added");
+        let literal_spans = result
+            .diagnostics
+            .as_slice()
+            .iter()
+            .map(|diagnostic| {
+                file.span_text(diagnostic.span().expect("literal diagnostic has a span"))
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            literal_spans,
+            [
+                Some("9223372036854775808"),
+                Some("9223372036854775808"),
+                Some("9223372036854775809"),
+            ]
+        );
+        assert_eq!(
+            result.diagnostics.as_slice()[0].message(),
+            "integer literal is outside the range of `Int`"
+        );
+        assert_eq!(
+            result.diagnostics.as_slice()[0].help(),
+            Some("write this magnitude as the direct operand of unary `-` to denote `Int::MIN`")
+        );
+        assert_eq!(
+            result.diagnostics.as_slice()[2].help(),
+            Some(
+                "use a magnitude no greater than `9223372036854775807`; exactly `9223372036854775808` is valid only directly under unary `-` to denote `Int::MIN`"
+            )
+        );
+    }
+
+    #[test]
+    fn the_minimum_integer_magnitude_does_not_widen_to_float() {
+        let (_, _, result) = checked("let value: Float = -9223372036854775808;\n");
+        assert_eq!(
+            result
+                .diagnostics
+                .as_slice()
+                .iter()
+                .map(|diagnostic| diagnostic.code().id())
+                .collect::<Vec<_>>(),
+            ["NDO2004"]
+        );
     }
 
     #[test]

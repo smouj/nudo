@@ -1,0 +1,5 @@
+# nudo-typeck v1
+def 0009 function `accept_float` 1:4: Fn(Float) -> Unit
+def 0010 binding `positive` 3:5: Int
+def 0011 binding `float_result` 4:5: Unit
+def 0012 parameter `value` 1:17: Float

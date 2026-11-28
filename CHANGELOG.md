@@ -17,6 +17,12 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **M3.2: integer literal boundaries are checked.** NEP-0019 accepts the exact
+  magnitude needed to write `Int::MIN` only directly under unary `-`; all other
+  invalid magnitudes use `NDO2010`. HIR performs one bounded, allocation-free
+  decimal scan, and conformance pins the signed boundaries, separators,
+  parentheses, expected `Float`, binary subtraction and nested negation.
+
 * **M3.2: function results are fixed by signatures.** NEP-0016 makes an omitted
   result annotation mean `Unit`; a function returning a value declares its
   result type. The checker validates the body against that type with `NDO2004`,

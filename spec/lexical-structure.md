@@ -110,8 +110,12 @@ float        := integer, ".", digit, { digit | "_" digit }
   ends, and the `.` is lexed on its own.
 * A digit sequence immediately followed by an identifier character is
   `NDO1005`: `123abc` is one malformed literal, not a number followed by a name.
-* The lexer produces the token and does not compute its value. Value
-  computation, radix literals and suffixes are not implemented and need a NEP.
+* The lexer recognises number grammar and reports malformed forms, but does not
+  compute numeric values. The lossless syntax tree preserves token text. HIR
+  parses an integer's decimal magnitude once, bounded at `2^63`, so the type
+  checker can apply [NEP-0019](../neps/0019-integer-literal-boundary.md) without
+  rescanning source text or constructing an arbitrary-precision value. Radix
+  literals and suffixes are not part of this grammar and need a NEP.
 
 ## Text literals
 

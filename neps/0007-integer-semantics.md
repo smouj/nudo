@@ -6,9 +6,9 @@
 | Created | 2026-09-18 |
 | Accepted | 2026-09-18, as gate 2 of M3.0 |
 | Supersedes | — |
-| Superseded by | — |
+| Superseded by | [NEP-0019](0019-integer-literal-boundary.md) for the integer-literal boundary only |
 | Specification chapters | [`spec/types.md`](../spec/types.md), [`spec/expressions.md`](../spec/expressions.md), [`spec/errors.md`](../spec/errors.md) |
-| Related NEPs | NEP-0006, NEP-0008 |
+| Related NEPs | NEP-0006, NEP-0008, NEP-0017, NEP-0019 |
 
 ## Summary
 
@@ -37,8 +37,8 @@ and unusable as the default. The choice below pays the cost where it is visible.
   constant arithmetic, but folding must not change the outcome — a trap it can
   see is still a trap, not a compile error.
 * **A literal that does not fit is a compile error** (`NDO2xxx`), because the
-  program can never be right. `9223372036854775808` is rejected at compile time,
-  not truncated at run time.
+  program can never be right. NEP-0019 defines the exact boundary, including
+  how unary minus spells `Int::MIN`; no literal is truncated at run time.
 * **Division truncates toward zero**, and `%` takes the sign of the dividend
   (`-7 / 2 == -3`, `-7 % 2 == -1`), matching every language a reader will have
   used.
@@ -85,9 +85,9 @@ and unusable as the default. The choice below pays the cost where it is visible.
 
 ## Implementation status
 
-**Partly implemented.** The lexer and grammar accept `%`; M3.2 gives `+`, `-`,
-`*` and `/` the result type of matching numeric `Int` or `Float` operands,
-rejects mixed `Int`/`Float` operands, requires `Int` for `%`, and preserves the
-numeric type through unary `-`. Other operator operand domains need settled type
-rules. Integer literal range checking needs value parsing in the type checker
-(M3), and arithmetic evaluation needs the interpreter (M4).
+**Partly implemented.** NEP-0019 and M3.2 implement bounded integer literal
+range checking and give `NDO2010` for invalid magnitudes. As NEP-0017 specifies,
+M3.2 types numeric, Boolean, comparison and conditional expressions, rejects
+mixed `Int`/`Float` operands, requires `Int` for `%`, and preserves the numeric
+type through unary `-`. Runtime arithmetic evaluation still needs the
+interpreter (M4).

@@ -11,6 +11,7 @@ Das Typsystem ist in den Sprachkapiteln und angenommenen NEPs spezifiziert. Das 
 | Regel | Aktuelles Verhalten |
 | --- | --- |
 | Primitive und Literaltypen | <code>Int</code>, <code>Float</code>, <code>Bool</code>, <code>Text</code> und <code>Unit</code> werden repräsentiert |
+| Ganzzahl-Literalgrenzen | <code>Int::MAX</code> ist gültig; die Magnitude <code>2^63</code> ist nur direkt unter unärem <code>-</code> für <code>Int::MIN</code> zulässig; größere oder anderweitig ungültige Magnituden verwenden <code>NDO2010</code> |
 | Annotationen und Funktionssignaturen | Werte werden mit angegebenen Typen verglichen; Funktionstypen und Aufrufe werden geprüft |
 | Funktionsergebnisse | Ohne Ergebnisannotation ist das Ergebnis <code>Unit</code>; Funktionen mit Rückgabewert schreiben ihren Ergebnistyp, Abweichungen im Rumpf verwenden <code>NDO2004</code> |
 | Aufrufe | Arität verwendet <code>NDO2005</code>, inkompatible Argumente <code>NDO2004</code>, nicht aufrufbare Werte <code>NDO2006</code> |
@@ -24,7 +25,7 @@ Die generische Inferenz ist bewusst begrenzt. Sie löst keine Typen für das ges
 
 ## Noch unvollständige Regeln
 
-Sequenzindizierung und deren Laufzeitverhalten bei ungültigen Grenzen, nominale Konstruktion, <code>match</code> und <code>Result&lt;T, E&gt;</code>-Matching stehen noch aus. Ganzzahl-Literalbereiche, die Ausführung von Verifizierern und Provenienz sowie Agenten, Tasks und Tools sind in diesem Typechecker noch nicht implementiert.
+Sequenzindizierung und deren Laufzeitverhalten bei ungültigen Grenzen, nominale Konstruktion, <code>match</code> und <code>Result&lt;T, E&gt;</code>-Matching stehen noch aus. Die Ausführung von Verifizierern und Provenienz sowie Agenten, Tasks und Tools sind in diesem Typechecker noch nicht implementiert.
 
 Diese Lücken sind beabsichtigt. Eine Regel gilt erst dann als implementiert, wenn ihr semantischer und diagnostischer Vertrag angenommen wurde. Roadmap und Spezifikation halten fest, welche Arbeit bereit ist und welche Entscheidungen noch offen sind.
 

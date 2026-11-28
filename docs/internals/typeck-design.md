@@ -75,7 +75,7 @@ fill in cases instead of redesigning the centre:
 
 | Rule | Example |
 | ---- | ------- |
-| Literal typing | `1` is `Int`, `1.5` is `Float`, `true` is `Bool`, `"nudo"` is `Text` |
+| Literal typing | Decimal magnitudes through `Int::MAX` are `Int`; `2^63` is accepted only directly under unary `-` for `Int::MIN`; other out-of-range magnitudes use `NDO2010`; `1.5` is `Float`, `true` is `Bool`, `"nudo"` is `Text` |
 | Annotations | `let x: Int = 1;` types both sides and compares them |
 | Named type arity | Resolved structs, enums, type parameters and intrinsic types require their declared type-argument count; `NDO2017` points at the type use |
 | Blocks | a block's type is its final expression's, or `Unit` when it has none |
@@ -112,7 +112,7 @@ not hidden.
 | Not yet | Arrives with |
 | ------- | ------------ |
 | Sequence and index typing, including out-of-range behavior | a specification decision |
-| Integer literal range checking and arithmetic evaluation | the interpreter and compile-time literal checking; arithmetic behavior is in NEP-0007 |
+| Arithmetic evaluation | the interpreter; overflow and division traps are specified by NEP-0007 |
 | Enum pattern resolution, payload binding, exhaustiveness and arm result types | NEP-0020 (**Draft**); do not implement before acceptance |
 | Building a nominal value: **the grammar has no construction syntax at all**, so it needs a NEP before it can be implemented | when the language decides |
 | `Result<T, E>` and exhaustive `match` behavior | after the match rules are accepted and implemented |
