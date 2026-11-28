@@ -217,6 +217,17 @@ struct Checker<'a> {
     diagnostics: Diagnostics,
 }
 
+struct EnumVariantType {
+    name: String,
+    payload_start: usize,
+    payload_len: usize,
+}
+
+struct EnumVariants {
+    variants: Vec<EnumVariantType>,
+    payload_types: Vec<Type>,
+}
+
 impl Checker<'_> {
     /// The type a definition declares, if it declares one.
     fn signature_of(&self, definition: &Def) -> Option<Type> {
@@ -727,14 +738,17 @@ impl Checker<'_> {
             has_error = true;
         }
 
-        let variant_count = variants.as_ref().map_or(0, Vec::len);
+        let variant_count = variants
+            .as_ref()
+            .map_or(0, |variants| variants.variants.len());
         let variant_indices = variants
             .as_ref()
             .map(|variants| {
                 variants
+                    .variants
                     .iter()
                     .enumerate()
-                    .map(|(index, (name, _))| (name.as_str(), index))
+                    .map(|(index, variant)| (variant.name.as_str(), index))
                     .collect::<HashMap<_, _>>()
             })
             .unwrap_or_default();
@@ -792,7 +806,9 @@ impl Checker<'_> {
                                 *word |= bit;
                                 covered_count += 1;
                             }
-                            Some(variants[index].1.as_slice())
+                            let variant = &variants.variants[index];
+                            let payload_end = variant.payload_start + variant.payload_len;
+                            Some(&variants.payload_types[variant.payload_start..payload_end])
                         }
                         (Some(_), None) => {
                             self.diagnostics.push(
@@ -906,10 +922,11 @@ impl Checker<'_> {
         if let Some(variants) = &variants {
             if covered_count < variant_count {
                 let missing = variants
+                    .variants
                     .iter()
                     .enumerate()
                     .filter(|(index, _)| covered[*index / 64] & (1_u64 << (*index % 64)) == 0)
-                    .map(|(_, (name, _))| name.as_str())
+                    .map(|(_, variant)| variant.name.as_str())
                     .collect::<Vec<_>>()
                     .join(", ");
                 self.diagnostics.push(
@@ -935,7 +952,7 @@ impl Checker<'_> {
     }
 
     /// Returns declaration-order variants and their payload types for a match.
-    fn enum_variants(&self, ty: &Type) -> Option<Vec<(String, Vec<Type>)>> {
+    fn enum_variants(&self, ty: &Type) -> Option<EnumVariants> {
         let Type::Named {
             definition,
             arguments,
@@ -951,10 +968,21 @@ impl Checker<'_> {
             if arguments.len() != 2 {
                 return None;
             }
-            return Some(vec![
-                ("Ok".to_string(), vec![arguments[0].clone()]),
-                ("Err".to_string(), vec![arguments[1].clone()]),
-            ]);
+            return Some(EnumVariants {
+                variants: vec![
+                    EnumVariantType {
+                        name: "Ok".to_string(),
+                        payload_start: 0,
+                        payload_len: 1,
+                    },
+                    EnumVariantType {
+                        name: "Err".to_string(),
+                        payload_start: 1,
+                        payload_len: 1,
+                    },
+                ],
+                payload_types: vec![arguments[0].clone(), arguments[1].clone()],
+            });
         }
         if definition.kind != DefKind::Enum || definition.type_parameters.len() != arguments.len() {
             return None;
@@ -966,25 +994,32 @@ impl Checker<'_> {
             .copied()
             .zip(arguments.iter().cloned())
             .collect::<HashMap<_, _>>();
-        Some(
-            definition
-                .variants
-                .iter()
-                .map(|variant| {
-                    let fields = variant
-                        .fields
-                        .iter()
-                        .map(|field| {
-                            field.ty.as_ref().map_or(Type::Error, |annotation| {
-                                let ty = self.type_of_annotation(annotation);
-                                self.substitute_type(&ty, &substitutions)
-                            })
-                        })
-                        .collect();
-                    (variant.name.clone(), fields)
-                })
-                .collect(),
-        )
+        let payload_count = definition
+            .variants
+            .iter()
+            .map(|variant| variant.fields.len())
+            .sum();
+        let mut variants = Vec::with_capacity(definition.variants.len());
+        let mut payload_types = Vec::with_capacity(payload_count);
+        for variant in &definition.variants {
+            let payload_start = payload_types.len();
+            for field in &variant.fields {
+                let ty = field.ty.as_ref().map_or(Type::Error, |annotation| {
+                    let ty = self.type_of_annotation(annotation);
+                    self.substitute_type(&ty, &substitutions)
+                });
+                payload_types.push(ty);
+            }
+            variants.push(EnumVariantType {
+                name: variant.name.clone(),
+                payload_start,
+                payload_len: payload_types.len() - payload_start,
+            });
+        }
+        Some(EnumVariants {
+            variants,
+            payload_types,
+        })
     }
 
     fn report_unreachable_match_arm(&mut self, span: Span, reason: &str) {
