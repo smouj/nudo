@@ -1430,7 +1430,7 @@ impl Checker<'_> {
 
         // Everything read out of the definition is copied first: reporting a
         // diagnostic needs `&mut self`, and a borrow of the HIR would outlive it.
-        let (is_struct, type_parameters, found, available) = {
+        let (is_struct, type_parameters, found) = {
             let Some(definition) = self.hir.def(id) else {
                 return Type::Error;
             };
@@ -1443,13 +1443,8 @@ impl Checker<'_> {
                         .iter()
                         .find(|field| field.name == name)
                         .and_then(|field| field.ty.clone()),
-                    definition
-                        .fields
-                        .iter()
-                        .map(|field| field.name.clone())
-                        .collect::<Vec<String>>(),
                 ),
-                _ => (false, Vec::new(), None, Vec::new()),
+                _ => (false, Vec::new(), None),
             }
         };
 
@@ -1470,6 +1465,18 @@ impl Checker<'_> {
             let field_type = self.type_of_annotation(&annotation);
             return self.substitute_type(&field_type, &substitutions);
         }
+        // The field list exists only to improve this diagnostic. Collect it
+        // only on the error path so successful accesses allocate nothing for it.
+        let available = {
+            let Some(definition) = self.hir.def(id) else {
+                return Type::Error;
+            };
+            definition
+                .fields
+                .iter()
+                .map(|field| field.name.clone())
+                .collect::<Vec<_>>()
+        };
         self.report_unknown_field(name, &receiver_type, name_span, &available);
         Type::Error
     }
