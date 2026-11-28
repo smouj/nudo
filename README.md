@@ -185,7 +185,7 @@ the dependency rules between them.
 | HIR and name resolution | Implemented and tested (milestone M3.1) |
 | `nudo check` | Implemented: reads `.nudo` files, reports lexical, syntax and name diagnostics |
 | `nudo --version`, `nudo --help` | Implemented |
-| Type checker | In progress (M3.2–M3.3): primitives, calls, bounded generic inference, fields, conditions, numeric operators and accepted `Verified<T> → T` assignment; `match`, `Result` checking and `verify` remain pending; not wired into `nudo check` yet |
+| Type checker | In progress (M3.2–M3.3): primitives, calls, bounded generic inference, fields, operator domains, `if` results and accepted `Verified<T> → T` assignment; sequence indexing, `match`, `Result` checking and `verify` remain pending; not wired into `nudo check` yet |
 | Effects | Planned (M5) |
 | Interpreter, WASM backend | Planned |
 | Agents, tools, models, policies | Designed only |
@@ -196,8 +196,8 @@ checked 1 file: 0 errors and 0 warnings
 ```
 
 `nudo check` lexes, parses and resolves names. A clean run means "no lexical,
-syntax or name diagnostics", not "this program is correct": nothing is
-type-checked, and nothing runs.
+syntax or name diagnostics", not "this program is correct": this command does
+not invoke the partial type checker, and nothing runs.
 
 ## Roadmap
 

@@ -1,0 +1,5 @@
+fn invalid(flag: Bool, number: Int, decimal: Float) {
+    let negative = -flag;
+    let sum = number + true;
+    let remainder = decimal % 2.0;
+}

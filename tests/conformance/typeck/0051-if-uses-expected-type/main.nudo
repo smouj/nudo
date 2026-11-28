@@ -1,0 +1,3 @@
+fn choose(flag: Bool, verified: Verified<Text>, plain: Text) -> Text {
+    if flag { verified } else { plain }
+}

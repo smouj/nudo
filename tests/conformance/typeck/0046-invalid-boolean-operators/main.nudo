@@ -1,0 +1,5 @@
+fn invalid(value: Int, flag: Bool) {
+    let unary = !value;
+    let and_value = value && flag;
+    let or_value = flag || 1;
+}

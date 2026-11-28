@@ -1,0 +1,7 @@
+struct Article {
+    title: Text
+}
+
+fn same(left: Article, right: Article) -> Bool {
+    left == right
+}

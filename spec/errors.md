@@ -42,13 +42,15 @@ program.
 | `NDO2001` | `UNRESOLVED_NAME` | error | **implemented** (resolution, M3.1) |
 | `NDO2002` | `DUPLICATE_NAME` | error | **implemented** (resolution, M3.1) |
 | `NDO2003` | `WRONG_NAMESPACE` | error | **implemented** (resolution, M3.1) |
-| `NDO2004` | `TYPE_MISMATCH` | error | **implemented** (type checker, M3.2) |
+| `NDO2004` | `TYPE_MISMATCH` | error | **implemented** (type checker, M3.2; a value does not satisfy the type required by its context) |
 | `NDO2005` | `WRONG_ARGUMENT_COUNT` | error | **implemented** (type checker, M3.2) |
 | `NDO2006` | `NOT_CALLABLE` | error | **implemented** (type checker, M3.2) |
 | `NDO2007` | `UNKNOWN_FIELD` | error | **implemented** (type checker, M3.2) |
 | `NDO2008` | `TYPE_PARAMETER_NOT_INFERRED` | error | **implemented** (type checker, M3.2) |
 | `NDO2009` | `TYPE_PARAMETER_NOT_IN_SIGNATURE` | error | **implemented** (type checker, M3.2) |
 | `NDO2017` | `WRONG_TYPE_ARGUMENT_COUNT` | error | **implemented** (type checker, M3.2) |
+| `NDO2018` | `INVALID_OPERATOR_TYPES` | error | **implemented** (type checker, M3.2; NEP-0017) |
+| `NDO2019` | `IF_BRANCH_TYPE_MISMATCH` | error | **implemented** (type checker, M3.2; NEP-0017) |
 | `NDO1002` | `UNKNOWN_CHARACTER` | error | **implemented** |
 | `NDO1003` | `UNTERMINATED_STRING` | error | **implemented** |
 | `NDO1004` | `UNTERMINATED_BLOCK_COMMENT` | error | **implemented** |
@@ -79,6 +81,21 @@ the first, and that identifiers are well formed and unique.
   function result. Independent unresolved parameters remain reportable. After
   reporting `NDO2008`, the call result is `Error` to prevent follow-up
   mismatches.
+
+## Operator and conditional diagnostics
+
+* `NDO2018` points at the operator token and records the actual operand type, or
+  both operand types for a binary operator. It is emitted once when the operand
+  types do not fit that operator's accepted domain. If an operand already has
+  an error type, the operator emits no follow-up diagnostic.
+* `NDO2019` points at the `else` branch whose type differs from the `then`
+  branch when no expected type is available. Its notes list both branch types.
+  If either branch already has an error type, no branch-mismatch diagnostic is
+  added.
+* An `if` condition that is not `Bool`, a branch that does not satisfy a known
+  expected type, and a non-`Unit` branch in an `if` without `else` use
+  `NDO2004` at the condition or offending branch, with structured `expected` and
+  `found` notes.
 
 **The registry may not claim a capability the toolchain lacks.** A code that no
 stage can emit is `reserved`, and the specification says so.

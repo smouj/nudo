@@ -160,15 +160,17 @@ for arity (`NDO2005`), argument types (`NDO2004`) and callability (`NDO2006`);
 malformed calls still check matched arguments and nested errors in excess arguments.
 Nominal declarations now carry their structure in HIR; field access is typed
 with `NDO2007`, and generic calls use argument- and context-driven inference, with
-generic field types substituted from the receiver. `if` conditions are checked
-as `Bool`, branch expressions are checked recursively, and the expected
-condition type reaches generic inference; the conditional result and branch
-agreement remain unspecified. Deferred expression forms also check their
-children for supported rules. Numeric arithmetic typing and stable diagnostics
-for unresolved generic parameters (NEP-0015) are in place. The next slices are
-the remaining operator and index rules, match typing and exhaustiveness, nominal
-construction, and `Result<T, E>`. Draft-gated rules stay unimplemented until
-accepted; until then, the checker stays silent rather than inventing semantics. See
+generic field types substituted from the receiver. `if` conditions are `Bool`;
+branch expressions are checked recursively, with an expected result type reaching
+generic inference. Conditional result rules and operator domains are now
+specified and checked under NEP-0017, and invalid operator operands report one
+`NDO2018` at the operator. Deferred expression forms also check their children for supported
+rules. Numeric arithmetic typing and stable diagnostics for unresolved generic
+parameters (NEP-0015) are in place. The remaining slices are sequence/index
+typing, match typing and exhaustiveness, nominal construction, and
+`Result<T, E>`. Draft-gated rules stay unimplemented until their semantics are
+accepted; until then, the checker stays silent rather than inventing semantics.
+See
 [`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
 
 Two gates are taken before this one is written, so that the checker is written
@@ -194,10 +196,14 @@ rules of their own.
       [NEP-0013](neps/0013-generic-inference.md)
 * [x] Type-argument arity for user types, type parameters and intrinsic types;
       `NDO2017` points at the invalid type use, including fields and enum payloads
-* [x] Numeric arithmetic typing: matching numeric `Int` or `Float` operands
-      preserve their type for `+`, `-`, `*` and `/`; `%` is `Int`-only, and
-      unary `-` preserves its numeric operand type
-* [ ] Logical negation, logical/equality/comparison operators and index typing
+* [x] Operator typing and `if` results ([NEP-0017](neps/0017-boolean-comparison-conditionals.md)):
+      arithmetic requires matching numeric types, `%` is `Int`-only, Boolean
+      operators use `Bool`, equality accepts matching primitive views, ordering
+      accepts matching `Int` or `Float`, and invalid domains report `NDO2018`
+      at the operator; `if` branches use an expected type or agree exactly,
+      while an `if` without `else` has type `Unit`
+* [ ] Sequence and index typing, including its runtime bounds behavior; a NEP
+      must settle this before implementation
 * [x] Stable generic-inference diagnostics: `NDO2008` for unresolved call
       parameters and `NDO2009` for function parameters absent from the signature
       (NEP-0015)
@@ -208,8 +214,8 @@ rules of their own.
 * [ ] `Result<T, E>` as an intrinsic type, using the same exhaustive `match`
       rules as every other enum
 * [x] Function types and calls; no implicit numeric conversion
-* [x] `if` conditions are checked as `Bool`; branch expressions are checked
-      recursively, with expected type propagated for generic inference
+* [x] `if` conditions are `Bool`; branches use an expected type or must agree
+      exactly, and an `if` without `else` has type `Unit` (NEP-0017)
 * [x] Deferred expression forms recursively check child expressions for
       supported rules while their own typing rules remain pending
 * [ ] Agent, task and tool type declarations
@@ -234,17 +240,13 @@ diagnostic contracts are accepted; a Draft NEP is not an implementation target.
   `2^63` magnitude is valid under unary minus and proposes the stable diagnostic
   `NDO2010`; do not implement boundary diagnostics until that contract is
   accepted.
-* **Boolean operators:** typing and short-circuit evaluation for `!`, `&&` and
-  `||` are proposed in NEP-0017 (Draft).
 * **Omitted function result types:** the current rules conflict; NEP-0016 is
   Draft.
 * **`match` and `Result<T, E>`:** variant resolution, payload binding, arm
   agreement and exhaustiveness are proposed in NEP-0020 (Draft); `Result`
   checking depends on those rules.
-* **Equality, ordering and indexing:** complete operand, result and runtime
-  rules have not been accepted.
-* **Conditional result agreement:** the checker verifies `if` conditions and
-  visits branches, but no accepted rule defines the conditional's result type.
+* **Sequence and index typing:** the grammar accepts `a[i]` and `[T]`, but the
+  element type, index type and out-of-range behavior need an accepted NEP.
 * **Nominal construction:** the grammar has no struct or enum construction
   syntax; a NEP must decide it before implementation.
 * **Agent, task and tool types:** their declaration semantics remain proposed

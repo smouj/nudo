@@ -81,12 +81,13 @@ fill in cases instead of redesigning the centre:
 | Blocks | a block's type is its final expression's, or `Unit` when it has none |
 | Names | a path takes the type of the definition it resolved to |
 | Functions | a body is compared with the written return type; with none written, the body's type *is* the result type |
-| `if` | the condition is checked as `Bool`; branches are checked recursively, and the expected condition type drives generic call inference |
+| `if` | the condition is `Bool`; an expected result checks both branches, otherwise branch types must match exactly; an `if` without `else` is `Unit` |
 | Field access | `article.title` takes the field's type after substituting the receiver's generic arguments; a built-in `Verified<T>` receiver uses the supported view of `T`; `NDO2007` points at a missing field's name |
 | Calls | arity (`NDO2005`, reported at the argument list), each argument against its parameter (`NDO2004`, reported at the argument), and calling something that is not a function (`NDO2006`, reported at the callee); a built-in `Verified<Fn(...) -> ...>` can be called through its supported `Fn` view; malformed calls still check matched arguments against their parameters and excess argument expressions for nested errors |
 | Function types | `Fn(A, B) -> C` annotations keep parameter and result types as a function type, so function-valued parameters can be called and participate in structural comparison and bounded inference |
 | Generic calls | Direct function-item parameters are inferred from arguments in source order, then a known expected result; unresolved parameters use `NDO2008`, signature-absent parameters use `NDO2009`, and dependent cascades are suppressed |
-| Numeric arithmetic | On `Int` or `Float` values (including `Verified<T>` values assignable to those primitives), `+`, `-`, `*` and `/` require matching types; `%` is `Int`-only; unary `-` preserves the primitive result type; mismatches report `NDO2004` |
+| Operators | Arithmetic requires matching numeric types, `%` is `Int`-only, Boolean operators require `Bool`, equality accepts matching primitive views, and ordering accepts matching `Int` or `Float`; the supported `Verified<T>`-to-`T` view applies; invalid domains report `NDO2018` at the operator |
+| Conditionals | Branches use a known expected type or must have exactly matching types; an `if` without `else` requires a `Unit` then-branch; an uncontextualised mismatch reports `NDO2019` |
 | Trust assignment | The resolved built-in `Verified<T>` is usable where `T` is expected; `Generated<T>` is not, and the relation does not widen nested generic arguments |
 | One diagnostic shape | `expected` and `found` as structure, never as prose to re-parse |
 
@@ -104,16 +105,13 @@ note: found: `Bool`
 
 Every omission is a named next step, and each one is **silent** rather than
 wrong: unsupported expression results type as `Error`, and `Error` reports
-nothing. An `if` condition and the expressions inside its branches are checked,
-while the conditional result is still unknown until the language specifies how
-its branch values agree. Unchecked operators, indexing, `match`, and agentic
-expressions still recursively check their child expressions, so a supported call
-or annotation error inside them is not hidden.
+nothing. Indexing, `match`, and agentic expressions still recursively check
+their child expressions, so a supported call or annotation error inside them is
+not hidden.
 
 | Not yet | Arrives with |
 | ------- | ------------ |
-| The result type of `if`, including agreement between branch values | a specification decision |
-| Other operator operand domains, logical negation, logical operators, equality, comparisons and indexing | their complete operand and result rules are not specified yet |
+| Sequence and index typing, including out-of-range behavior | a specification decision |
 | Integer literal range checking and arithmetic evaluation | the interpreter and compile-time literal checking; arithmetic behavior is in NEP-0007 |
 | Enum pattern resolution, payload binding, exhaustiveness and arm result types | NEP-0020 (**Draft**); do not implement before acceptance |
 | Building a nominal value: **the grammar has no construction syntax at all**, so it needs a NEP before it can be implemented | when the language decides |

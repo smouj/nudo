@@ -1,0 +1,5 @@
+# nudo-typeck v1
+def 0009 struct `Article` 1:8: <unknown>
+def 0010 function `same` 5:4: Fn(Article, Article) -> Bool
+def 0011 parameter `left` 5:9: Article
+def 0012 parameter `right` 5:24: Article

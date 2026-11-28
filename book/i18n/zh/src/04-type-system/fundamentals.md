@@ -17,8 +17,8 @@
 | 调用 | 参数个数错误使用 <code>NDO2005</code>，参数类型不兼容使用 <code>NDO2004</code>，不可调用值使用 <code>NDO2006</code> |
 | 泛型调用 | 按源码顺序，从实参和已知的期望结果类型推断类型参数；无法推断的泛型类型参数使用 <code>NDO2008</code>，函数签名中未使用的类型参数使用 <code>NDO2009</code> |
 | 名义类型 | 使用 <code>NDO2017</code> 检查类型参数个数，并检查名义身份和已支持的字段访问 |
-| 算术 | 匹配的数值类型支持 <code>+</code>、<code>-</code>、<code>*</code>、<code>/</code>；<code>%</code> 仅允许 Int；一元 <code>-</code> 保持数值类型 |
-| 条件 | <code>if</code> 的条件必须为 <code>Bool</code>；分支表达式仍会被检查 |
+| 运算符 | 算术使用匹配的数值视图；<code>%</code> 仅允许 Int；布尔运算符使用 <code>Bool</code>；相等比较接受匹配的基本类型视图；顺序比较接受匹配的 <code>Int</code> 或 <code>Float</code>；无效类型使用 <code>NDO2018</code> |
+| 条件 | <code>if</code> 条件为 <code>Bool</code>；存在期望类型时会检查两个分支，否则分支类型必须完全相同；没有 <code>else</code> 时，结果和 <code>then</code> 分支均为 <code>Unit</code>；无上下文的类型不一致使用 <code>NDO2019</code> |
 | 信任赋值 | 内置 <code>Verified&lt;T&gt;</code> 在已支持的位置可用于要求 <code>T</code> 的地方 |
 
 泛型推断有明确边界。它不会跨整个程序求解类型，不会泛化局部绑定，也不会猜测未解析的类型参数。
@@ -26,9 +26,9 @@
 
 ## 尚未完成的规则
 
-检查器尚未定义 <code>if</code> 的结果类型与分支值一致性，也没有实现所有运算符、
-索引、名义值构造、<code>match</code> 或 <code>Result&lt;T, E&gt;</code> 模式匹配。
-该检查器尚未实现整数字面量范围检查、智能体、任务和工具类型。
+序列索引及其运行时边界行为、名义值构造、<code>match</code> 和
+<code>Result&lt;T, E&gt;</code> 匹配仍未完成。该检查器也尚未实现整数字面量范围检查、
+验证器执行与来源追踪，以及智能体、任务和工具类型。
 
 这些遗漏是有意的。只有语义和诊断契约已经接受，规则才能实现。
 路线图和规范会记录哪些工作已就绪，哪些决定仍然开放。

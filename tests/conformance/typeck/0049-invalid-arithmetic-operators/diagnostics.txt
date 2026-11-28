@@ -1,0 +1,4 @@
+# nudo-diagnostics v1
+error NDO2018 2:20
+error NDO2018 3:22
+error NDO2018 4:29

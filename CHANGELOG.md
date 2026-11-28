@@ -17,6 +17,14 @@ would be a promise the project cannot keep.
 
 ### Added
 
+* **M3.2: operator and conditional rules are implemented.** NEP-0017 defines
+  Boolean, equality and ordering domains, short-circuit evaluation and `if`
+  branch typing. `Verified<T>` keeps its accepted primitive view; arithmetic
+  operator errors now report `NDO2018` at the operator, and uncontextualised
+  `if` branch disagreements report `NDO2019`. Conformance covers supported and
+  rejected operands, exact diagnostic spans, expected branch types and the
+  `Unit` rule for `if` without `else`.
+
 * **M3.2: bounded generic inference now diagnoses missing types.** `NDO2008`
   identifies unresolved type parameters at a call; `NDO2009` rejects function
   type parameters absent from the signature. Recovery suppresses only

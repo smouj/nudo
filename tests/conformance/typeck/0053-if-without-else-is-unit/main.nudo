@@ -1,0 +1,11 @@
+fn valid(flag: Bool) {
+    if flag { }
+}
+
+fn invalid_condition(flag: Int) {
+    if flag { }
+}
+
+fn invalid_branch(flag: Bool) {
+    if flag { 1 }
+}

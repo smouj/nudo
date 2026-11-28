@@ -1,0 +1,3 @@
+fn choose(flag: Bool, number: Int, text: Text) -> Int {
+    if flag { number } else { text }
+}

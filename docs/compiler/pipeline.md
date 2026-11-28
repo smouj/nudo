@@ -17,9 +17,7 @@ Syntax tree      compiler/nudo-syntax       ← implemented (M2)
 AST              compiler/nudo-ast          ← implemented (M2)
   ↓
 HIR              compiler/nudo-hir          ← implemented (M3)
-Typeck           compiler/nudo-typeck       ← implemented (M3.2, first slice; not wired into `check` yet)
-  ↓
-Type checking    compiler/nudo-typeck       ← planned (M3)
+Typeck           compiler/nudo-typeck       ← partial accepted rules (M3.2; not wired into `check` yet)
   ↓
 Effect checking  compiler/nudo-effects      ← planned (M5)
   ↓
@@ -65,20 +63,25 @@ on and that no other front end can reuse.
 
 ## What exists today
 
-The implemented slice is deliberately small and complete:
+The CLI's implemented source-checking path is:
 
 ```text
-.nudo → SourceFile → Lexer → Tokens → Diagnostics
+.nudo → SourceFile → Lexer → Tokens → Parser → SyntaxTree → AST → HIR → Diagnostics
 ```
 
 * `crates/nudo-source` — a file, its identity and its line index.
 * `crates/nudo-span` — byte positions, spans, and 1-based character columns.
 * `compiler/nudo-lexer` — tokenisation with recovery, no panics, deterministic
   output.
+* `compiler/nudo-parser`, `nudo-syntax` and `nudo-ast` — syntax parsing,
+  lossless tree and typed wrappers.
+* `compiler/nudo-hir` — name resolution and diagnostics.
+* `compiler/nudo-typeck` — a partial accepted-rule checker with tests and
+  conformance; this crate is not yet invoked by `nudo check`.
 * `compiler/nudo-diagnostics` — the code registry and the caret renderer.
 * `cli/nudo-cli` — `check`, argument handling and exit codes.
 
-Everything else is an empty crate with a documented contract, in
+The remaining execution, effects and agent crates have documented contracts, in
 [`../../ARCHITECTURE.md`](../../ARCHITECTURE.md).
 
 ## Testing a stage

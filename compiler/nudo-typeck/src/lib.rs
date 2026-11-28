@@ -40,25 +40,26 @@
 //!   in structural type comparison and bounded generic inference.
 //! * **Fields.** A field access takes its declared field type and reports a
 //!   missing field on a known struct.
-//! * **Numeric arithmetic.** When both operands are assignable to the same
-//!   primitive numeric type, `+`, `-`, `*` and `/` return that type; `%` requires
-//!   `Int`; unary `-` returns its operand's numeric type.
+//! * **Operators.** Arithmetic uses matching numeric operands, `%` uses `Int`,
+//!   Boolean operators use `Bool`, equality is limited to matching primitive
+//!   types, and ordering is limited to matching `Int` or `Float` operands. An
+//!   invalid operator domain produces one `NDO2018` at the operator.
 //! * **Trust assignment.** The resolved built-in `Verified<T>` can be used
 //!   where `T` is expected. `Generated<T>` cannot, and generic arguments remain
 //!   invariant.
-//! * **Conditions.** An `if` condition is checked as `Bool`, with that expected
-//!   type available to generic inference.
+//! * **Conditionals.** Conditions are `Bool`; branch values use an expected
+//!   type when one is available and otherwise must agree exactly. An `if`
+//!   without `else` has type `Unit` and requires a `Unit` then-branch.
 //! * **One diagnostic.** `NDO2004`, with `expected` and `found` as structure
 //!   rather than as a sentence to re-parse.
 //!
 //! # What it deliberately does not check yet
 //!
-//! Each omission is a named next step rather than a hole: the condition of an
-//! `if` is checked as `Bool`, but its branch/result typing remains deferred;
-//! logical, equality and comparison operators, indexing, `verify`, provenance
-//! tracking, `Result<T, E>` exhaustiveness, and effects remain. Unsupported
-//! expression results type as [`Type::Error`], which is compatible with
-//! everything and therefore reports nothing: silence, not a wrong answer.
+//! Each omission is a named next step rather than a hole: indexing, `match`,
+//! `verify`, provenance tracking, `Result<T, E>` exhaustiveness, and effects
+//! remain. Unsupported expression results type as [`Type::Error`], which is
+//! compatible with everything and therefore reports nothing: silence, not a
+//! wrong answer.
 
 pub mod types;
 
@@ -580,18 +581,23 @@ impl Checker<'_> {
                 condition,
                 then_block,
                 else_branch,
-            } => self.type_of_if(condition, then_block, else_branch),
+            } => self.type_of_if(condition, then_block, else_branch, expected),
             ExprKind::Index { base, index } => {
                 self.type_of_expression(base);
                 self.type_of_expression(index);
                 Type::Error
             }
-            ExprKind::Unary { operator, operand } => self.type_of_unary(&operator, operand),
+            ExprKind::Unary {
+                operator,
+                operator_span,
+                operand,
+            } => self.type_of_unary(&operator, operator_span, operand),
             ExprKind::Binary {
                 operator,
+                operator_span,
                 left,
                 right,
-            } => self.type_of_binary(&operator, left, right),
+            } => self.type_of_binary(&operator, operator_span, left, right),
             ExprKind::Match { scrutinee, arms } => {
                 self.type_of_expression(scrutinee);
                 for arm in arms {
@@ -622,109 +628,183 @@ impl Checker<'_> {
         typed
     }
 
-    /// Checks the condition rule for `if`. The expression's result remains
-    /// unknown until the specification settles how its branch values agree.
+    /// Checks `if` conditions and branches, preserving a known expected type.
     fn type_of_if(
         &mut self,
         condition: ExprId,
         then_block: ExprId,
         else_branch: Option<ExprId>,
+        expected: Option<&Type>,
     ) -> Type {
-        let expected = Type::Bool;
-        let actual = self.type_of_expression_with_expected(condition, Some(&expected));
-        let span = self
+        let expected_condition = Type::Bool;
+        let actual_condition =
+            self.type_of_expression_with_expected(condition, Some(&expected_condition));
+        let condition_span = self
             .hir
             .expr(condition)
             .map_or_else(zero_span, |expression| expression.span);
-        self.expect(&expected, &actual, span);
+        self.expect(&expected_condition, &actual_condition, condition_span);
 
-        // Branch agreement is not specified yet, but expressions inside either
-        // branch still get their independent checks (including nested `if`s).
-        self.type_of_expression(then_block);
-        if let Some(else_branch) = else_branch {
-            self.type_of_expression(else_branch);
+        let then_span = self
+            .hir
+            .expr(then_block)
+            .map_or_else(zero_span, |expression| expression.span);
+        let Some(else_branch) = else_branch else {
+            let unit = Type::Unit;
+            let then_type = self.type_of_expression_with_expected(then_block, Some(&unit));
+            let matches_unit = self.is_assignable(&then_type, &unit);
+            self.expect(&unit, &then_type, then_span);
+            return if matches_unit { unit } else { Type::Error };
+        };
+
+        let else_span = self
+            .hir
+            .expr(else_branch)
+            .map_or_else(zero_span, |expression| expression.span);
+        if let Some(expected) = expected {
+            let then_type = self.type_of_expression_with_expected(then_block, Some(expected));
+            let else_type = self.type_of_expression_with_expected(else_branch, Some(expected));
+            let then_matches = self.is_assignable(&then_type, expected);
+            let else_matches = self.is_assignable(&else_type, expected);
+            self.expect(expected, &then_type, then_span);
+            self.expect(expected, &else_type, else_span);
+            if then_matches && else_matches {
+                return expected.clone();
+            }
+            return Type::Error;
         }
 
+        let then_type = self.type_of_expression(then_block);
+        let else_type = self.type_of_expression(else_branch);
+        if self.contains_error_type(&then_type) || self.contains_error_type(&else_type) {
+            return Type::Error;
+        }
+        if then_type == else_type {
+            return then_type;
+        }
+
+        self.diagnostics.push(
+            Diagnostic::error(
+                codes::IF_BRANCH_TYPE_MISMATCH,
+                "the branches of this `if` have different types",
+            )
+            .with_location(self.source, else_span)
+            .with_note(format!("then branch: `{then_type}`"))
+            .with_note(format!("else branch: `{else_type}`"))
+            .with_help("make both branches produce the same type, or add an expected type"),
+        );
         Type::Error
     }
 
-    /// Types unary numeric negation, whose primitive operand type determines
-    /// the result type.
-    fn type_of_unary(&mut self, operator: &str, operand: ExprId) -> Type {
+    /// Types unary operators and reports invalid domains at the operator token.
+    fn type_of_unary(&mut self, operator: &str, operator_span: Span, operand: ExprId) -> Type {
         let operand_type = self.type_of_expression(operand);
-        if operand_type.is_error() {
+        if self.contains_error_type(&operand_type) {
             return Type::Error;
         }
-        if operator != "-" {
-            // The type rule for logical negation has not been specified yet.
-            return Type::Error;
+        match operator {
+            "-" => {
+                if let Some(numeric_type) = self.numeric_type(&operand_type) {
+                    return numeric_type;
+                }
+            }
+            "!" if self.is_assignable(&operand_type, &Type::Bool) => return Type::Bool,
+            "!" => {}
+            _ => return Type::Error,
         }
-        if let Some(numeric_type) = self.numeric_type(&operand_type) {
-            return numeric_type;
-        }
-        // Other operand domains remain deferred until their rules are
-        // specified; do not reject a possible future built-in operation here.
+        self.report_invalid_operator_types(operator, operator_span, &[operand_type]);
         Type::Error
     }
 
-    /// Types the arithmetic operators whose numeric behavior is fixed by
-    /// NEP-0007. Other operators remain deferred until their rules are decided.
-    fn type_of_binary(&mut self, operator: &str, left: ExprId, right: ExprId) -> Type {
+    /// Types unary and binary operators without coercion or overload search.
+    fn type_of_binary(
+        &mut self,
+        operator: &str,
+        operator_span: Span,
+        left: ExprId,
+        right: ExprId,
+    ) -> Type {
         let left_type = self.type_of_expression(left);
         let right_type = self.type_of_expression(right);
-        if left_type.is_error() || right_type.is_error() {
+        if self.contains_error_type(&left_type) || self.contains_error_type(&right_type) {
             return Type::Error;
         }
-        if operator == "%" {
-            let expected = Type::Int;
-            let left_is_int = self.is_assignable(&left_type, &expected);
-            let right_is_int = self.is_assignable(&right_type, &expected);
-            if !left_is_int {
-                let span = self.hir.expr(left).map_or_else(zero_span, |it| it.span);
-                self.report_type_mismatch(
-                    &expected.to_string(),
-                    &left_type.to_string(),
-                    span,
-                    "remainder requires `Int` operands",
-                );
+        let result = match operator {
+            "+" | "-" | "*" | "/" => {
+                let left_numeric = self.numeric_type(&left_type);
+                let right_numeric = self.numeric_type(&right_type);
+                match (left_numeric, right_numeric) {
+                    (Some(left), Some(right)) if left == right => Some(left),
+                    _ => None,
+                }
             }
-            if !right_is_int {
-                let span = self.hir.expr(right).map_or_else(zero_span, |it| it.span);
-                self.report_type_mismatch(
-                    &expected.to_string(),
-                    &right_type.to_string(),
-                    span,
-                    "remainder requires `Int` operands",
-                );
+            "%" => {
+                if self.numeric_type(&left_type) == Some(Type::Int)
+                    && self.numeric_type(&right_type) == Some(Type::Int)
+                {
+                    Some(Type::Int)
+                } else {
+                    None
+                }
             }
-            return if left_is_int && right_is_int {
-                Type::Int
-            } else {
-                Type::Error
-            };
-        }
-        if !matches!(operator, "+" | "-" | "*" | "/") {
-            return Type::Error;
+            "&&" | "||" => {
+                if self.is_assignable(&left_type, &Type::Bool)
+                    && self.is_assignable(&right_type, &Type::Bool)
+                {
+                    Some(Type::Bool)
+                } else {
+                    None
+                }
+            }
+            "==" | "!=" => match (
+                self.equality_type(&left_type),
+                self.equality_type(&right_type),
+            ) {
+                (Some(left), Some(right)) if left == right => Some(Type::Bool),
+                _ => None,
+            },
+            "<" | ">" | "<=" | ">=" => {
+                let left_numeric = self.numeric_type(&left_type);
+                let right_numeric = self.numeric_type(&right_type);
+                match (left_numeric, right_numeric) {
+                    (Some(left), Some(right)) if left == right => Some(Type::Bool),
+                    _ => None,
+                }
+            }
+            _ => return Type::Error,
+        };
+        if let Some(result) = result {
+            return result;
         }
 
-        let left_numeric = self.numeric_type(&left_type);
-        let right_numeric = self.numeric_type(&right_type);
-        let (Some(left_numeric), Some(right_numeric)) = (left_numeric, right_numeric) else {
-            // The operator domains beyond numeric operands are not specified
-            // yet, so keep those results deferred rather than inventing rules.
-            return Type::Error;
-        };
-        if left_numeric != right_numeric {
-            let span = self.hir.expr(right).map_or_else(zero_span, |it| it.span);
-            self.report_type_mismatch(
-                &left_numeric.to_string(),
-                &right_numeric.to_string(),
-                span,
-                "arithmetic operands must have the same numeric type",
-            );
-            return Type::Error;
+        self.report_invalid_operator_types(operator, operator_span, &[left_type, right_type]);
+        Type::Error
+    }
+
+    fn report_invalid_operator_types(&mut self, operator: &str, span: Span, operands: &[Type]) {
+        let mut diagnostic = Diagnostic::error(
+            codes::INVALID_OPERATOR_TYPES,
+            format!("operator `{operator}` cannot be applied to these operand types"),
+        )
+        .with_location(self.source, span);
+        for (index, operand) in operands.iter().enumerate() {
+            let label = match (operands.len(), index) {
+                (1, _) => "operand",
+                (_, 0) => "left operand",
+                _ => "right operand",
+            };
+            diagnostic = diagnostic.with_note(format!("{label}: `{operand}`"));
         }
-        left_numeric
+        self.diagnostics
+            .push(diagnostic.with_help("use operand types supported by this operator"));
+    }
+
+    /// The primitive equality domain after applying the ordinary supported
+    /// `Verified<T>`-to-`T` assignment view.
+    fn equality_type(&self, ty: &Type) -> Option<Type> {
+        [Type::Int, Type::Float, Type::Bool, Type::Text]
+            .into_iter()
+            .find(|primitive| self.is_assignable(ty, primitive))
     }
 
     /// Types a call: the callee's signature decides everything.
@@ -1497,7 +1577,7 @@ mod tests {
     }
 
     #[test]
-    fn mixed_numeric_arithmetic_is_a_type_mismatch_at_the_right_operand() {
+    fn mixed_numeric_arithmetic_reports_at_the_operator_with_both_types() {
         let (sources, id, result) = checked("let value = 1 + 2.0;\n");
         assert_eq!(
             result
@@ -1506,18 +1586,36 @@ mod tests {
                 .iter()
                 .map(|diagnostic| diagnostic.code().id())
                 .collect::<Vec<_>>(),
-            vec!["NDO2004"]
+            vec!["NDO2018"]
         );
         let diagnostic = &result.diagnostics.as_slice()[0];
         let notes = diagnostic.notes().join(" | ");
-        assert!(notes.contains("expected: `Int`"), "{notes}");
-        assert!(notes.contains("found: `Float`"), "{notes}");
+        assert!(notes.contains("left operand: `Int`"), "{notes}");
+        assert!(notes.contains("right operand: `Float`"), "{notes}");
         let file = sources.get(id).expect("just added");
         let span = diagnostic.span().expect("a span");
-        let expected_column = "let value = 1 + 2.0;".find("2.0").expect("right operand") + 1;
+        assert_eq!(file.span_text(span), Some("+"));
+        let expected_column = "let value = 1 + 2.0;".find('+').expect("operator") + 1;
         assert_eq!(
             file.line_col(span.start()).to_string(),
             format!("1:{expected_column}")
+        );
+    }
+
+    #[test]
+    fn an_uncontextualised_if_branch_mismatch_is_reported_once_at_else() {
+        let program = "fn main() {\n    let value = if true { 1 } else { true };\n}\n";
+        let (sources, id, result) = checked(program);
+        assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
+        let diagnostic = &result.diagnostics.as_slice()[0];
+        assert_eq!(diagnostic.code().id(), "NDO2019");
+        let notes = diagnostic.notes().join(" | ");
+        assert!(notes.contains("then branch: `Int`"), "{notes}");
+        assert!(notes.contains("else branch: `Bool`"), "{notes}");
+        let file = sources.get(id).expect("just added");
+        assert_eq!(
+            file.span_text(diagnostic.span().expect("else branch span")),
+            Some("{ true }")
         );
     }
 

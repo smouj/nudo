@@ -35,9 +35,10 @@ to prevent:
   a bug, not a shortcut.
 * **No fake stages.** The pipeline shows the stages this command actually
   intended to run for this file, and what each one did. A stage the command would
-  have reached but did not is `pending` with its reason (`not reached`); a stage
-  the command never runs is simply absent, so there is no `TYPE` row before the
-  type checker exists. Stage lists are built from real data, never hardcoded.
+  have reached but did not is `pending` with its reason (`not reached`); the
+  standalone partial type checker is absent because `nudo check` does not invoke
+  it yet, so the command has no `TYPE` row. Stage lists are built from real data,
+  never hardcoded.
 
 ## States and symbols
 

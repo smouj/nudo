@@ -1,0 +1,2 @@
+# nudo-diagnostics v1
+error NDO2019 2:36

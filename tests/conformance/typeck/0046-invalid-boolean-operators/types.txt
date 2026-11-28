@@ -1,0 +1,7 @@
+# nudo-typeck v1
+def 0009 function `invalid` 1:4: Fn(Int, Bool) -> Unit
+def 0010 parameter `value` 1:12: Int
+def 0011 parameter `flag` 1:24: Bool
+def 0012 binding `unary` 2:9: <error>
+def 0013 binding `and_value` 3:9: <error>
+def 0014 binding `or_value` 4:9: <error>

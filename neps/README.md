@@ -42,6 +42,7 @@ See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for how to open one, and
 | [0013](0013-generic-inference.md) | Generic inference | Accepted |
 | [0014](0014-trust-types-obey-the-rules.md) | Trust types obey the ordinary rules | Accepted |
 | [0015](0015-uninferable-generic-parameters.md) | Uninferable generic parameters | Accepted |
+| [0017](0017-boolean-comparison-conditionals.md) | Boolean, comparison and conditional expressions | Accepted |
 
 NEPs 0002 and 0007–0011 are the **semantic gates of M3**, taken together and
 before `nudo-typeck` exists, so that the checker is written against decided
@@ -49,7 +50,8 @@ answers rather than guesses. [NEP-0001](0001-agent-types.md),
 [NEP-0003](0003-capability-system.md) and [NEP-0004](0004-effects.md) remain
 drafts, and gate M5–M8. [NEP-0012](0012-early-exit.md) is not a gate: it settles
 a question the specification had left in prose, and removes rather than adds a
-feature.
+feature. [NEP-0017](0017-boolean-comparison-conditionals.md) is an accepted
+M3.2 gate for operator domains and conditional result types.
 
 ## States
 
