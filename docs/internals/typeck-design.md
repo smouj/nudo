@@ -96,6 +96,17 @@ fill in cases instead of redesigning the centre:
 The diagnostic points at the **value**, not at the name it was bound to: the
 value is what breaks the promise, and therefore the place a reader has to change.
 
+## Field lookup
+
+Field access keeps declaration order in HIR, so a type checker can report the
+same first matching field as a linear scan. Structs with fewer than sixteen
+fields stay linear. For wider structs, the checker counts field-name
+comparisons; only after their cumulative cost reaches an estimated one-time
+sort budget (`field_count * floor(log2(field_count))`) does it build a sorted
+vector of field positions. Later accesses use binary search. This keeps a
+single access from allocating that vector and lets repeated access amortize its
+O(F) storage and O(F log F) build cost.
+
 ```text
 error[NDO2004]: type mismatch
   --> src/main.nudo:1:18
