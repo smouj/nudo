@@ -2,11 +2,9 @@
 //
 // PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
 //
-// Why not: the `tools:` list is written one name per line, and the frozen
-// grammar requires commas (`tools-clause = "tools", ":", tool-name,
-// { ",", tool-name }`); the tool names are also dotted, while a path uses
-// `::`. Both are recorded as grammar-versus-example conflicts in the M2 pull
-// request and need a NEP to settle.
+// Why not: the parser accepts these declarations, but their validation is
+// gated by NEP-0001 and NEP-0003. `Report` is an intentionally unresolved
+// placeholder, and no agent or task runtime behavior is accepted.
 //
 // Read this declaration as a capability statement, not as a prompt:
 //

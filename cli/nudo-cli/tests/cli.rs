@@ -150,6 +150,10 @@ fn check_reports_every_preview_example_as_not_accepted() {
             Some(1),
             "examples/{name} is a preview and must not be accepted"
         );
+        if name == "05-agent" {
+            assert!(stderr(&output).contains("NDO2001"), "{}", stderr(&output));
+            assert!(stderr(&output).contains("`Report`"), "{}", stderr(&output));
+        }
     }
 }
 

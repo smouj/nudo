@@ -2,9 +2,9 @@
 //
 // PREVIEW — NOT ACCEPTED BY THE CURRENT TOOLCHAIN.
 //
-// Why not: the tool names are dotted and the `tools:` list is newline-separated
-// where the grammar requires commas and `::`; and `delegate … { topic: topic }`
-// uses named fields, while the grammar's `block` is a statement list.
+// Why not: `delegate … { topic: topic }` uses a named-field object, while the
+// accepted block grammar is a statement list. Delegation and capability
+// narrowing remain proposed in spec/agents/delegation.md and NEP-0003.
 //
 // The rule: delegation may narrow authority, and may never widen it.
 //
