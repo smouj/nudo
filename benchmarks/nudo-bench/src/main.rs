@@ -275,6 +275,23 @@ fn build_cases() -> Vec<Case> {
             source,
         });
     }
+
+    // Measure type-checking immediately around the variant lookup and inline
+    // coverage thresholds without timing lexing, parsing or HIR lowering.
+    // Every arm is explicit so each coverage backend marks every variant.
+    for (case, variants) in [
+        ("enum-match-exhaustive-16", 16),
+        ("enum-match-exhaustive-17", 17),
+        ("enum-match-exhaustive-64", 64),
+        ("enum-match-exhaustive-65", 65),
+    ] {
+        cases.push(Case {
+            case,
+            stage: Stage::Typeck,
+            source: synthetic_repeated_exhaustive_enum_matches(variants, 128),
+        });
+    }
+
     cases
 }
 
@@ -524,6 +541,27 @@ fn synthetic_repeated_enum_matches(variants: usize, functions: usize) -> String 
         source.push_str(&format!(
             "fn classify_{index}(value: ReusedCase) -> Int {{\n    match value {{\n        Case0 => 0\n        _ => 1\n    }}\n}}\n"
         ));
+    }
+    source
+}
+
+/// Repeats exhaustive enum matches to exercise every variant lookup and
+/// coverage bit in the type checker.
+fn synthetic_repeated_exhaustive_enum_matches(variants: usize, functions: usize) -> String {
+    let mut source = String::with_capacity(variants * 24 + functions * variants * 32);
+    source.push_str("enum ExhaustiveCase {\n");
+    for index in 0..variants {
+        source.push_str(&format!("    Case{index}\n"));
+    }
+    source.push_str("}\n\n");
+    for function in 0..functions {
+        source.push_str(&format!(
+            "fn classify_{function}(value: ExhaustiveCase) -> Int {{\n    match value {{\n"
+        ));
+        for variant in 0..variants {
+            source.push_str(&format!("        Case{variant} => {variant}\n"));
+        }
+        source.push_str("    }\n}\n");
     }
     source
 }
@@ -1297,6 +1335,33 @@ mod tests {
             "repeated match source must typecheck: {:?}",
             checked.diagnostics
         );
+    }
+
+    #[test]
+    fn enum_match_threshold_inputs_typecheck_cleanly() {
+        for variants in [16, 17, 64, 65] {
+            let source = synthetic_repeated_exhaustive_enum_matches(variants, 4);
+            let mut sources = SourceMap::new();
+            let id = sources.add("enum-match-threshold.nudo", source);
+            let file = sources.get(id).expect("just added");
+            let parsed = parse(file);
+            assert!(
+                !parsed.has_errors(),
+                "{variants}-variant match input must parse"
+            );
+            let resolved = lower(parsed.tree(), id);
+            assert!(
+                resolved.diagnostics.is_empty(),
+                "{variants}-variant match input must resolve: {:?}",
+                resolved.diagnostics
+            );
+            let checked = check(&resolved.hir, id);
+            assert!(
+                checked.diagnostics.is_empty(),
+                "{variants}-variant match input must typecheck: {:?}",
+                checked.diagnostics
+            );
+        }
     }
 
     #[test]
