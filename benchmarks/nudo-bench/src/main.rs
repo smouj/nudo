@@ -248,6 +248,10 @@ fn build_cases() -> Vec<Case> {
         ("text-literals", synthetic_text(2_000)),
         ("comments", synthetic_comments(2_000)),
         ("enum-match-large", synthetic_enum_match(1_000)),
+        (
+            "enum-match-reused-small",
+            synthetic_repeated_enum_matches(8, 1_000),
+        ),
         ("fields-wide", synthetic_field_accesses(64, 1_000)),
     ] {
         cases.push(Case {
@@ -504,6 +508,23 @@ fn synthetic_enum_match(variants: usize) -> String {
         ));
     }
     source.push_str("    }\n}\n");
+    source
+}
+
+/// A small enum matched independently in many functions. This captures the
+/// allocation and setup cost of ordinary, repeated match expressions.
+fn synthetic_repeated_enum_matches(variants: usize, functions: usize) -> String {
+    let mut source = String::with_capacity(variants * 24 + functions * 100);
+    source.push_str("enum ReusedCase {\n");
+    for index in 0..variants {
+        source.push_str(&format!("    Case{index}\n"));
+    }
+    source.push_str("}\n\n");
+    for index in 0..functions {
+        source.push_str(&format!(
+            "fn classify_{index}(value: ReusedCase) -> Int {{\n    match value {{\n        Case0 => 0\n        _ => 1\n    }}\n}}\n"
+        ));
+    }
     source
 }
 
@@ -1252,6 +1273,28 @@ mod tests {
         assert!(
             checked.diagnostics.is_empty(),
             "match benchmark source must typecheck: {:?}",
+            checked.diagnostics
+        );
+    }
+
+    #[test]
+    fn repeated_small_enum_match_benchmark_input_typechecks_cleanly() {
+        let source = synthetic_repeated_enum_matches(8, 16);
+        let mut sources = SourceMap::new();
+        let id = sources.add("enum-match-reused-small.nudo", source);
+        let file = sources.get(id).expect("just added");
+        let parsed = parse(file);
+        assert!(!parsed.has_errors(), "repeated match source must parse");
+        let resolved = lower(parsed.tree(), id);
+        assert!(
+            resolved.diagnostics.is_empty(),
+            "repeated match source must resolve: {:?}",
+            resolved.diagnostics
+        );
+        let checked = check(&resolved.hir, id);
+        assert!(
+            checked.diagnostics.is_empty(),
+            "repeated match source must typecheck: {:?}",
             checked.diagnostics
         );
     }
