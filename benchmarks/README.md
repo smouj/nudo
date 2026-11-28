@@ -41,11 +41,19 @@ harness rather than the parser.
 | `comments` | 2 000 comment-heavy blocks, line and block |
 | `enum-match-large` | 1 000 generic enum variants, each with one payload and an exhaustive match arm |
 | `enum-match-reused-small` | One 8-variant enum matched with two arms in 1 000 functions |
+| `enum-match-exhaustive-16` | Type checking only: exhaustive 16-variant enum matches in 128 functions |
+| `enum-match-exhaustive-17` | Type checking only: exhaustive 17-variant enum matches in 128 functions |
+| `enum-match-exhaustive-64` | Type checking only: exhaustive 64-variant enum matches in 128 functions |
+| `enum-match-exhaustive-65` | Type checking only: exhaustive 65-variant enum matches in 128 functions |
 | `fields-wide` | 64-field record read by 1 000 typed accessor functions |
 
-Each case runs at every stage above, so the table has thirty-two rows. Inputs are
-generated deterministically before timing, and a run reports each stage's
-observed output count as `units`.
+The four boundary cases time `nudo-typeck` alone: their source is parsed and
+lowered before the timed region. Every generated match has an explicit arm for
+every variant, so all variant lookups and coverage bits are exercised. They
+bracket the 16/17-variant lookup strategy and the 64/65-variant inline coverage
+storage. The other eight cases run at each front-end stage, giving thirty-six
+rows in total. Inputs are generated deterministically before timing, and a run
+reports each stage's observed output count as `units`.
 
 ## Metrics
 
