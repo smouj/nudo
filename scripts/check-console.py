@@ -41,7 +41,15 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BINARY = os.path.join(ROOT, "target", "debug", "nudo")
+
+
+def cli_binary_path(root: str, *, windows: bool) -> str:
+    """Return Cargo's CLI artifact name for the host platform."""
+    suffix = ".exe" if windows else ""
+    return os.path.join(root, "target", "debug", "nudo" + suffix)
+
+
+BINARY = cli_binary_path(ROOT, windows=os.name == "nt")
 
 # The checker is excluded from the corpus because it necessarily contains the
 # very fragments it looks for.
