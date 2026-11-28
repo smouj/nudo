@@ -19,9 +19,9 @@ El diseño vincula el efecto requerido por una función con la autoridad disponi
 
 ## Estado de la implementación actual
 
-M5 está planificado. El capítulo sobre efectos sigue siendo una propuesta y <code>neps/0004-effects.md</code> está en Draft. Aún no hay inferencia de efectos, comprobador de efectos, implementación de <code>NDO3xxx</code> ni aplicación de capabilities en runtime. El crate <code>nudo-effects</code> marca un límite en la hoja de ruta, no un subsistema terminado.
+M5 está planificado. NEP-0004 está en Discussion y el capítulo sobre efectos sigue siendo una propuesta. Aún no hay inferencia de efectos, comprobador de efectos, implementación de <code>NDO3xxx</code> ni aplicación de capabilities en runtime. El crate <code>nudo-effects</code> marca un límite en la hoja de ruta, no un subsistema terminado.
 
-El ejemplo siguiente utiliza la sintaxis de la propuesta Draft; no es sintaxis aceptada en la que un usuario pueda confiar:
+El ejemplo siguiente ilustra la propuesta en Discussion; no es sintaxis aceptada en la que un usuario pueda confiar:
 
 ~~~nudo
 fn fetch(url: Text) -> Text with Network {

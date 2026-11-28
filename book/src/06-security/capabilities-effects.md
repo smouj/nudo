@@ -23,14 +23,14 @@ tool or agent from widening the caller’s authority.
 
 ## Current implementation status
 
-M5 is planned. The effect chapter is still proposed and
-<code>neps/0004-effects.md</code> is Draft. There is no effect inference,
+M5 is planned. NEP-0004 is in Discussion, while the effect chapter remains
+proposed. There is no effect inference,
 effect checker, <code>NDO3xxx</code> implementation or runtime capability
 enforcement today. The <code>nudo-effects</code> crate is a roadmap boundary,
 not a finished subsystem.
 
-The example below uses the Draft proposal’s syntax; it is not accepted syntax
-that a user can rely on:
+The example below illustrates the Discussion proposal; it is not accepted
+syntax that a user can rely on:
 
 ~~~nudo
 fn fetch(url: Text) -> Text with Network {
@@ -42,5 +42,3 @@ M5’s roadmap exit criterion is an effectful call rejected from an effect-free
 function, with a diagnostic that names both the effect and the call path that
 introduced it. The design must be accepted before that checker can be
 implemented. Runtime policy enforcement is a separate later milestone.
-
-\n
