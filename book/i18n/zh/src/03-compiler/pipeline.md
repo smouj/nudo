@@ -6,24 +6,23 @@
 
 {{#include ../diagrams/pipeline.svg}}
 
-*强调色标记当前 CLI 使用的前端工作。类型检查只有部分实现，并单独通过测试；
+*强调色标记当前 CLI 使用的前端工作。类型检查只有部分实现；
 效果检查、MIR 和执行仍在计划中。*
 
 ~~~text
 SourceFile → Lexer → Lossless syntax tree → AST → HIR / name resolution
                                                         ↓
-                                     partial type checker (not in nudo check)
+                                  部分检查已接受的类型规则
                                                         ↓
                                     effects → MIR → interpreter / backend
 ~~~
 
-CLI 命令 <code>nudo check</code> 会进行源文件加载、词法分析、解析以及 HIR 降低/名称解析。
-它可以导出记号、语法树和名称解析结果。它不会调用 <code>nudo-typeck</code>，
-也不会执行源码。
+CLI 命令 <code>nudo check</code> 会加载源文件、进行词法和语法分析、降低到 HIR 并解析名称，
+然后检查已实现的已接受类型规则。它可以导出记号、语法树和名称解析结果，但不会执行源码。
 
 <code>nudo-hir</code> crate 将带类型的 AST 降低为标识符和已解析定义。
 <code>nudo-typeck</code> crate 消费 HIR，并实现一部分已接受的类型规则。
-单元测试和 typeck 一致性语料会直接测试它；其余规则必须先确定规范语义，才能实现。
+名称解析成功后，CLI 会调用它；单元测试和 typeck 一致性语料也会直接测试它。Draft 规则仍未实现。
 
 计划中的效果检查器、MIR、解释器和 WebAssembly 后端目前都不是可用能力。
 图中的方框表示预期架构和路线图，不代表程序今天已经可以通过这些阶段。

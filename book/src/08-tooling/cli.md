@@ -1,7 +1,7 @@
 # 08.1 — Toolchain and CLI
 
 > **Status:** Implemented / Planned  
-> **Summary:** The current <code>nudo</code> command checks source, syntax and names; type checking, execution, effects and the wider toolchain remain future work.
+> **Summary:** The current <code>nudo</code> command checks source, syntax, names and the implemented subset of accepted type rules; execution, effects and the wider toolchain remain future work.
 
 ## Implemented commands
 
@@ -15,14 +15,13 @@ nudo --help
 ~~~
 
 The check command loads one or more source files, lexes and parses them, lowers
-accepted syntax to HIR, resolves names and reports lexical, syntax and
-resolution diagnostics. It can also emit a plain or CI-oriented report.
+accepted syntax to HIR, resolves names, applies implemented accepted type rules
+and reports diagnostics. It can also emit a plain or CI-oriented report.
 
-Its scope ends at name resolution. A clean result does not promise that the
-program is type-correct or executable. The partial type checker is a separate
-crate with unit tests and conformance cases; the CLI does not call it. There is
-no <code>nudo run</code>, <code>nudo build</code>, REPL, formatter, language
-server or package manager.
+Its type coverage is partial: unsupported and Draft-gated rules remain
+unchecked, and the command does not execute the program. There is no
+<code>nudo run</code>, <code>nudo build</code>, REPL, formatter, language server
+or package manager.
 
 Exit codes are stable: 0 means no error diagnostic in the implemented stages,
 1 means at least one error was reported, and 2 means a usage or input error or

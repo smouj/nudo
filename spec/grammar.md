@@ -11,8 +11,7 @@
 and rejects the rest, with `NDO1001` and the expected/found pair. It does not
 mean the language is finished: the productions marked provisional can still
 change, and each change needs a NEP. The partial type checker implements
-accepted M3.2 rules but is not wired into `nudo check`; programs do not run yet
-(M4).
+accepted M3.2 rules and `nudo check` invokes it; programs do not run yet (M4).
 
 ## Where the grammar lives
 

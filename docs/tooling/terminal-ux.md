@@ -35,10 +35,9 @@ to prevent:
   a bug, not a shortcut.
 * **No fake stages.** The pipeline shows the stages this command actually
   intended to run for this file, and what each one did. A stage the command would
-  have reached but did not is `pending` with its reason (`not reached`); the
-  standalone partial type checker is absent because `nudo check` does not invoke
-  it yet, so the command has no `TYPE` row. Stage lists are built from real data,
-  never hardcoded.
+  have reached but did not is `pending` with its reason (`not reached`). The
+  partial type checker has a `TYPECK` row when reached. Stage lists are built
+  from real data, never hardcoded.
 
 ## States and symbols
 
@@ -99,7 +98,7 @@ NUDO CHECK
 src/main.nudo
 ────────────────────────────────────────
 
-✓ SOURCE ── ✓ LEX 12 tokens ── ✓ PARSE ── ✓ HIR 4 definitions
+✓ SOURCE ── ✓ LEX 12 tokens ── ✓ PARSE ── ✓ HIR 4 definitions ── ✓ TYPECK
 
 SUMMARY
   files     1
@@ -117,6 +116,7 @@ would not fit, the stages stack instead — same information, smaller window:
   ✓ lex    12 tokens
   ✓ parse
   ✓ hir    4 definitions
+  ✓ typeck
 ```
 
 ### Plain
@@ -127,6 +127,7 @@ source: ok
 lex: ok
 parse: ok
 hir: ok
+typeck: ok
 checked 1 file: 0 errors and 0 warnings
 ```
 
@@ -135,10 +136,11 @@ checked 1 file: 0 errors and 0 warnings
 ```text
 NUDO CHECK
 
-[1/4] source ok
-[2/4] lex    ok
-[3/4] parse  ok
-[4/4] hir    ok
+[1/5] source ok
+[2/5] lex    ok
+[3/5] parse  ok
+[4/5] hir    ok
+[5/5] typeck ok
 
 files       1
 errors      0
@@ -222,8 +224,9 @@ normal cases, not degraded ones.
 ## What this layer deliberately does not do yet
 
 `nudo run`, the REPL, tasks, agents, budgets and traces are **not implemented**,
-and the terminal layer must not pretend otherwise: no `TYPE` row before the type
-checker exists, no `PASS` for a stage that did not run, no fake budget line.
+and the terminal layer must not pretend otherwise: a `TYPECK` row is pending if
+the checker is not reached, no `PASS` appears for an unrun stage, and no fake
+budget line is shown.
 
 The shapes are reserved so they can be added without redesign, and nothing else:
 

@@ -3,8 +3,8 @@
 //! # What this binary does today
 //!
 //! Exactly one command is implemented: `nudo check`, which reads `.nudo`
-//! sources, lexes them, parses them and reports diagnostics. That is milestones
-//! M1 and M2 of the roadmap. Every other command in the toolchain is listed by
+//! sources, lexes them, parses them, resolves names and applies the accepted
+//! subset of type checking. Every other command in the toolchain is listed by
 //! `nudo --help` and exits with code [`EXIT_USAGE`] after saying so plainly.
 //!
 //! Nothing here pretends to work: a command that is not implemented never
@@ -103,9 +103,9 @@ USAGE:
     {TOOLCHAIN_NAME} --help
 
 IMPLEMENTED
-    check      Read .nudo sources and report lexical, syntax and name
-               diagnostics (milestones M1-M3: lexing, parsing and name
-               resolution; nothing is executed)
+    check      Read .nudo sources and report diagnostics, including the
+               implemented subset of accepted type rules (milestones M1-M3.2;
+               nothing is executed)
 
 PLANNED (declared, not implemented)
 {planned}
@@ -155,11 +155,11 @@ OPTIONS:
     -h, --help        Print this help
 
 SCOPE:
-    Milestones M1-M3. `check` reads each file, lexes it, parses it, resolves
-    its names and reports lexical, syntax and resolution diagnostics. Type
-    checking, effect checking and execution are planned and are not
-    implemented, so a clean run means \"no lexical, syntax or name
-    diagnostics\", not \"this program is correct\"."
+    Milestones M1-M3.2. `check` reads each file, lexes it, parses it, resolves
+    its names and checks accepted type rules implemented so far. The type
+    checker is partial; effect checking and execution are not implemented. A
+    clean run means \"no diagnostics from implemented stages\", not \"the
+    program is complete or correct under every planned rule\"."
     );
 }
 
@@ -335,12 +335,31 @@ fn cmd_check(args: &[String]) -> u8 {
             if dump_resolutions {
                 dump.push_str(&nudo_hir::dump_resolutions(&resolved.hir, file));
             }
+            if resolution_errors == 0 {
+                let typeck = nudo_typeck::check(&resolved.hir, *id);
+                let type_errors = typeck.diagnostics.error_count();
+                diagnostics.extend_from(typeck.diagnostics);
+                stages.push(terminal::Stage::new(
+                    "TYPECK",
+                    "typeck",
+                    stage_status(type_errors),
+                ));
+            } else {
+                stages.push(
+                    terminal::Stage::new("TYPECK", "typeck", terminal::Status::Pending)
+                        .with_detail("not reached"),
+                );
+            }
         } else {
             // Name resolution *would* have run, and did not. Saying so is not
             // the same as advertising a stage that does not exist: the pipeline
             // records what this command intended to do with this file.
             stages.push(
                 terminal::Stage::new("HIR", "hir", terminal::Status::Pending)
+                    .with_detail("not reached"),
+            );
+            stages.push(
+                terminal::Stage::new("TYPECK", "typeck", terminal::Status::Pending)
                     .with_detail("not reached"),
             );
         }

@@ -10,7 +10,7 @@
 //!
 //! The format is specified in `tests/conformance/README.md`. Unlike the lexer and
 //! parser corpora, the CLI exposes no type dump yet: M3.2 is still in progress,
-//! and the checker is not wired into `nudo check`. These expectations are
+//! and `nudo check` has no stable type-dump format. These expectations are
 //! written by this driver with `NUDO_BLESS=1` and **reviewed as a diff**, like
 //! every other expectation in the repository. Blessing is not a way to make a
 //! failing case pass: it is the same command, minus the comparison.

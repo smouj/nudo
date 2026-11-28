@@ -83,5 +83,5 @@ fn describe(value: Result<Int, Text>) -> Text {
 ```
 
 El parser y el comprobador tienen casos de conformidad para payloads genéricos,
-`Result`, comodines, patrones inválidos, recuperación y tipos de rama. El
-comprobador aún no está conectado a `nudo check`.
+`Result`, comodines, patrones inválidos, recuperación y tipos de rama. La CLI
+aplica las reglas aceptadas implementadas tras resolver nombres sin errores.

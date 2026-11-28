@@ -11,7 +11,7 @@
 - <code>NDO2001</code>–<code>NDO2003</code> は名前解決エラーで、<code>nudo check</code> が出力します。
 - <code>NDO2004</code>–<code>NDO2019</code> は実装済みの型検査規則を扱います。<code>NDO2010</code> は <code>Int</code> で表せない整数の大きさを指します。正確に <code>2^63</code> の値は <code>Int::MIN</code> を表す単項 <code>-</code> の直接のオペランドとしてのみ使用できます。NEP-0020 に基づき、<code>NDO2011</code>–<code>NDO2016</code> は enum と <code>Result</code> のパターン、payload の個数、網羅性、到達可能性、match の各腕の型を扱います。テストは構造化された note とソース位置を固定します。
 
-型チェッカーは部分的な実装で、CLI からはまだ呼び出されません。そのため、エラーのない <code>nudo check</code> はソースが字句解析、構文解析、名前解決を通過したことを示すだけで、型検査を通過したという意味ではありません。
+型チェッカーは部分的に実装され、名前解決に成功した後で CLI から呼び出されます。エラーのない <code>nudo check</code> は、実装済みの採用済み規則でエラーがなかったことを示します。未対応または Draft の規則は未検査です。
 
 ## 計画中の診断分類
 

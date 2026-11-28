@@ -16,7 +16,7 @@ NUDO は、その境界を言語と runtime に可視化する方法を探りま
 
 ## 現在あるもの
 
-CLI はソースファイルを読み込み、token 化し、損失のない構文木に parse し、名前を解決して、各段階を表示できます。HIR と名前解決の crate は実装済みです。型チェッカーは採用済み規則の一部を実装し、独自のテストと適合性ケースを持ちますが、<code>nudo check</code> はまだ型チェッカーを実行しません。
+CLI はソースファイルを読み込み、token 化し、損失のない構文木に parse し、名前を解決して、実装済みの採用済み型規則を検査できます。HIR、名前解決、部分的な型チェッカーの crate は実装済みです。型チェッカーには独自のテストと適合性ケースもあります。
 
 現在の toolchain は NUDO プログラムを実行しません。インタープリター、effect checker、モデルプロバイダー、エージェント runtime、ツール sandbox、provenance store、WASM backend はまだありません。<a href="status.md">プロジェクト状況</a>と<a href="https://github.com/smouj/nudo/blob/main/ROADMAP.md">ロードマップ</a>では、動作するフロントエンドと計画中のサブシステムを区別しています。
 

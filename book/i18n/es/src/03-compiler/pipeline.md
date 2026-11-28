@@ -6,21 +6,21 @@
 
 {{#include ../diagrams/pipeline.svg}}
 
-*La ruta de acento marca el trabajo del front end implementado. La comprobación
-de tipos es parcial y se prueba por separado; la comprobación de efectos, MIR
-y la ejecución están planificadas.*
+*La ruta de acento marca el trabajo del front end utilizado por la CLI. La
+comprobación de tipos es parcial; los efectos, MIR y la ejecución están
+planificados.*
 
 ~~~text
 SourceFile → Lexer → Lossless syntax tree → AST → HIR / name resolution
                                                         ↓
-                               comprobador parcial de tipos (no en nudo check)
+                            comprobador parcial de reglas de tipos aceptadas
                                                         ↓
                                     efectos → MIR → intérprete / backend
 ~~~
 
-El comando <code>nudo check</code> carga el código fuente, ejecuta el análisis léxico y sintáctico y reduce a HIR/resuelve nombres. Puede volcar tokens, el árbol sintáctico y las resoluciones de nombres. No invoca <code>nudo-typeck</code> ni ejecuta el código.
+El comando <code>nudo check</code> carga el código fuente, ejecuta el análisis léxico y sintáctico, reduce a HIR/resuelve nombres y aplica las reglas de tipos aceptadas que están implementadas. Puede volcar tokens, el árbol sintáctico y las resoluciones de nombres. No ejecuta el código.
 
-El crate <code>nudo-hir</code> reduce el AST tipado a identificadores y definiciones resueltas. El crate <code>nudo-typeck</code> consume ese HIR e implementa un conjunto parcial de reglas de tipos aceptadas. Las pruebas unitarias y el corpus de conformidad de typeck lo ejercitan directamente. Sus reglas restantes deben especificarse antes de implementarse.
+El crate <code>nudo-hir</code> reduce el AST tipado a identificadores y definiciones resueltas. El crate <code>nudo-typeck</code> consume ese HIR e implementa un conjunto parcial de reglas de tipos aceptadas. La CLI lo invoca tras resolver los nombres sin errores; las pruebas unitarias y el corpus de conformidad de typeck también lo ejercitan directamente. Las reglas Draft siguen sin implementarse.
 
 El comprobador de efectos planificado, MIR, el intérprete y el backend WebAssembly no están disponibles. Sus bloques en el diagrama muestran la arquitectura prevista y el orden de la hoja de ruta; no prometen que hoy un programa pueda recorrer esas fases.
 

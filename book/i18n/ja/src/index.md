@@ -17,9 +17,9 @@ NUDO は汎用プログラミング言語のプロジェクトです。通常の
 
 ## 現在動作するもの
 
-- <code>nudo check</code> は <code>.nudo</code> ファイルを読み込み、字句解析と構文解析を行い、名前を解決して、字句・構文・名前解決の診断を報告します。
+- <code>nudo check</code> は <code>.nudo</code> ファイルを読み込み、字句解析と構文解析を行い、名前を解決し、実装済みの採用済み型規則を検査します。
 - <code>--dump-tokens</code>、<code>--dump-tree</code>、<code>--dump-resolutions</code> は各段階を安定した形式で表示します。
-- Rust crate には部分的な型チェッカーがあります。実装済み規則は unit test と型検査の適合性コーパスで検証されますが、<code>nudo check</code> にはまだ接続されていません。
+- Rust crate には部分的な型チェッカーがあります。実装済み規則は unit test と型検査の適合性コーパスで検証され、構文解析と名前解決が成功した後に <code>nudo check</code> で実行されます。
 - ベンチマーク suite は lexer、parser、HIR lowering、型検査の合成 workload を測定します。NUDO プログラムの実行時間は測定しません。
 
 <code>nudo run</code>、<code>nudo build</code>、インタープリター、エフェクトチェッカー、エージェント runtime、ツール呼び出し、policy 強制、provenance recorder、WebAssembly backend はまだありません。

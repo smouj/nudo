@@ -17,9 +17,9 @@ Para conocer el diseño, empieza por Filosofía y Confianza. Para el compilador 
 
 ## Qué funciona hoy
 
-- <code>nudo check</code> carga archivos <code>.nudo</code>, los analiza léxica y sintácticamente, resuelve nombres e informa de diagnósticos léxicos, sintácticos y de resolución de nombres.
+- <code>nudo check</code> carga archivos <code>.nudo</code>, los analiza léxica y sintácticamente, resuelve nombres y aplica las reglas de tipos aceptadas que ya están implementadas.
 - <code>--dump-tokens</code>, <code>--dump-tree</code> y <code>--dump-resolutions</code> muestran vistas estables de esas fases.
-- Los crates de Rust contienen un comprobador parcial de tipos. Sus reglas implementadas se ejercitan con pruebas unitarias y el corpus de conformidad de tipos, pero aún no está conectado a <code>nudo check</code>.
+- Los crates de Rust contienen un comprobador parcial de tipos. Sus reglas implementadas se ejercitan con pruebas unitarias y el corpus de conformidad de tipos, y <code>nudo check</code> las aplica tras analizar y resolver los nombres correctamente.
 - La suite de benchmarks mide cargas sintéticas en el lexer, el parser, la reducción a HIR y la comprobación de tipos. No mide la ejecución de programas NUDO.
 
 Todavía no hay <code>nudo run</code>, <code>nudo build</code>, intérprete, comprobador de efectos, runtime de agentes, despacho de herramientas, aplicación de policies, registrador de procedencia ni backend WebAssembly.

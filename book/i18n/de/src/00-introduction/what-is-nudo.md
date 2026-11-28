@@ -16,7 +16,7 @@ NUDO untersucht, wie sich diese Grenzen in Sprache und Runtime sichtbar machen l
 
 ## Was heute existiert
 
-Die CLI kann Quelldateien laden, tokenisieren, in einen verlustfreien Syntaxbaum parsen, Namen auflösen und diese Stufen anzeigen. Die HIR- und Namensauflösungs-Crates sind implementiert. Der Typechecker implementiert einen Teil der angenommenen Regeln und hat eigene Tests und Konformitätsfälle; <code>nudo check</code> führt ihn noch nicht aus.
+Die CLI kann Quelldateien laden, tokenisieren, in einen verlustfreien Syntaxbaum parsen, Namen auflösen und die bisher implementierten angenommenen Typregeln anwenden. Die HIR-, Namensauflösungs- und partiellen Typechecker-Crates sind implementiert. Der Typechecker hat außerdem eigene Tests und Konformitätsfälle.
 
 Die aktuelle Toolchain führt keine NUDO-Programme aus. Es gibt noch keinen Interpreter, Effektprüfer, Modellanbieter, Agenten-Runtime, Tool-Sandbox, Provenienzspeicher oder WASM-Backend. Der <a href="status.md">Projektstatus</a> und die <a href="https://github.com/smouj/nudo/blob/main/ROADMAP.md">Roadmap</a> unterscheiden das funktionierende Frontend von geplanten Subsystemen.
 

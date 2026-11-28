@@ -15,7 +15,7 @@ USAGE:
 
 | Command | Does |
 | ------- | ---- |
-| `nudo check <FILE>...` | Reads `.nudo` files, lexes them, parses them, resolves their names, and reports lexical, syntax and resolution diagnostics |
+| `nudo check <FILE>...` | Reads `.nudo` files, lexes and parses them, resolves names, checks the accepted type rules implemented so far, and reports diagnostics |
 | `nudo --version` | Prints the version and the release channel |
 | `nudo --help` | Lists the implemented commands and the planned ones |
 
@@ -110,6 +110,7 @@ in [`../../spec/errors.md`](../../spec/errors.md).
 
 ## What `check` does not do
 
-It does not type-check or run the program. A clean result means "no lexical,
-syntax or name diagnostics". The toolchain says so in its own help text, because a
-command that overstates what it checked is worse than a command that does less.
+It applies only the accepted type rules implemented so far; it does not check
+effects or run the program. Unsupported rules remain deliberately incomplete.
+A clean result means no diagnostics from the implemented stages, not that every
+planned language rule has been checked.

@@ -4,9 +4,9 @@
 //
 //     nudo check examples/04-results/main.nudo
 //
-// The file uses syntax accepted by the pre-alpha toolchain. It does not run:
-// the interpreter is M4. The type checker supports the accepted match and
-// Result rules, but `nudo check` does not invoke it yet.
+// The file uses syntax accepted by the pre-alpha toolchain. `nudo check`
+// applies the accepted match and Result rules implemented so far. It does not
+// run: the interpreter is M4.
 //
 // NUDO has no exceptions, and no `return` either (NEP-0012). A failure is a
 // value the caller must handle, and `match` must be exhaustive; a function's

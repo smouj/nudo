@@ -6,27 +6,27 @@
 
 {{#include ../diagrams/pipeline.svg}}
 
-*The accent path marks implemented front-end work. Type checking is partial and
-tested separately; effect checking, MIR and execution are planned.*
+*The accent path marks front-end work used by the CLI. Type checking is partial;
+effect checking, MIR and execution are planned.*
 
 ~~~text
 SourceFile → Lexer → Lossless syntax tree → AST → HIR / name resolution
                                                         ↓
-                                     partial type checker (not in nudo check)
+                                  partial accepted-rule type checker
                                                         ↓
                                     effects → MIR → interpreter / backend
 ~~~
 
-The CLI command <code>nudo check</code> runs source loading, lexing, parsing and
-HIR lowering/name resolution. It can dump tokens, the syntax tree and name
-resolutions. It does not call <code>nudo-typeck</code>, and it does not execute
+The CLI command <code>nudo check</code> runs source loading, lexing, parsing,
+HIR lowering/name resolution and the implemented subset of accepted type rules.
+It can dump tokens, the syntax tree and name resolutions. It does not execute
 the source.
 
 The <code>nudo-hir</code> crate lowers the typed AST into identifiers and
 resolved definitions. The <code>nudo-typeck</code> crate consumes that HIR and
-implements a partial set of accepted type rules. Unit tests and the typeck
-conformance corpus exercise it directly. Its remaining rules must be specified
-before they are implemented.
+implements a partial set of accepted type rules. The CLI invokes it after
+successful name resolution; unit tests and the typeck conformance corpus also
+exercise it directly. Draft-gated rules remain unimplemented.
 
 The planned effect checker, MIR, interpreter and WebAssembly backend are not
 available capabilities. Their boxes in the diagram show the intended

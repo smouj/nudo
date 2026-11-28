@@ -26,11 +26,11 @@ NUDO 是一种通用编程语言项目。其设计目标是让普通的确定性
 ## 当前可用的内容
 
 - <code>nudo check</code> 可读取 <code>.nudo</code> 文件、进行词法和语法分析、
-  解析名称，并报告词法、语法及名称解析诊断。
+  解析名称，并检查目前已实现的已接受类型规则。
 - <code>--dump-tokens</code>、<code>--dump-tree</code> 和
   <code>--dump-resolutions</code> 可显示这些阶段的稳定输出。
-- Rust crate 中包含一个部分类型检查器。已实现的规则由单元测试和类型检查一致性语料覆盖，
-  但它尚未接入 <code>nudo check</code>。
+- Rust crate 中包含一个部分类型检查器。已实现的规则由单元测试和类型检查一致性语料覆盖；
+  <code>nudo check</code> 会在语法分析和名称解析成功后运行这些规则。
 - 基准套件测量合成工作负载在词法分析、解析、HIR 降低和类型检查阶段的表现；
   它不测量 NUDO 程序执行。
 

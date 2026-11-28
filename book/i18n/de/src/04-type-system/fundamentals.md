@@ -2,9 +2,9 @@
 
 > **Status:** Implementiert (IMPLEMENTED) / Spezifiziert (SPECIFIED) / Geplant (PLANNED)
 >
-> **Summary:** NUDO besitzt einen teilweise implementierten Typechecker für angenommene Regeln; das vollständige Typsystem ist weiterhin in Arbeit und noch nicht Teil des CLI-Befehls <code>check</code>.
+> **Summary:** NUDO besitzt einen teilweise implementierten Typechecker für angenommene Regeln; das vollständige Typsystem ist weiterhin in Arbeit, während die CLI die implementierte Teilmenge prüft.
 
-Das Typsystem ist in den Sprachkapiteln und angenommenen NEPs spezifiziert. Das Rust-Crate <code>nudo-typeck</code> implementiert eine wachsende Teilmenge und verarbeitet HIR statt Quelltext. Seine Tests und Konformitätsfälle prüfen die implementierten Regeln. Die CLI ruft den Typechecker noch nicht auf.
+Das Typsystem ist in den Sprachkapiteln und angenommenen NEPs spezifiziert. Das Rust-Crate <code>nudo-typeck</code> implementiert eine wachsende Teilmenge und verarbeitet HIR statt Quelltext. Seine Tests und Konformitätsfälle prüfen die implementierten Regeln. Die CLI ruft den Typechecker nach erfolgreicher Namensauflösung auf.
 
 ## Vom aktuellen Typechecker implementierte Regeln
 
@@ -32,4 +32,4 @@ Diese Lücken sind beabsichtigt. Eine Regel gilt erst dann als implementiert, we
 
 ## Was eine erfolgreiche CLI-Prüfung bedeutet
 
-<code>nudo check</code> führt Lexing, Syntaxanalyse und Namensauflösung aus. Da der teilweise Typechecker nicht in diesen Befehl eingebunden ist, belegt ein erfolgreicher CLI-Lauf nicht, dass alle Typregeln erfüllt sind. Der Typechecker wird derzeit mit eigenen Tests und dem Typkonformitätskorpus geprüft.
+<code>nudo check</code> führt Lexing, Syntaxanalyse, Namensauflösung und teilweise Typprüfung aus. Ein erfolgreicher Lauf bedeutet, dass die implementierten angenommenen Regeln keine Fehler gemeldet haben; nicht unterstützte und Draft-gesteuerte Typregeln bleiben ungeprüft. Zusätzlich wird der Typechecker mit eigenen Tests und dem Typkonformitätskorpus geprüft.

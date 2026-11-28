@@ -11,7 +11,7 @@ Los diagnósticos forman parte de la experiencia del lenguaje, no son un volcado
 - <code>NDO2001</code>–<code>NDO2003</code> cubren errores de resolución de nombres y los emite <code>nudo check</code>.
 - <code>NDO2004</code>–<code>NDO2019</code> cubren las reglas de tipado implementadas. <code>NDO2010</code> señala una magnitud entera que no puede representar un <code>Int</code>; exactamente <code>2^63</code> solo se permite directamente bajo el unario <code>-</code> para escribir <code>Int::MIN</code>. Según NEP-0020, <code>NDO2011</code>–<code>NDO2016</code> cubren patrones de <code>enum</code> y <code>Result</code>, aridad de payloads, exhaustividad, alcanzabilidad y tipos de los brazos. Las pruebas fijan notas estructuradas y ubicaciones de origen.
 
-El comprobador de tipos es parcial y la CLI aún no lo invoca. Por tanto, un <code>nudo check</code> limpio indica que el código pasó el análisis léxico, sintáctico y la resolución de nombres; no significa que haya pasado la comprobación de tipos.
+El comprobador de tipos es parcial y la CLI lo invoca tras resolver los nombres correctamente. Por tanto, un <code>nudo check</code> limpio indica que las reglas aceptadas implementadas no notificaron errores; las reglas no admitidas o sujetas a una NEP Draft siguen sin comprobarse.
 
 ## Familias de diagnósticos planificadas
 

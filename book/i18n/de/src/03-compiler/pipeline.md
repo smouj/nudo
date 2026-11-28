@@ -6,21 +6,21 @@
 
 {{#include ../diagrams/pipeline.svg}}
 
-*Der hervorgehobene Pfad zeigt die implementierte Frontend-Arbeit. Die Typprüfung
-ist teilweise implementiert und wird separat getestet; Effektprüfung, MIR und
+*Der hervorgehobene Pfad zeigt die Frontend-Arbeit, die von der CLI verwendet
+wird. Die Typprüfung ist teilweise implementiert; Effektprüfung, MIR und
 Ausführung sind geplant.*
 
 ~~~text
 SourceFile → Lexer → Lossless syntax tree → AST → HIR / name resolution
                                                         ↓
-                                 Teil-Typechecker (nicht in nudo check)
+                              partieller Typechecker für angenommene Regeln
                                                         ↓
                                     Effekte → MIR → Interpreter / Backend
 ~~~
 
-Der CLI-Befehl <code>nudo check</code> lädt den Quellcode, führt Lexing und Parsing aus und senkt nach HIR ab beziehungsweise löst Namen auf. Er kann Tokens, den Syntaxbaum und Namensauflösungen ausgeben. Er ruft <code>nudo-typeck</code> nicht auf und führt den Quellcode nicht aus.
+Der CLI-Befehl <code>nudo check</code> lädt den Quellcode, führt Lexing und Parsing aus, senkt nach HIR ab beziehungsweise löst Namen auf und prüft die bisher implementierten angenommenen Typregeln. Er kann Tokens, den Syntaxbaum und Namensauflösungen ausgeben. Er führt den Quellcode nicht aus.
 
-Das Crate <code>nudo-hir</code> senkt den typisierten AST auf Bezeichner und aufgelöste Definitionen ab. Das Crate <code>nudo-typeck</code> verarbeitet dieses HIR und implementiert einen Teil der angenommenen Typregeln. Unit-Tests und das Typeck-Konformitätskorpus prüfen es direkt. Die übrigen Regeln müssen spezifiziert werden, bevor sie implementiert werden.
+Das Crate <code>nudo-hir</code> senkt den typisierten AST auf Bezeichner und aufgelöste Definitionen ab. Das Crate <code>nudo-typeck</code> verarbeitet dieses HIR und implementiert einen Teil der angenommenen Typregeln. Die CLI ruft es nach erfolgreicher Namensauflösung auf; Unit-Tests und das Typeck-Konformitätskorpus prüfen es ebenfalls direkt. Draft-Regeln bleiben unimplementiert.
 
 Der geplante Effektprüfer, MIR, Interpreter und das WebAssembly-Backend sind nicht verfügbar. Ihre Blöcke im Diagramm zeigen die vorgesehene Architektur und die Reihenfolge der Roadmap; sie versprechen nicht, dass ein Programm diese Stufen heute durchlaufen kann.
 

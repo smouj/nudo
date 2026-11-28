@@ -14,20 +14,21 @@ user-facing workflow is complete.
 | M2 — Parser and syntax tree | Complete | Lossless syntax, parser, typed AST and syntax diagnostics |
 | M3.0 — Semantic gates | Complete | Accepted decisions recorded in the specification and NEPs |
 | M3.1 — HIR and name resolution | Complete | HIR lowering, scopes, name resolution and NDO2001–NDO2003 |
-| M3.2 — Type system | In progress | Partial type checker for accepted rules, including typed enum and <code>Result</code> matching; not yet called by the CLI |
+| M3.2 — Type system | In progress | Partial type checker for accepted rules, including typed enum and <code>Result</code> matching; invoked by the CLI |
 | M3.3 — Trust types | Partial | Type identity and the accepted Verified-to-inner assignment rule |
 | M4 — Interpreter | Planned | First end-to-end program and <code>nudo run</code> |
 | M5 — Effect system | Planned | Effect inference, checking and diagnostics; semantics remain proposed |
 
-The CLI command <code>nudo check</code> currently loads source, lexes, parses
-and resolves names. It can display tokens, syntax trees and name resolutions.
-A clean run means those stages reported no errors; it does not establish that
-the program is type-correct, executable or safe at runtime.
+The CLI command <code>nudo check</code> loads source, lexes, parses, resolves
+names and runs the accepted type rules implemented so far. It can display
+tokens, syntax trees and name resolutions. A clean run means the implemented
+stages reported no errors; unsupported rules, execution and runtime safety are
+not established.
 
 The type-checking crate covers primitive and literal types, annotations, calls,
 bounded generic inference, field access, selected arithmetic, Bool conditions,
 typed enum and <code>Result</code> matching, and accepted trust-type assignment.
-Its current conformance corpus exercises those rules independently of the CLI.
+Its current conformance corpus also exercises those rules independently of the CLI.
 Unsupported rules remain deliberately incomplete until their semantic contracts
 are ready.
 

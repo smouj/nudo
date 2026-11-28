@@ -170,9 +170,9 @@ specified and checked under NEP-0017, and invalid operator operands report one
 `NDO2018` at the operator. Deferred expression forms also check their children for supported
 rules. Numeric arithmetic typing and stable diagnostics for unresolved generic
 parameters (NEP-0015) are in place. The remaining slices are sequence/index
-typing and nominal construction. Draft-gated rules stay unimplemented until
-their semantics are accepted; until then, the checker stays silent rather than
-inventing semantics.
+typing, nominal construction, and agent, task and tool declarations.
+Draft-gated rules stay unimplemented until their semantics are accepted; until
+then, the checker stays silent rather than inventing semantics.
 See
 [`docs/internals/typeck-design.md`](docs/internals/typeck-design.md).
 
@@ -231,8 +231,12 @@ rules of their own.
       exactly, and an `if` without `else` has type `Unit` (NEP-0017)
 * [x] Deferred expression forms recursively check child expressions for
       supported rules while their own typing rules remain pending
+* [x] `nudo check` runs the implemented type rules after clean parsing and name
+      resolution, reports their diagnostics and skips the stage after earlier
+      errors to avoid cascades
 * [ ] Agent, task and tool type declarations
-* [ ] Type errors with stable `NDO2xxx` codes
+* [x] Stable `NDO2xxx` codes for implemented type rules; additional codes are
+      specified alongside their accepted rules
 
 #### M3.2 readiness audit
 

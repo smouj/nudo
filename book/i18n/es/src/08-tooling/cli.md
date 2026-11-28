@@ -1,7 +1,7 @@
 # 08.1 — Toolchain y CLI
 
 > **Status:** Implementado (IMPLEMENTED) / Planificado (PLANNED)
-> **Summary:** El comando actual <code>nudo</code> comprueba el código fuente, la sintaxis y los nombres; la comprobación de tipos, la ejecución, los efectos y el resto de la toolchain siguen siendo trabajo futuro.
+> **Summary:** El comando actual <code>nudo</code> comprueba el código fuente, la sintaxis, los nombres y el subconjunto implementado de reglas de tipos aceptadas; la ejecución, los efectos y el resto de la toolchain siguen siendo trabajo futuro.
 
 ## Comandos implementados
 
@@ -14,9 +14,9 @@ nudo --version
 nudo --help
 ~~~
 
-El comando check carga uno o varios archivos, los analiza léxica y sintácticamente, reduce la sintaxis aceptada a HIR, resuelve nombres e informa de diagnósticos léxicos, sintácticos y de resolución. También puede emitir un informe normal o dirigido a CI.
+El comando check carga uno o varios archivos, los analiza léxica y sintácticamente, reduce la sintaxis aceptada a HIR, resuelve nombres, aplica las reglas de tipos aceptadas que están implementadas e informa de diagnósticos. También puede emitir un informe normal o dirigido a CI.
 
-Su alcance termina en la resolución de nombres. Un resultado limpio no garantiza que el programa tenga tipos correctos ni que sea ejecutable. El comprobador parcial de tipos es un crate separado con pruebas unitarias y casos de conformidad; la CLI no lo invoca. Todavía no existen <code>nudo run</code>, <code>nudo build</code>, REPL, formateador, servidor de lenguaje ni gestor de paquetes.
+La cobertura de tipos es parcial: las reglas no admitidas o sujetas a una NEP Draft siguen sin comprobarse, y el comando no ejecuta el programa. Todavía no existen <code>nudo run</code>, <code>nudo build</code>, REPL, formateador, servidor de lenguaje ni gestor de paquetes.
 
 Los códigos de salida son estables: 0 significa que las fases implementadas no encontraron diagnósticos de error; 1 significa que se notificó al menos un error; 2 significa un error de uso o de entrada, o un comando no implementado.
 

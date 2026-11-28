@@ -161,7 +161,7 @@ AST              compiler/nudo-ast          ← implemented (M2)
   ↓
 HIR              compiler/nudo-hir          ← implemented (M3.1)
   ↓
-Type checking    compiler/nudo-typeck       ← in progress (M3.2; not wired into `check` yet)
+Type checking    compiler/nudo-typeck       ← partial accepted rules (M3.2; invoked by `nudo check`)
   ↓
 Effect checking  compiler/nudo-effects      ← planned (M5)
   ↓
@@ -183,9 +183,9 @@ the dependency rules between them.
 | Lexer | Implemented and tested (milestone M1) |
 | Parser, lossless syntax tree, AST | Implemented and tested (milestone M2) |
 | HIR and name resolution | Implemented and tested (milestone M3.1) |
-| `nudo check` | Implemented: reads `.nudo` files, reports lexical, syntax and name diagnostics |
+| `nudo check` | Implemented: reads `.nudo` files, reports lexical, syntax, name and implemented type diagnostics |
 | `nudo --version`, `nudo --help` | Implemented |
-| Type checker | In progress (M3.2–M3.3): primitives, calls, bounded generic inference, `Unit` for omitted function results, fields, operator domains, `if`, exhaustive enum/`Result` matching and accepted `Verified<T> → T` assignment; sequence indexing, nominal construction and `verify` remain pending; not wired into `nudo check` yet |
+| Type checker | In progress (M3.2–M3.3): primitives, calls, bounded generic inference, `Unit` for omitted function results, fields, operator domains, `if`, exhaustive enum/`Result` matching and accepted `Verified<T> → T` assignment; sequence indexing, nominal construction and `verify` remain pending; implemented rules run in `nudo check` |
 | Effects | Planned (M5) |
 | Interpreter, WASM backend | Planned |
 | Agents, tools, models, policies | Designed only |
@@ -195,9 +195,10 @@ $ nudo check examples/00-hello-world/main.nudo
 checked 1 file: 0 errors and 0 warnings
 ```
 
-`nudo check` lexes, parses and resolves names. A clean run means "no lexical,
-syntax or name diagnostics", not "this program is correct": this command does
-not invoke the partial type checker, and nothing runs.
+`nudo check` lexes and parses, resolves names and invokes the partial type
+checker after clean parsing and name resolution. A clean run means no
+diagnostics from implemented stages; unsupported rules are not checked and
+nothing runs.
 
 ## Roadmap
 

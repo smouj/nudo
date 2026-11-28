@@ -14,7 +14,7 @@ pueden ejecutar.*
 
 <code>Generated&lt;T&gt;</code> y <code>Verified&lt;T&gt;</code> son tipos distintos. El comprobador no los convierte implícitamente y sus argumentos genéricos siguen siendo invariantes. Por tanto, un resultado generado no puede satisfacer un parámetro que exija explícitamente el tipo verificado.
 
-Las reglas aceptadas también permiten usar el <code>Verified&lt;T&gt;</code> integrado donde se espera <code>T</code> en posiciones admitidas. Esto se basa en la identidad resuelta del tipo integrado; un tipo definido por el usuario con la misma grafía no obtiene esa regla. El comportamiento está cubierto por casos de conformidad del comprobador, pero <code>nudo check</code> todavía no ejecuta la comprobación de tipos.
+Las reglas aceptadas también permiten usar el <code>Verified&lt;T&gt;</code> integrado donde se espera <code>T</code> en posiciones admitidas. Esto se basa en la identidad resuelta del tipo integrado; un tipo definido por el usuario con la misma grafía no obtiene esa regla. El comportamiento está cubierto por casos de conformidad del comprobador y las reglas implementadas se ejecutan en <code>nudo check</code>. La operación <code>verify</code> sigue sin estar admitida hasta que se acepte e implemente su contrato.
 
 ## La operación de verificación planificada
 

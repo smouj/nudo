@@ -2,12 +2,12 @@
 
 > **Status:** Implemented / Specified / Planned
 >
-> **Summary:** NUDO has an implemented partial checker for accepted type rules; the full type system remains in progress and is not yet part of the CLI check command.
+> **Summary:** NUDO has an implemented partial checker for accepted type rules; the full type system remains in progress, while the implemented subset is part of the CLI check command.
 
 The type system is specified in the language chapters and accepted NEPs. The
 Rust crate <code>nudo-typeck</code> implements a growing subset and consumes HIR,
 not source text. Its tests and conformance cases exercise the implemented rules.
-The CLI does not invoke the checker yet.
+The CLI invokes it after successful name resolution.
 
 ## Rules implemented by the current checker
 
@@ -47,9 +47,10 @@ which work is ready and which decisions remain open.
 
 ## What a clean CLI check means
 
-<code>nudo check</code> runs lexical, syntax and name-resolution stages. Since
-the partial type checker is not wired into that command, a clean CLI result does
-not establish that every type rule has passed. The checker is currently
-exercised through its own tests and the type-checking conformance corpus.
+<code>nudo check</code> runs lexical, syntax, name-resolution and partial
+type-checking stages. A clean CLI result means the implemented accepted rules
+reported no errors; unsupported and Draft-gated type rules remain unchecked.
+The type checker is also exercised through its own tests and the type-checking
+conformance corpus.
 
 \n
